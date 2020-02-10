@@ -3,7 +3,7 @@ from transformers import BertModel, BertTokenizer, BertPreTrainedModel
 
 import torch
 
-from head_model import BertForRelevance
+from bert_relevance_model import BertForRelevance
 import os
 
 # BERT init
@@ -11,8 +11,7 @@ pretrained_weights = 'bert-base-uncased'
 tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
 
 queries = ["find me a good match for my query, please"]
-
-docs = [("Great query I am", 1), ("Yup, I'm a rubbish query", 0)]
+docs = [("Great query I am", 1.0), ("Yup, I'm a rubbish query", 0.0)]
 
 train_inputs = []
 train_labels = []
@@ -27,14 +26,24 @@ train_inputs_tensor = torch.tensor(train_inputs)
 train_labels_tensor = torch.tensor(train_labels)
 
 if __name__ == "__main__":
+
+    from fine_tunning import build_data_loader, train_bert_relevance_model
+
+    train_dataloader, validation_dataloader = build_data_loader(train_inputs=train_inputs_tensor,
+                                                                train_labels=train_labels_tensor,
+                                                                validation_inputs=train_inputs_tensor,
+                                                                validation_labels=train_labels_tensor,
+                                                                batch_size=1)
+
     relevance_bert = BertForRelevance.from_pretrained(pretrained_weights)
 
-    outputs = relevance_bert(train_inputs_tensor, labels=train_labels_tensor)
-    # print(outputs)
-    # print(pooled_output)
-    # print(pooled_output.shape)
-    # print(groud_truth_tensor)
-    # print(groud_truth_tensor.shape)
+    train_bert_relevance_model(model=relevance_bert,
+                               train_dataloader=train_dataloader,
+                               validation_dataloader=validation_dataloader)
+
+    #outputs = relevance_bert(train_inputs_tensor, labels=train_labels_tensor)
+
+
 
 
 
