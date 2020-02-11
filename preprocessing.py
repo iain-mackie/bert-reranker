@@ -32,7 +32,7 @@ def convert_to_unicode(text):
 
 def convert_dataset(data, corpus, set_name, tokenizer, output_folder, max_length=512):
 
-    output_path = os.path.join(output_folder, '()_dataset.pt'.format(set_name))
+    output_path = os.path.join(output_folder, '{}_dataset.pt'.format(set_name))
 
     print('Converting {} to pytorch dataset'.format(set_name))
     start_time = time.time()
