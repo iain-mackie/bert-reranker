@@ -101,7 +101,6 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
         model.train()
 
-        counter = 0
         for step, batch in enumerate(train_dataloader):
 
             # Progress update every 40 batches.
@@ -134,9 +133,6 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
             # Update the learning rate.
             scheduler.step()
-            if counter > 0:
-                break
-            counter += 1
 
         # Calculate the average loss over the training data.
         avg_train_loss = total_loss / len(train_dataloader)
