@@ -26,18 +26,16 @@ def flat_accuracy(preds, labels):
     return 0.0
 
 
-def build_data_loader(train_inputs, train_labels, validation_inputs, validation_labels, batch_size):
+def build_data_loader(train_tensor, validation_tensor, batch_size):
     #TODO add attension masks
 
     # Create the DataLoader for our training set.
-    train_data = TensorDataset(train_inputs, train_labels)
     train_sampler = RandomSampler(train_data)
-    train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=batch_size)
+    train_dataloader = DataLoader(train_tensor, sampler=train_sampler, batch_size=batch_size)
 
     # Create the DataLoader for our validation set.
-    validation_data = TensorDataset(validation_inputs, validation_labels)
-    validation_sampler = SequentialSampler(validation_data)
-    validation_dataloader = DataLoader(validation_data, sampler=validation_sampler, batch_size=batch_size)
+    validation_sampler = SequentialSampler(validation_tensor)
+    validation_dataloader = DataLoader(validation_tensor, sampler=validation_sampler, batch_size=batch_size)
 
     return train_dataloader, validation_dataloader
 
