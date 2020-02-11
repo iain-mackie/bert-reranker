@@ -40,9 +40,7 @@ def convert_dataset(data, corpus, set_name, tokenizer, output_folder, max_length
 
     input_list = []
     labels_list = []
-    counter = 0
     for i, query in enumerate(data):
-        if counter < 2:
 
         qrels, doc_titles = data[query]
         query = query.replace('enwiki:', '')
