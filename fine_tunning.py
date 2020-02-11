@@ -41,7 +41,7 @@ def build_data_loader(train_tensor, validation_tensor, batch_size):
     return train_dataloader, validation_dataloader
 
 
-def train_bert_relevance_model(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8, seed=None):
+def train_bert_relevance_model(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8):
     # Set the seed value all over the place to make this reproducible.
     # TODO - GPU vs. CPU
     # Set the seed value all over the place to make this reproducible.
@@ -101,6 +101,7 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
         model.train()
 
+        counter = 0
         for step, batch in enumerate(train_dataloader):
 
             # Progress update every 40 batches.
@@ -111,8 +112,8 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
                 # Report progress.
                 print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
 
-            b_input_ids = batch[0].to(device)
-            b_labels = batch[1].to(device)
+            b_input_ids = batch[0].to(device, dtype=torch.float)
+            b_labels = batch[1].to(device, dtype=torch.float)
             print(b_input_ids)
             print(b_labels)
 
@@ -133,6 +134,9 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
             # Update the learning rate.
             scheduler.step()
+            if counter > 0:
+                break
+            counter += 1
 
         # Calculate the average loss over the training data.
         avg_train_loss = total_loss / len(train_dataloader)
@@ -157,7 +161,7 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
         for batch in validation_dataloader:
 
-            batch = tuple(t for t in batch) #.to(device)
+            batch = tuple(t for t in batch).to(device)
 
             b_input_ids, b_labels = batch
 
