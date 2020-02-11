@@ -30,7 +30,7 @@ def build_data_loader(train_tensor, validation_tensor, batch_size):
     #TODO add attension masks
 
     # Create the DataLoader for our training set.
-    train_sampler = RandomSampler(train_data)
+    train_sampler = RandomSampler(train_tensor)
     train_dataloader = DataLoader(train_tensor, sampler=train_sampler, batch_size=batch_size)
 
     # Create the DataLoader for our validation set.
