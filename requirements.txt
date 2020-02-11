@@ -1,3 +1,4 @@
 torch>=1.0.0
 tensorflow>=2.0
 transformers
+# install trec-car-tools: https://github.com/TREMA-UNH/trec-car-tools

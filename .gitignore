@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints
 .ipynb_checkpoints/*
+dedup.articles-paragraphs.cbor
+*.topics
+*.qrels
+*.run
