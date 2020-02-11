@@ -113,16 +113,12 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
             b_input_ids = batch[0].to(device)
             b_labels = batch[1].to(device, dtype=torch.float)
-            print(b_input_ids)
-            print(b_labels)
 
             model.zero_grad()
 
             outputs = model(b_input_ids, labels=b_labels)
-            print(outputs)
 
             loss = outputs[0]
-            print(loss)
 
             total_loss += loss.item()
 
