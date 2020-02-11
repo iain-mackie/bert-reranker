@@ -146,10 +146,11 @@ def merge(qrels, run):
 
 
 if __name__ == "__main__":
-    test_run = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
-    test_qrels = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
-    paragraphs = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    output_folder = '/nfs/trec_car/data/bert_reranker_datasets/'
+    base = os.path.join('nfs', 'trec_car', 'data')
+    test_run = os.path.join(base, 'bert_reranker_datasets', 'test.run')
+    test_qrels = os.path.join(base, 'bert_reranker_datasets', 'test.qrels')
+    paragraphs = os.path.join(base, 'paragraphs', 'dedup.articles-paragraphs.cbor')
+    output_folder = os.path.join(base, 'bert_reranker_datasets')
 
     run = load_run(path=test_run)
     qrels = load_qrels(path=test_qrels)
