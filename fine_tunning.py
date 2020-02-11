@@ -161,13 +161,13 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
         for batch in validation_dataloader:
 
-            batch = tuple(t.to(device) for t in batch)
+            batch = tuple(t for t in batch)
 
             b_input_ids, b_labels = batch
 
             with torch.no_grad():
 
-                outputs = model(input_ids=b_input_ids, labels=b_labels)
+                outputs = model(input_ids=b_input_ids.to(device), labels=b_labels.to(device, dtype=torch.float))
 
             logits = outputs[0]
 
