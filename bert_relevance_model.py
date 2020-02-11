@@ -7,6 +7,11 @@ from torch.nn import MSELoss
 
 #TODO - cosine similarity of q & d
 
+#TODO - sentence relevance aggregation (See Birch implmenentation) --> BERT sentence level OR a(BM25+RM3) + (1-a)(S1+...)
+
+#TODO - add comments and chaneg docstring
+
+
 class BertForRelevance(BertPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
