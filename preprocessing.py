@@ -58,7 +58,7 @@ def convert_dataset(data, corpus, set_name, tokenizer, output_folder, max_length
                 add_special_tokens=True,
                 pad_to_max_length=True
             )
-            input_list += q_d
+            input_list += [q_d]
 
         labels_list += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
 

@@ -31,6 +31,10 @@ train_labels_tensor = torch.tensor(train_labels)
 
 if __name__ == "__main__":
 
+    print(train_inputs_tensor.shape)
+    print(train_labels_tensor.shape)
+
+
     from fine_tunning import build_data_loader, train_bert_relevance_model
 
     train_dataloader, validation_dataloader = build_data_loader(train_inputs=train_inputs_tensor,
