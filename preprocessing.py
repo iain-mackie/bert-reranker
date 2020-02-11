@@ -128,7 +128,7 @@ def load_corpus(path=paragraphs_path):
                         for elem in p.bodies]
 
             corpus[p.para_id] = ' '.join(para_txt)
-            if i % 10000 == 0:
+            if i % 1000000 == 0:
                 print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
                 time_passed = time.time() - start_time
                 hours_remaining = (APPROX_TOTAL_PARAGRAPHS - i) * time_passed / (max(1.0, i) * 3600)
@@ -146,11 +146,10 @@ def merge(qrels, run):
 
 
 if __name__ == "__main__":
-    base = os.path.join('nfs', 'trec_car', 'data')
-    test_run = os.path.join(base, 'bert_reranker_datasets', 'test.run')
-    test_qrels = os.path.join(base, 'bert_reranker_datasets', 'test.qrels')
-    paragraphs = os.path.join(base, 'paragraphs', 'dedup.articles-paragraphs.cbor')
-    output_folder = os.path.join(base, 'bert_reranker_datasets')
+    test_run = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
+    test_qrels = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
+    paragraphs = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
+    output_folder = '/nfs/trec_car/data/bert_reranker_datasets/'
 
     run = load_run(path=test_run)
     qrels = load_qrels(path=test_qrels)
