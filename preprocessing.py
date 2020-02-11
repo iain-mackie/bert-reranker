@@ -1,5 +1,5 @@
 
-from trec_car.read_data import iter_paragraphs, ParaText # ParaLink iter_pages, iter_annotations,
+from trec_car_tools import iter_paragraphs, ParaText # ParaLink iter_pages, iter_annotations,
 import os
 import collections
 import time
