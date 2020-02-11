@@ -1,8 +1,13 @@
 
-from trec_car.read_data import iter_paragraphs, ParaText, ParaLink #iter_pages, iter_annotations,
+from trec_car.read_data import iter_paragraphs, ParaText # ParaLink iter_pages, iter_annotations,
 import os
 import collections
 import time
+import six
+import unicodedata
+from transformers import BertTokenizer
+from torch.utils.data import TensorDataset
+import torch
 
 #TODO - make datasets (paragraph + sentence)
 
@@ -10,6 +15,68 @@ paragraphs_path = os.path.join(os.getcwd(), 'dedup.articles-paragraphs.cbor')
 
 test_qrels_path = os.path.join(os.getcwd(), 'test.qrels')
 test_run_path = os.path.join(os.getcwd(), 'test.run')
+
+
+def convert_to_unicode(text):
+    """Converts `text` to Unicode (if it's not already), assuming utf-8 input."""
+    if six.PY3:
+        if isinstance(text, str):
+            return text
+        elif isinstance(text, bytes):
+            return text.decode("utf-8", "ignore")
+        else:
+            raise ValueError("Unsupported string type: %s" % (type(text)))
+    else:
+        raise ValueError("Not running on Python 3?")
+
+
+def convert_dataset(data, corpus, set_name, tokenizer, output_folder, max_length=512):
+
+    output_path = os.path.join(output_folder, '()_dataset.pt'.format(set_name))
+
+    print('Converting {} to pytorch dataset'.format(set_name))
+    start_time = time.time()
+
+
+    input_list = []
+    labels_list = []
+    counter = 0
+    for i, query in enumerate(data):
+        if counter < 2:
+
+        qrels, doc_titles = data[query]
+        query = query.replace('enwiki:', '')
+        query = query.replace('%20', ' ')
+        query = query.replace('/', ' ')
+        query = convert_to_unicode(query)
+        if i % 1000 == 0:
+            print('query', query)
+
+        for d in doc_titles:
+            q_d = tokenizer.encode(
+                text=query,
+                text_pair=convert_to_unicode(corpus[d]),
+                max_length=max_length,
+                add_special_tokens=True,
+                pad_to_max_length=True
+            )
+            input_list += q_d
+
+        labels_list += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
+
+
+        if i % 1000 == 0:
+            print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
+            time_passed = time.time() - start_time
+            est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
+            print('estimated total hours to save: {}'.format(est_hours))
+
+    inputs_tensor = torch.tensor(input_list)
+    labels_tensor = torch.tensor(labels_list)
+    dataset = TensorDataset(inputs_tensor, labels_tensor)
+
+    return dataset
+
 
 
 def load_qrels(path=test_qrels_path):
@@ -25,7 +92,7 @@ def load_qrels(path=test_qrels_path):
     return qrels
 
 
-def load_run(path):
+def load_run(path=test_run_path):
     """Loads run into a dict of key: topic, value: list of candidate doc ids."""
 
     # We want to preserve the order of runs so we can pair the run file with the
@@ -39,6 +106,7 @@ def load_run(path):
             run[topic].append((doc_title, int(rank)))
             if i % 1000000 == 0:
                 print('Loading run {}'.format(i))
+
     # Sort candidate docs by rank.
     sorted_run = collections.OrderedDict()
     for topic, doc_titles_ranks in run.items():
@@ -69,6 +137,7 @@ def load_corpus(path=paragraphs_path):
 
     return corpus
 
+
 def merge(qrels, run):
     """Merge qrels and runs into a single dict of key: topic, value: tuple(relevant_doc_ids, candidate_doc_ids)"""
     data = collections.OrderedDict()
@@ -78,7 +147,13 @@ def merge(qrels, run):
 
 
 if __name__ == "__main__":
-    test = load_qrels()
-    print(test)
-    print('hi')
+    run = load_run()
+    qrels = load_qrels()
+    merge = merge(qrels, run)
+    pretrained_weights = 'bert-base-uncased'
+    tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
+
+    convert_dataset(data=merge, tokenizer=tokenizer)
+
+
 

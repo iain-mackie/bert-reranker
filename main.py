@@ -3,7 +3,7 @@ from transformers import BertModel, BertTokenizer, BertPreTrainedModel
 
 import torch
 
-from bert_relevance_model import BertForRelevance
+from bert_retrieval_model import BertForRelevance
 import os
 
 # BERT init
