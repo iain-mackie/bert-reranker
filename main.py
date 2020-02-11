@@ -18,7 +18,11 @@ train_labels = []
 for q in queries:
     for d in docs:
         q_d_pair = tokenizer.encode(q, d[0], max_length=512, add_special_tokens=True, pad_to_max_length=True)
+        q_d_pair_plus = tokenizer.encode_plus(q, d[0], max_length=512, add_special_tokens=True, pad_to_max_length=True)
+        # should use - be explicit!
         print(q_d_pair)
+        print(q_d_pair_plus)
+
         train_inputs.append(q_d_pair)
         train_labels.append(d[1])
 
@@ -39,7 +43,11 @@ if __name__ == "__main__":
 
     train_bert_relevance_model(model=relevance_bert,
                                train_dataloader=train_dataloader,
-                               validation_dataloader=validation_dataloader)
+                               validation_dataloader=validation_dataloader,
+                               epochs=2,
+                               lr=5e-4,
+                               eps=1e-8,
+                               seed=None)
 
     #outputs = relevance_bert(train_inputs_tensor, labels=train_labels_tensor)
 

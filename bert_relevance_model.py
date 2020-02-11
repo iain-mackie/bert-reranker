@@ -5,6 +5,7 @@ from torch import nn
 from torch import sigmoid
 from torch.nn import MSELoss
 
+#TODO - cosine similarity of q & d
 
 class BertForRelevance(BertPreTrainedModel):
     def __init__(self, config):
