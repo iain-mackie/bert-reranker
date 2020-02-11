@@ -73,7 +73,8 @@ def convert_dataset(data, corpus, set_name, tokenizer, output_folder, max_length
     labels_tensor = torch.tensor(labels_list)
     dataset = TensorDataset(inputs_tensor, labels_tensor)
 
-    return dataset
+    print('saving tensor')
+    torch.save(dataset, output_path)
 
 
 
@@ -145,13 +146,21 @@ def merge(qrels, run):
 
 
 if __name__ == "__main__":
-    run = load_run()
-    qrels = load_qrels()
-    merge = merge(qrels, run)
+    test_run = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
+    test_qrels = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
+    paragraphs = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
+    output_folder = '/nfs/trec_car/data/bert_reranker_datasets/'
+
+    run = load_run(path=test_run)
+    qrels = load_qrels(path=test_qrels)
+    data = merge(qrels, run)
+
+    corpus = load_corpus(paragraphs)
+
     pretrained_weights = 'bert-base-uncased'
     tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
 
-    convert_dataset(data=merge, tokenizer=tokenizer)
+    convert_dataset(data=data, corpus=corpus, set_name='test', tokenizer=tokenizer, output_folder=output_folder)
 
 
 
