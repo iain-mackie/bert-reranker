@@ -50,8 +50,7 @@ if __name__ == "__main__":
                                validation_dataloader=validation_dataloader,
                                epochs=2,
                                lr=5e-4,
-                               eps=1e-8,
-                               seed=None)
+                               eps=1e-8)
 
     #outputs = relevance_bert(train_inputs_tensor, labels=train_labels_tensor)
 

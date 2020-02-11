@@ -112,7 +112,7 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
                 # Report progress.
                 print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
 
-            b_input_ids = batch[0].to(device, dtype=torch.float)
+            b_input_ids = batch[0].to(device)
             b_labels = batch[1].to(device, dtype=torch.float)
             print(b_input_ids)
             print(b_labels)
@@ -161,7 +161,7 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
         for batch in validation_dataloader:
 
-            batch = tuple(t for t in batch).to(device)
+            batch = tuple(t.to(device) for t in batch)
 
             b_input_ids, b_labels = batch
 
