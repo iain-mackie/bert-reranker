@@ -1,6 +1,6 @@
 
 from transformers import BertModel, BertTokenizer, BertPreTrainedModel
-
+from torch.utils.data import TensorDataset
 import torch
 
 from bert_retrieval_model import BertForRelevance
@@ -37,10 +37,10 @@ if __name__ == "__main__":
 
     from fine_tunning import build_data_loader, train_bert_relevance_model
 
-    train_dataloader, validation_dataloader = build_data_loader(train_inputs=train_inputs_tensor,
-                                                                train_labels=train_labels_tensor,
-                                                                validation_inputs=train_inputs_tensor,
-                                                                validation_labels=train_labels_tensor,
+    both_tensor = TensorDataset(train_inputs_tensor, train_labels_tensor)
+
+    train_dataloader, validation_dataloader = build_data_loader(train_tensor=both_tensor,
+                                                                validation_tensor=both_tensor,
                                                                 batch_size=1)
 
     relevance_bert = BertForRelevance.from_pretrained(pretrained_weights)

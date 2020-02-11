@@ -8,6 +8,7 @@ from transformers import get_linear_schedule_with_warmup
 import time
 import datetime
 import numpy as np
+import random
 
 
 def format_time(elapsed):
@@ -43,10 +44,32 @@ def build_data_loader(train_tensor, validation_tensor, batch_size):
 def train_bert_relevance_model(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8, seed=None):
     # Set the seed value all over the place to make this reproducible.
     # TODO - GPU vs. CPU
-    # random.seed(seed)
-    # np.random.seed(seed)
-    # torch.manual_seed(seed)
-    # torch.cuda.manual_seed_all(seed)
+    # Set the seed value all over the place to make this reproducible.
+    seed_val = 42
+
+    random.seed(seed_val)
+    np.random.seed(seed_val)
+    torch.manual_seed(seed_val)
+    torch.cuda.manual_seed_all(seed_val)
+
+    # If there's a GPU available...
+    if torch.cuda.is_available():
+
+        # Tell PyTorch to use the GPU.
+        device = torch.device("cuda")
+
+        print('There are %d GPU(s) available.' % torch.cuda.device_count())
+
+        print('We will use the GPU:', torch.cuda.get_device_name(0))
+
+        model.cuda()
+
+    # If not...
+    else:
+        print('No GPU available, using the CPU instead.')
+        device = torch.device("cpu")
+
+
 
 
     optimizer = AdamW(model.parameters(),
@@ -88,8 +111,8 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
                 # Report progress.
                 print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
 
-            b_input_ids = batch[0] #.to(device)
-            b_labels = batch[1] #.to(device)
+            b_input_ids = batch[0].to(device)
+            b_labels = batch[1].to(device)
             #print(b_input_ids)
             #print(b_labels)
 
