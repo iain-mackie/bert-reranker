@@ -69,7 +69,6 @@ def load_corpus(path=paragraphs_path):
 
     return corpus
 
-
 def merge(qrels, run):
     """Merge qrels and runs into a single dict of key: topic, value: tuple(relevant_doc_ids, candidate_doc_ids)"""
     data = collections.OrderedDict()
