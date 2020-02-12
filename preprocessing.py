@@ -32,7 +32,7 @@ def convert_to_unicode(text):
 
 def convert_dataset(data, corpus, set_name, tokenizer, output_folder, max_length=512):
 
-    output_path = os.path.join(output_folder, '()_dataset.pt'.format(set_name))
+    output_path = os.path.join(output_folder, '{}_dataset.pt'.format(set_name))
 
     print('Converting {} to pytorch dataset'.format(set_name))
     start_time = time.time()
@@ -58,7 +58,7 @@ def convert_dataset(data, corpus, set_name, tokenizer, output_folder, max_length
                 add_special_tokens=True,
                 pad_to_max_length=True
             )
-            input_list += q_d
+            input_list += [q_d]
 
         labels_list += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
 
@@ -128,7 +128,7 @@ def load_corpus(path=paragraphs_path):
                         for elem in p.bodies]
 
             corpus[p.para_id] = ' '.join(para_txt)
-            if i % 10000 == 0:
+            if i % 1000000 == 0:
                 print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
                 time_passed = time.time() - start_time
                 hours_remaining = (APPROX_TOTAL_PARAGRAPHS - i) * time_passed / (max(1.0, i) * 3600)
