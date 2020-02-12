@@ -145,22 +145,32 @@ def merge(qrels, run):
     return data
 
 
+def make_tensor_dataset(corpus, set_name, tokenizer, data_path, max_length=512):
+
+    run_path = data_path + '{}.run'.format(set_name)
+    run = load_run(path=run_path)
+
+    qrels_path = data_path + '{}.qrels'.format(set_name)
+    qrels = load_qrels(path=qrels_path)
+
+    data = merge(qrels=qrels, run=run)
+
+    convert_dataset(data=data, corpus=corpus, set_name=set_name, tokenizer=tokenizer, output_folder=data_path,
+                    max_length=max_length)
+
+
 if __name__ == "__main__":
-    test_run = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
-    test_qrels = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
-    paragraphs = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    output_folder = '/nfs/trec_car/data/bert_reranker_datasets/'
-
-    run = load_run(path=test_run)
-    qrels = load_qrels(path=test_qrels)
-    data = merge(qrels, run)
-
-    corpus = load_corpus(paragraphs)
 
     pretrained_weights = 'bert-base-uncased'
     tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
 
-    convert_dataset(data=data, corpus=corpus, set_name='test', tokenizer=tokenizer, output_folder=output_folder)
+    paragraphs = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
+    corpus = load_corpus(paragraphs)
+
+    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    set_name = 'test'
+
+    make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=512)
 
 
 
