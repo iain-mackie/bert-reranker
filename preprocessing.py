@@ -169,11 +169,11 @@ if __name__ == "__main__":
 
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
 
-    set_name = 'test'
-    make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=512)
-
-    set_name = 'dev'
-    make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=512)
+    # set_name = 'test'
+    # make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=512)
+    #
+    # set_name = 'dev'
+    # make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=512)
 
     set_name = 'train'
     make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=512)
