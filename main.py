@@ -15,6 +15,14 @@ docs = [("Great query I am", 1.0),
         ("Yup, I'm a rubbish query", 0.0),
         ("Okay query for sure", 1.0),
         ("Who knows", 0.0),
+        ("Great query I am", 1.0),
+        ("Yup, I'm a rubbish query", 0.0),
+        ("Okay query for sure", 1.0),
+        ("Who knows", 0.0),
+        ("Great query I am", 1.0),
+        ("Yup, I'm a rubbish query", 0.0),
+        ("Okay query for sure", 1.0),
+        ("Who knows", 0.0)
         ]
 
 train_inputs = []
@@ -45,7 +53,7 @@ if __name__ == "__main__":
 
     train_dataloader, validation_dataloader = build_data_loader(train_tensor=both_tensor,
                                                                 validation_tensor=both_tensor,
-                                                                batch_size=1)
+                                                                batch_size=4)
 
     relevance_bert = BertForRelevance.from_pretrained(pretrained_weights)
 

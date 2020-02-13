@@ -156,15 +156,24 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
             batch = tuple(t for t in batch)
 
             b_input_ids, b_labels = batch
+            print('BATCH')
+            print(b_input_ids), print(b_labels)
 
             with torch.no_grad():
 
                 outputs = model(input_ids=b_input_ids.to(device), labels=b_labels.to(device, dtype=torch.float))
 
-            logits = outputs[0]
+            loss = outputs[0]
+            print('*** LOSS ***')
+            print(loss)
 
-            logits = logits.detach().cpu().numpy()
-            label_ids = b_labels.to('cpu').numpy()
+            print('*** PRED ***')
+            pred = outputs[1].numpy()[0]
+            print(pred)
+
+            print('*** GT ***')
+            gt = b_labels.numpy()
+            print(gt)
 
             # Calculate the accuracy for this batch of test sentences.
             #tmp_eval_accuracy = flat_accuracy(logits, label_ids)
