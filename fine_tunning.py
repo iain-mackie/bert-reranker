@@ -21,11 +21,6 @@ def format_time(elapsed):
     # Format as hh:mm:ss
     return str(datetime.timedelta(seconds=elapsed_rounded))
 
-def flat_accuracy(preds, labels):
-    # TODO - what metrics?  MAP?  MSE? etc.
-
-    return 0.0
-
 
 def build_data_loader(train_tensor, validation_tensor, batch_size):
     #TODO add attension masks
@@ -167,13 +162,14 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
             print('*** LOSS ***')
             print(loss)
 
-            print('*** PRED ***')
-            pred = outputs[1].numpy()[0]
-            print(pred)
-
-            print('*** GT ***')
-            gt = b_labels.numpy()
-            print(gt)
+            # print('*** PRED ***')
+            # pred = outputs[1].numpy().tolist()
+            #
+            # print('*** GT ***')
+            # gt = b_labels.numpy()
+            #gt_list = b_labels.numpy().tolist()
+            # print(gt)
+            # print(gt_list)
 
             # Calculate the accuracy for this batch of test sentences.
             #tmp_eval_accuracy = flat_accuracy(logits, label_ids)
@@ -192,6 +188,33 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
     print("Training complete!")
 
     #TODO - trec output wrtiter
+
+
+if __name__ == "__main__":
+    
+    from bert_retrieval_model import BertForRelevance
+
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset.pt'
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
+
+    train_tensor = torch.load(train_path)
+    validation_tensor = torch.load(dev_path)
+
+    train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
+                                                                validation_tensor=validation_tensor,
+                                                                batch_size=32)
+
+    pretrained_weights = 'bert-base-uncased'
+    relevance_bert = BertForRelevance.from_pretrained(pretrained_weights)
+
+    train_bert_relevance_model(model=relevance_bert,
+                               train_dataloader=train_dataloader,
+                               validation_dataloader=validation_dataloader,
+                               epochs=2,
+                               lr=5e-4,
+                               eps=1e-8)
+
+
 
 
 
