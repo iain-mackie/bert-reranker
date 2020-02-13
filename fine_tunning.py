@@ -182,6 +182,8 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
     print("")
     print("Training complete!")
 
+    #TODO - trec output wrtiter
+
 
 
 

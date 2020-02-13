@@ -11,7 +11,11 @@ pretrained_weights = 'bert-base-uncased'
 tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
 
 queries = ["find me a good match for my query, please"]
-docs = [("Great query I am", 1.0), ("Yup, I'm a rubbish query", 0.0)]
+docs = [("Great query I am", 1.0),
+        ("Yup, I'm a rubbish query", 0.0),
+        ("Okay query for sure", 1.0),
+        ("Who knows", 0.0),
+        ]
 
 train_inputs = []
 train_labels = []
