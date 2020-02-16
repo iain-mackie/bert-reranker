@@ -219,8 +219,10 @@ def fine_tuning_bert_re_reanker(model, train_dataloader, validation_dataloader, 
 
     # TODO - trec output wrtiter
 
-def inference_bert_re_ranker():
-    pass
+def inference_bert_re_ranker(model_path):
+    model = BertReRanker.from_pretrained(model_path)
+
+    print(model)
 
 def trec_output():
     pass
