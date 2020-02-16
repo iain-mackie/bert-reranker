@@ -56,8 +56,8 @@ def format_time(elapsed):
     return str(datetime.timedelta(seconds=int(round((elapsed)))))
 
 
-def fine_tuning_bert_re_reanker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
-                                seed_val=42, write=False, model_path=None, experiment_name='test'):
+def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
+                               seed_val=42, write=False, model_path=None, experiment_name='test'):
     # Set the seed value all over the place to make this reproducible.
 
     random.seed(seed_val)
@@ -220,6 +220,7 @@ def fine_tuning_bert_re_reanker(model, train_dataloader, validation_dataloader, 
     # TODO - trec output wrtiter
 
 def inference_bert_re_ranker(model_path):
+
     model = BertReRanker.from_pretrained(model_path)
 
     print(model)
@@ -228,11 +229,10 @@ def trec_output():
     pass
 
 
-
 if __name__ == "__main__":
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset.pt'
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explict.pt'
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explict.pt'
 
     train_tensor = torch.load(train_path)
     validation_tensor = torch.load(dev_path)
@@ -244,5 +244,6 @@ if __name__ == "__main__":
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
 
-    fine_tuning_bert_re_reanker(model=relevance_bert, train_dataloader=train_dataloader,
-                                validation_dataloader=validation_dataloader, epochs=5, lr=5e-4, eps=1e-8)
+    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
+                               validation_dataloader=validation_dataloader, epochs=5, lr=5e-5, eps=1e-8, seed_val=42,
+                               write=False, model_path=None, experiment_name='test')

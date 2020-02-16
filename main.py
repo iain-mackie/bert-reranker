@@ -2,7 +2,7 @@
 from transformers import BertTokenizer
 from torch.utils.data import TensorDataset
 import torch
-from bert_models import BertReRanker, fine_tuning_bert_re_reanker, inference_bert_re_ranker
+from bert_models import BertReRanker, fine_tuning_bert_re_ranker, inference_bert_re_ranker
 from preprocessing import build_data_loader
 import os
 
@@ -52,9 +52,9 @@ if __name__ == "__main__":
     # Train & validation run
     model_path = os.path.join(os.getcwd(), 'models')
     experiment_name = 'test'
-    fine_tuning_bert_re_reanker(model=relevance_bert, train_dataloader=train_dataloader,
-                                validation_dataloader=validation_dataloader, epochs=2, lr=5e-4, eps=1e-8, write=True,
-                                experiment_name=experiment_name, model_path=model_path)
+    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
+                               validation_dataloader=validation_dataloader, epochs=2, lr=5e-4, eps=1e-8, write=True,
+                               experiment_name=experiment_name, model_path=model_path)
 
     # Run Inference
     model_path = os.path.join(os.getcwd(), 'models', 'test', 'epoch1')
