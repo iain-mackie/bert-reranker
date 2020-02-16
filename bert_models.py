@@ -231,8 +231,8 @@ def trec_output():
 
 if __name__ == "__main__":
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explict.pt'
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explict.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explicit.pt'
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explicit.pt'
 
     train_tensor = torch.load(train_path)
     validation_tensor = torch.load(dev_path)
