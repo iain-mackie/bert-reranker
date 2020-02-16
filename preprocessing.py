@@ -49,9 +49,9 @@ def convert_dataset(data, corpus, set_name, tokenizer, output_path, max_length=5
                 q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(corpus[d]), max_length=max_length,
                     add_special_tokens=True, pad_to_max_length=True
                                             )
-                input_ids += q_d['input_ids']
-                token_type_ids += q_d['token_type_ids']
-                attention_mask += q_d['attention_mask']
+                input_ids += [q_d['input_ids']]
+                token_type_ids += [q_d['token_type_ids']]
+                attention_mask += [q_d['attention_mask']]
                 labels += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
 
             if i % 1000 == 0:
@@ -73,8 +73,8 @@ def convert_dataset(data, corpus, set_name, tokenizer, output_path, max_length=5
     labels_tensor = torch.tensor(labels)
 
     print('tensor shape of input_ids: {}'.format(input_ids_tensor.shape))
-    print('tensor shape  token_type_ids: {}'.format(token_type_ids_tensor.shape))
-    print('tensor shape  attention_mask: {}'.format(attention_mask_tensor.shape))
+    print('tensor shape token_type_ids: {}'.format(token_type_ids_tensor.shape))
+    print('tensor shape attention_mask: {}'.format(attention_mask_tensor.shape))
     print('tensor shape labels: {}'.format(labels_tensor.shape))
 
     dataset = TensorDataset(input_ids_tensor, token_type_ids_tensor, attention_mask_tensor, labels_tensor)
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     max_length = 512
 
     set_name = 'test'
-    output_path =  '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explicit.pt'
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explicit.pt'
     make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, output_path=output_path, max_length=max_length)
     #
     # set_name = 'dev'
