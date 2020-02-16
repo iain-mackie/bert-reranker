@@ -64,7 +64,12 @@ def convert_dataset(data, corpus, set_name, tokenizer, output_path, max_length=5
                 est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
                 print('estimated total hours to save: {}'.format(est_hours))
         except:
-            print('Exception ')
+            print('*** Exception on query {}: {}'.format(i, query))
+
+    print('len of input_ids: {}'.format(len(input_ids)))
+    print('len of token_type_ids: {}'.format(len(token_type_ids)))
+    print('len of attention_mask: {}'.format(len(attention_mask)))
+    print('len of labels: {}'.format(len(labels)))
 
     input_ids_tensor = torch.tensor(input_ids)
     token_type_ids_tensor = torch.tensor(token_type_ids)
@@ -72,7 +77,7 @@ def convert_dataset(data, corpus, set_name, tokenizer, output_path, max_length=5
     labels_tensor = torch.tensor(labels)
     dataset = TensorDataset(input_ids_tensor, token_type_ids_tensor, attention_mask_tensor, labels_tensor)
 
-    print('saving tensor')
+    print('saving tensor to: {}'.format(output_path))
     torch.save(dataset, output_path)
 
 
