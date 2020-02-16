@@ -52,7 +52,8 @@ def convert_dataset(data, corpus, set_name, tokenizer, output_path, max_length=5
                 input_ids += [q_d['input_ids']]
                 token_type_ids += [q_d['token_type_ids']]
                 attention_mask += [q_d['attention_mask']]
-                labels += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
+
+            labels += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
 
             if i % 1000 == 0:
                 print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))

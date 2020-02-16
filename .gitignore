@@ -8,3 +8,4 @@ dedup.articles-paragraphs.cbor
 *.topics
 *.qrels
 *.run
+models/*

@@ -2,9 +2,9 @@
 from transformers import BertTokenizer
 from torch.utils.data import TensorDataset
 import torch
-from fine_tunning import train_bert_relevance_model
-from bert_models import BertReRanker
+from bert_models import BertReRanker, fine_tuning_bert_re_reanker
 from preprocessing import build_data_loader
+import os
 
 # BERT init
 pretrained_weights = 'bert-base-uncased'
@@ -50,6 +50,8 @@ if __name__ == "__main__":
     relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
 
     # Train & validation run
-    train_bert_relevance_model(model=relevance_bert, train_dataloader=train_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=2, lr=5e-4, eps=1e-8)
+    model_path = os.path.join(os.getcwd(), 'models')
+    fine_tuning_bert_re_reanker(model=relevance_bert, train_dataloader=train_dataloader,
+                                validation_dataloader=validation_dataloader, epochs=2, lr=5e-4, eps=1e-8, write=True,
+                                model_path=model_path)
 

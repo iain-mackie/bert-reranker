@@ -11,6 +11,7 @@ import time
 import datetime
 import numpy as np
 import random
+import os
 
 #TODO - cosine similarity of q & d
 
@@ -56,7 +57,7 @@ def format_time(elapsed):
 
 
 def fine_tuning_bert_re_reanker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
-                                seed_val=42, write=False):
+                                seed_val=42, write=False, model_path=None, experiment_name='test'):
     # Set the seed value all over the place to make this reproducible.
 
     random.seed(seed_val)
@@ -199,10 +200,19 @@ def fine_tuning_bert_re_reanker(model, train_dataloader, validation_dataloader, 
         # Writing model
         if write:
             print('Writing model to file')
-            pass
+            if os.path.isdir(model_path):
+                exp_path = os.path.join(model_path, experiment_name)
+
+                if os.path.isdir(exp_path) == False:
+                    os.mkdir(exp_path)
+
+                epoch_dir = os.path.join(exp_path, 'epoch{}'.format(epoch_i))
+                os.mkdir(epoch_dir)
+                model.save_pretrained(epoch_dir)  # save
+            else:
+                print('MODEL PATH DOES NOT EXIST')
         else:
             print('Not writing model to file')
-
 
     print("")
     print("Training complete!")
@@ -211,6 +221,10 @@ def fine_tuning_bert_re_reanker(model, train_dataloader, validation_dataloader, 
 
 def inference_bert_re_ranker():
     pass
+
+def trec_output():
+    pass
+
 
 
 if __name__ == "__main__":
