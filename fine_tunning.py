@@ -1,10 +1,9 @@
 
-import torch
-from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
-
 from transformers.optimization import AdamW
 from transformers import get_linear_schedule_with_warmup
+from preprocessing import build_data_loader
 
+import torch
 import time
 import datetime
 import numpy as np
@@ -17,23 +16,9 @@ def format_time(elapsed):
     return str(datetime.timedelta(seconds=int(round((elapsed)))))
 
 
-def build_data_loader(train_tensor, validation_tensor, batch_size):
+def train_bert_relevance_model(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8, seed_val=42):
 
-    # Create the DataLoader for our training set.
-    train_sampler = RandomSampler(train_tensor)
-    train_dataloader = DataLoader(train_tensor, sampler=train_sampler, batch_size=batch_size)
-
-    # Create the DataLoader for our validation set.
-    validation_sampler = SequentialSampler(validation_tensor)
-    validation_dataloader = DataLoader(validation_tensor, sampler=validation_sampler, batch_size=batch_size)
-
-    return train_dataloader, validation_dataloader
-
-
-def train_bert_relevance_model(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8):
     # Set the seed value all over the place to make this reproducible.
-    # Set the seed value all over the place to make this reproducible.
-    seed_val = 42
 
     random.seed(seed_val)
     np.random.seed(seed_val)
@@ -54,22 +39,16 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
     # If not...
     else:
+
         print('No GPU available, using the CPU instead.')
         device = torch.device("cpu")
 
 
-
-
-    optimizer = AdamW(model.parameters(),
-                      lr=lr,  # args.learning_rate - default is 5e-5
-                      eps=eps  # args.adam_epsilon  - default is 1e-8.
-                      )
+    optimizer = AdamW(model.parameters(), lr=lr, eps=eps)
 
     total_steps = len(train_dataloader) * epochs
 
-    scheduler = get_linear_schedule_with_warmup(optimizer,
-                                                num_warmup_steps=0,  # Default value in run_glue.py
-                                                num_training_steps=total_steps)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
 
     loss_values = []
 
@@ -203,8 +182,7 @@ if __name__ == "__main__":
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = BertForRelevance.from_pretrained(pretrained_weights)
 
-    train_bert_relevance_model(model=relevance_bert,
-                               train_dataloader=train_dataloader,
+    train_bert_relevance_model(model=relevance_bert, train_dataloader=train_dataloader,
                                validation_dataloader=validation_dataloader,
                                epochs=5,
                                lr=5e-4,

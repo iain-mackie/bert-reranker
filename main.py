@@ -2,8 +2,9 @@
 from transformers import BertTokenizer
 from torch.utils.data import TensorDataset
 import torch
-from fine_tunning import build_data_loader, train_bert_relevance_model
+from fine_tunning import train_bert_relevance_model
 from bert_models import BertReRanker
+from preprocessing import build_data_loader
 
 # BERT init
 pretrained_weights = 'bert-base-uncased'
