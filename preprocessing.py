@@ -190,15 +190,15 @@ if __name__ == "__main__":
 
     max_length = 512
 
-    set_name = 'test'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explicit.pt'
-    make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, output_path=output_path, max_length=max_length)
-    #
-    # set_name = 'dev'
-    #output_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_explicit.pt'
-    # make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, output_path=output_path, max_length=max_length)
-
-    #set_name = 'train'
-    #output_path = '/nfs/trec_car/data/bert_reranker_datasets/train_dataset_explicit.pt'
+    #set_name = 'test'
+    #output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explicit.pt'
     #make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, output_path=output_path, max_length=max_length)
+
+    set_name = 'dev'
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_explicit.pt'
+    make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, output_path=output_path, max_length=max_length)
+
+    set_name = 'train'
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/train_dataset_explicit.pt'
+    make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, output_path=output_path, max_length=max_length)
 
