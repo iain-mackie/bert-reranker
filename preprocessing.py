@@ -11,11 +11,6 @@ import torch
 
 #TODO - make datasets (paragraph + sentence)
 
-paragraphs_path = os.path.join(os.getcwd(), 'dedup.articles-paragraphs.cbor')
-
-test_qrels_path = os.path.join(os.getcwd(), 'test.qrels')
-test_run_path = os.path.join(os.getcwd(), 'test.run')
-
 
 def convert_to_unicode(text):
     """Converts `text` to Unicode (if it's not already), assuming utf-8 input."""
@@ -30,55 +25,58 @@ def convert_to_unicode(text):
         raise ValueError("Not running on Python 3?")
 
 
-def convert_dataset(data, corpus, set_name, tokenizer, output_folder, max_length=512):
-
-    output_path = output_folder + '{}_dataset.pt'.format(set_name)
+def convert_dataset(data, corpus, set_name, tokenizer, output_path, max_length=512):
 
     print('Converting {} to pytorch dataset'.format(set_name))
     start_time = time.time()
 
-
-    input_list = []
-    labels_list = []
+    input_ids = []
+    token_type_ids = []
+    attention_mask = []
+    labels = []
     for i, query in enumerate(data):
 
-        qrels, doc_titles = data[query]
-        query = query.replace('enwiki:', '')
-        query = query.replace('%20', ' ')
-        query = query.replace('/', ' ')
-        query = convert_to_unicode(query)
-        if i % 1000 == 0:
-            print('query', query)
+        try:
+            qrels, doc_titles = data[query]
+            query = query.replace('enwiki:', '')
+            query = query.replace('%20', ' ')
+            query = query.replace('/', ' ')
+            query = convert_to_unicode(query)
+            if i % 1000 == 0:
+                print('query', query)
 
-        for d in doc_titles:
-            q_d = tokenizer.encode(
-                text=query,
-                text_pair=convert_to_unicode(corpus[d]),
-                max_length=max_length,
-                add_special_tokens=True,
-                pad_to_max_length=True
-            )
-            input_list += [q_d]
+            for d in doc_titles:
+                q_d = tokenizer.encode_plus(
+                    text=query,
+                    text_pair=convert_to_unicode(corpus[d]),
+                    max_length=max_length,
+                    add_special_tokens=True,
+                    pad_to_max_length=True
+                )
+                input_ids = q_d['input_ids']
+                token_type_ids = q_d['token_type_ids']
+                attention_mask = q_d['attention_mask']
+                labels += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
 
-        labels_list += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
+            if i % 1000 == 0:
+                print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
+                time_passed = time.time() - start_time
+                est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
+                print('estimated total hours to save: {}'.format(est_hours))
+        except:
+            print('Exception ')
 
-
-        if i % 1000 == 0:
-            print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
-            time_passed = time.time() - start_time
-            est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
-            print('estimated total hours to save: {}'.format(est_hours))
-
-    inputs_tensor = torch.tensor(input_list)
-    labels_tensor = torch.tensor(labels_list)
-    dataset = TensorDataset(inputs_tensor, labels_tensor)
+    input_ids_tensor = torch.tensor(input_ids)
+    token_type_ids_tensor = torch.tensor(token_type_ids)
+    attention_mask_tensor = torch.tensor(attention_mask)
+    labels_tensor = torch.tensor(labels)
+    dataset = TensorDataset(input_ids_tensor, token_type_ids_tensor, attention_mask_tensor, labels_tensor)
 
     print('saving tensor')
     torch.save(dataset, output_path)
 
 
-
-def load_qrels(path=test_qrels_path):
+def load_qrels(path):
     """Loads qrels into a dict of key: topic, value: list of relevant doc ids."""
     qrels = collections.defaultdict(set)
     with open(path) as f:
@@ -91,7 +89,7 @@ def load_qrels(path=test_qrels_path):
     return qrels
 
 
-def load_run(path=test_run_path):
+def load_run(path):
     """Loads run into a dict of key: topic, value: list of candidate doc ids."""
 
     # We want to preserve the order of runs so we can pair the run file with the
@@ -116,7 +114,7 @@ def load_run(path=test_run_path):
     return sorted_run
 
 
-def load_corpus(path=paragraphs_path):
+def load_corpus(path):
     """Loads TREC-CAR's paraghaphs into a dict of key: title, value: paragraph."""
     corpus = {}
     start_time = time.time()
@@ -145,7 +143,7 @@ def merge(qrels, run):
     return data
 
 
-def make_tensor_dataset(corpus, set_name, tokenizer, data_path, max_length=512):
+def make_tensor_dataset(corpus, set_name, tokenizer, data_path, output_path, max_length=512):
 
     run_path = data_path + '{}.run'.format(set_name)
     run = load_run(path=run_path)
@@ -155,7 +153,7 @@ def make_tensor_dataset(corpus, set_name, tokenizer, data_path, max_length=512):
 
     data = merge(qrels=qrels, run=run)
 
-    convert_dataset(data=data, corpus=corpus, set_name=set_name, tokenizer=tokenizer, output_folder=data_path,
+    convert_dataset(data=data, corpus=corpus, set_name=set_name, tokenizer=tokenizer, output_path=output_path,
                     max_length=max_length)
 
 
@@ -169,12 +167,15 @@ if __name__ == "__main__":
 
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
 
-    # set_name = 'test'
-    # make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=512)
+    set_name = 'test'
+    output_path =  '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explicit.pt'
+    make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, output_path=output_path, max_length=512)
     #
     # set_name = 'dev'
-    # make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=512)
+    #output_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_explicit.pt'
+    # make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, output_path=output_path, max_length=512)
 
-    set_name = 'train'
-    make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=512)
+    #set_name = 'train'
+    #output_path = '/nfs/trec_car/data/bert_reranker_datasets/train_dataset_explicit.pt'
+    #make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, output_path=output_path, max_length=512)
 

@@ -1,6 +1,6 @@
 
 import torch
-from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
+from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 
 from transformers.optimization import AdamW
 from transformers import get_linear_schedule_with_warmup
@@ -12,18 +12,12 @@ import random
 
 
 def format_time(elapsed):
-    '''
-    Takes a time in seconds and returns a string hh:mm:ss
-    '''
-    # Round to the nearest second.
-    elapsed_rounded = int(round((elapsed)))
 
     # Format as hh:mm:ss
-    return str(datetime.timedelta(seconds=elapsed_rounded))
+    return str(datetime.timedelta(seconds=int(round((elapsed)))))
 
 
 def build_data_loader(train_tensor, validation_tensor, batch_size):
-    #TODO add attension masks
 
     # Create the DataLoader for our training set.
     train_sampler = RandomSampler(train_tensor)
@@ -38,7 +32,6 @@ def build_data_loader(train_tensor, validation_tensor, batch_size):
 
 def train_bert_relevance_model(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8):
     # Set the seed value all over the place to make this reproducible.
-    # TODO - GPU vs. CPU
     # Set the seed value all over the place to make this reproducible.
     seed_val = 42
 
@@ -107,11 +100,14 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
                 print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
 
             b_input_ids = batch[0].to(device)
-            b_labels = batch[1].to(device, dtype=torch.float)
+            b_token_type_ids = batch[1].to(device)
+            b_attention_mask = batch[2].to(device)
+            b_labels = batch[3].to(device, dtype=torch.float)
 
             model.zero_grad()
 
-            outputs = model(b_input_ids, labels=b_labels)
+            outputs = model(input_ids=b_input_ids, attention_mask=b_attention_mask, token_type_ids=b_token_type_ids,
+                            labels=b_labels)
 
             loss = outputs[0]
 
@@ -148,15 +144,15 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
         for batch in validation_dataloader:
 
-            batch = tuple(t for t in batch)
-
-            b_input_ids, b_labels = batch
-            print('BATCH')
-            print(b_input_ids), print(b_labels)
+            b_input_ids = batch[0].to(device)
+            b_token_type_ids = batch[1].to(device)
+            b_attention_mask = batch[2].to(device)
+            b_labels = batch[3].to(device, dtype=torch.float)
 
             with torch.no_grad():
 
-                outputs = model(input_ids=b_input_ids.to(device), labels=b_labels.to(device, dtype=torch.float))
+                outputs = model(input_ids=b_input_ids, token_type_ids=b_token_type_ids, attention_mask=b_attention_mask,
+                                labels=b_labels)
 
             loss = outputs[0]
             print('*** LOSS ***')
@@ -191,8 +187,8 @@ def train_bert_relevance_model(model, train_dataloader, validation_dataloader, e
 
 
 if __name__ == "__main__":
-    
-    from bert_retrieval_model import BertForRelevance
+
+    from bert_models import BertForRelevance
 
     train_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset.pt'
     dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
@@ -210,7 +206,7 @@ if __name__ == "__main__":
     train_bert_relevance_model(model=relevance_bert,
                                train_dataloader=train_dataloader,
                                validation_dataloader=validation_dataloader,
-                               epochs=2,
+                               epochs=5,
                                lr=5e-4,
                                eps=1e-8)
 
