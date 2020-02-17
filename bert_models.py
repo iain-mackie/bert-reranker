@@ -152,13 +152,15 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         # ========================================
         #               Validation
         # ========================================
+        print("---")
+        print('Validation...')
 
         t0 = time.time()
 
         model.eval()
-        #eval_loss = 0
+        eval_loss = 0
         #eval_accuracy = 0
-        #nb_eval_steps = 0
+        nb_eval_steps = 0
         #nb_eval_examples = 0, 0
 
         for batch in validation_dataloader:
@@ -173,16 +175,16 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                                 labels=b_labels)
 
             loss = outputs[0]
-            print('*** LOSS ***')
-            print(loss)
+            #print('*** LOSS ***')
+            eval_loss += loss
 
-            print('*** PRED ***')
-            pred = outputs[1].numpy().tolist()
-            print(pred)
+            #print('*** PRED ***')
+            #pred = outputs[1].numpy().tolist()
+            #print(pred)
 
-            print('*** GT ***')
-            gt = b_labels.numpy().tolist()
-            print(gt)
+            #print('*** GT ***')
+            #gt = b_labels.numpy().tolist()
+            #print(gt)
 
             # Calculate the accuracy for this batch of test sentences.
             # tmp_eval_accuracy = flat_accuracy(logits, label_ids)
@@ -191,10 +193,11 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             # eval_accuracy += tmp_eval_accuracy
 
             # Track the number of batches
-            #nb_eval_steps += 1
+            nb_eval_steps += 1
 
         # Report the final accuracy for this validation run.
-        # print("  Accuracy: {0:.2f}".format(eval_accuracy / nb_eval_steps))
+        print("")
+        print("  Average validation loss: {0:.2f}".format(eval_loss / nb_eval_steps))
         print("  Validation took: {:}".format(format_time(time.time() - t0)))
 
         # Writing model
