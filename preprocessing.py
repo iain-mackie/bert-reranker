@@ -84,7 +84,7 @@ def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=
     print('len of attention_mask: {}'.format(len(attention_mask)))
     print('len of labels: {}'.format(len(labels)))
 
-    print('Writhing lists to pickles')
+    print('Writing lists to pickles')
     path = data_path + '{}_input_ids.pickle'.format(set_name)
     write_to_pickle(data=input_ids, path=path)
 
@@ -99,23 +99,34 @@ def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=
     print('Done')
 
 
-# def convert_dataset_to_pt(data, path):
-#
-#
-#     input_ids_tensor = torch.tensor(input_ids)
-#     token_type_ids_tensor = torch.tensor(token_type_ids)
-#     attention_mask_tensor = torch.tensor(attention_mask)
-#     labels_tensor = torch.tensor(labels)
-#
-#     print('tensor shape of input_ids: {}'.format(input_ids_tensor.shape))
-#     print('tensor shape token_type_ids: {}'.format(token_type_ids_tensor.shape))
-#     print('tensor shape attention_mask: {}'.format(attention_mask_tensor.shape))
-#     print('tensor shape labels: {}'.format(labels_tensor.shape))
-#
-#     dataset = TensorDataset(input_ids_tensor, token_type_ids_tensor, attention_mask_tensor, labels_tensor)
-#
-#     print('saving tensor to: {}'.format(output_path))
-#     torch.save(dataset, output_path)
+def convert_dataset_to_pt(set_name, data_path, output_path):
+
+    path = data_path + '{}_input_ids.pickle'.format(set_name)
+    input_ids = read_from_pickle(path=path)
+
+    path = data_path + '{}_token_type_ids.pickle'.format(set_name)
+    token_type_ids = read_from_pickle(path=path)
+
+    path = data_path + '{}_attention_mask.pickle'.format(set_name)
+    attention_mask = read_from_pickle(path=path)
+
+    path = data_path + '{}_labels.pickle'.format(set_name)
+    labels = read_from_pickle(path=path)
+
+    input_ids_tensor = torch.tensor(input_ids)
+    token_type_ids_tensor = torch.tensor(token_type_ids)
+    attention_mask_tensor = torch.tensor(attention_mask)
+    labels_tensor = torch.tensor(labels)
+
+    print('tensor shape of input_ids: {}'.format(input_ids_tensor.shape))
+    print('tensor shape token_type_ids: {}'.format(token_type_ids_tensor.shape))
+    print('tensor shape attention_mask: {}'.format(attention_mask_tensor.shape))
+    print('tensor shape labels: {}'.format(labels_tensor.shape))
+
+    dataset = TensorDataset(input_ids_tensor, token_type_ids_tensor, attention_mask_tensor, labels_tensor)
+
+    print('saving tensor to: {}'.format(output_path))
+    torch.save(dataset, output_path)
 
 
 def load_qrels(path):
@@ -225,15 +236,16 @@ if __name__ == "__main__":
     max_length = 512
 
     set_name = 'test'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_explicit.pt'
-    make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
-                        max_length=max_length)
+    # make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
+    #                     max_length=max_length)
+
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle.pt'
+    convert_dataset_to_pt(set_name=set_name, data_path=data_dir, output_path=output_path)
 
     # set_name = 'dev'
-    # output_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_explicit.pt'
-    # make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=max_length)
+    # make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
+    #                     max_length=max_length)
     #
     # set_name = 'train'
-    # output_path = '/nfs/trec_car/data/bert_reranker_datasets/train_dataset_explicit.pt'
-    # make_tensor_dataset(corpus, set_name, tokenizer, data_path=data_dir, max_length=max_length)
-
+    # make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
+    #                     max_length=max_length)
