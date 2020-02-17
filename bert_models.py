@@ -146,7 +146,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         loss_values.append(avg_train_loss)
 
         print("")
-        print("  Average training loss: {0:.2f}".format(avg_train_loss))
+        print("  Average training loss: {0:.4f}".format(avg_train_loss))
         print("  Training epoch took: {:}".format(format_time(time.time() - t0)))
 
         # ========================================
@@ -197,7 +197,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
         # Report the final accuracy for this validation run.
         print("")
-        print("  Average validation loss: {0:.2f}".format(eval_loss / nb_eval_steps))
+        print("  Average validation loss: {0:.4f}".format(eval_loss / nb_eval_steps))
         print("  Validation took: {:}".format(format_time(time.time() - t0)))
 
         # Writing model
@@ -215,18 +215,80 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             else:
                 print('MODEL PATH DOES NOT EXIST')
         else:
-            print('Not writing model to file')
+            print('*** Not writing model to file ***')
 
     print("")
     print("Training complete!")
 
     # TODO - trec output wrtiter
 
-def inference_bert_re_ranker(model_path):
+def inference_bert_re_ranker(model_path, dataloader, seed_val=42):
 
     model = BertReRanker.from_pretrained(model_path)
 
-    print(model)
+    random.seed(seed_val)
+    np.random.seed(seed_val)
+    torch.manual_seed(seed_val)
+    torch.cuda.manual_seed_all(seed_val)
+
+    # If there's a GPU available...
+    if torch.cuda.is_available():
+
+        # Tell PyTorch to use the GPU.
+        device = torch.device("cuda")
+
+        print('There are %d GPU(s) available.' % torch.cuda.device_count())
+        print('We will use the GPU:', torch.cuda.get_device_name(0))
+
+        model.cuda()
+
+    # If not...
+    else:
+
+        print('No GPU available, using the CPU instead.')
+        device = torch.device("cpu")
+
+    for batch in dataloader:
+
+        b_input_ids = batch[0].to(device)
+        b_token_type_ids = batch[1].to(device)
+        b_attention_mask = batch[2].to(device)
+        b_labels = batch[3].to(device, dtype=torch.float)
+
+        with torch.no_grad():
+            outputs = model(input_ids=b_input_ids, token_type_ids=b_token_type_ids, attention_mask=b_attention_mask,
+                            labels=b_labels)
+
+        loss = outputs[0]
+        # print('*** LOSS ***')
+        eval_loss += loss
+
+        # print('*** PRED ***')
+        # pred = outputs[1].numpy().tolist()
+        # print(pred)
+
+        # print('*** GT ***')
+        # gt = b_labels.numpy().tolist()
+        # print(gt)
+
+
+def write_trec_output(set_name, output_dir, data_path):
+
+    #trec_path = output_dir + "bert_predictions_" + set_name + ".run"
+    run_path = os.path.join(data_path, set_name + ".run")
+
+    query_docids_map = []
+    with open(run_path) as ref_file:
+
+        for line in ref_file:
+            query, _, doc_id, _, _, _ = line.strip().split(" ")
+
+            query_docids_map.append((query, doc_id))
+
+
+
+
+
 
 def trec_output():
     pass
@@ -234,19 +296,24 @@ def trec_output():
 
 if __name__ == "__main__":
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle.pt'
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle.pt'
+    # train_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle.pt'
+    # dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle.pt'
+    #
+    # train_tensor = torch.load(train_path)
+    # validation_tensor = torch.load(dev_path)
+    #
+    # train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
+    #                                                             validation_tensor=validation_tensor,
+    #                                                             batch_size=8)
+    #
+    # pretrained_weights = 'bert-base-uncased'
+    # relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
+    #
+    # fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
+    #                            validation_dataloader=validation_dataloader, epochs=5, lr=5e-5, eps=1e-8, seed_val=42,
+    #                            write=False, model_path=None, experiment_name='test')
 
-    train_tensor = torch.load(train_path)
-    validation_tensor = torch.load(dev_path)
-
-    train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
-                                                                validation_tensor=validation_tensor,
-                                                                batch_size=8)
-
-    pretrained_weights = 'bert-base-uncased'
-    relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
-
-    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=5, lr=5e-5, eps=1e-8, seed_val=42,
-                               write=False, model_path=None, experiment_name='test')
+    set_name = 'test'
+    output_dir = 'TODO'
+    data_path = '/home/imackie/Documents/github/bert-reranker/'
+    write_trec_output(set_name, output_dir, data_path)
