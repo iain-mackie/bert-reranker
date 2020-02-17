@@ -239,7 +239,7 @@ if __name__ == "__main__":
 
     train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
                                                                 validation_tensor=validation_tensor,
-                                                                batch_size=16)
+                                                                batch_size=8)
 
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
