@@ -51,11 +51,12 @@ if __name__ == "__main__":
 
     # Train & validation run
     model_path = os.path.join(os.getcwd(), 'models')
-    experiment_name = 'test'
-    write = False
+    experiment_name = 'test3'
+    write = True
+    do_eval = True
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=2, lr=5e-4, eps=1e-8, write=write,
-                               experiment_name=experiment_name, model_path=model_path)
+                               validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8, write=write,
+                               experiment_name=experiment_name, model_path=model_path, do_eval=do_eval)
 
     # Run Inference
     # model_path = os.path.join(os.getcwd(), 'models', 'test', 'epoch1')

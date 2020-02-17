@@ -57,7 +57,7 @@ def format_time(elapsed):
 
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
-                               seed_val=42, write=False, model_path=None, experiment_name='test'):
+                               seed_val=42, write=False, model_path=None, experiment_name='test', do_eval=False):
     # Set the seed value all over the place to make this reproducible.
 
     random.seed(seed_val)
@@ -91,6 +91,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
     loss_values = []
 
     for epoch_i in range(0, epochs):
+
+        metrics = []
 
         # ========================================
         #               Training
@@ -141,64 +143,74 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         # Calculate the average loss over the training data.
         avg_train_loss = total_loss / len(train_dataloader)
         print(avg_train_loss)
+        metrics.append('Average training loss: ' + str(avg_train_loss) + '\n')
 
         # Store the loss value for plotting the learning curve.
         loss_values.append(avg_train_loss)
 
         print("")
-        print("  Average training loss: {0:.4f}".format(avg_train_loss))
+        print("  Average training loss: {0:.5f}".format(avg_train_loss))
         print("  Training epoch took: {:}".format(format_time(time.time() - t0)))
 
         # ========================================
         #               Validation
         # ========================================
-        print("---")
-        print('Validation...')
+        if do_eval:
 
-        t0 = time.time()
+            print("---")
+            print('Validation...')
 
-        model.eval()
-        eval_loss = 0
-        #eval_accuracy = 0
-        nb_eval_steps = 0
-        #nb_eval_examples = 0, 0
+            t0 = time.time()
 
-        for batch in validation_dataloader:
+            model.eval()
+            eval_loss = 0
+            #eval_accuracy = 0
+            nb_eval_steps = 0
+            #nb_eval_examples = 0, 0
 
-            b_input_ids = batch[0].to(device)
-            b_token_type_ids = batch[1].to(device)
-            b_attention_mask = batch[2].to(device)
-            b_labels = batch[3].to(device, dtype=torch.float)
+            for batch in validation_dataloader:
 
-            with torch.no_grad():
-                outputs = model(input_ids=b_input_ids, token_type_ids=b_token_type_ids, attention_mask=b_attention_mask,
-                                labels=b_labels)
+                b_input_ids = batch[0].to(device)
+                b_token_type_ids = batch[1].to(device)
+                b_attention_mask = batch[2].to(device)
+                b_labels = batch[3].to(device, dtype=torch.float)
 
-            loss = outputs[0]
-            #print('*** LOSS ***')
-            eval_loss += loss
+                with torch.no_grad():
+                    outputs = model(input_ids=b_input_ids, token_type_ids=b_token_type_ids, attention_mask=b_attention_mask,
+                                    labels=b_labels)
 
-            #print('*** PRED ***')
-            #pred = outputs[1].numpy().tolist()
-            #print(pred)
+                loss = outputs[0]
+                #print('*** LOSS ***')
+                eval_loss += loss
 
-            #print('*** GT ***')
-            #gt = b_labels.numpy().tolist()
-            #print(gt)
+                #print('*** PRED ***')
+                #pred = outputs[1].numpy().tolist()
+                #print(pred)
 
-            # Calculate the accuracy for this batch of test sentences.
-            # tmp_eval_accuracy = flat_accuracy(logits, label_ids)
+                #print('*** GT ***')
+                #gt = b_labels.numpy().tolist()
+                #print(gt)
 
-            # Accumulate the total accuracy.
-            # eval_accuracy += tmp_eval_accuracy
+                # Calculate the accuracy for this batch of test sentences.
+                # tmp_eval_accuracy = flat_accuracy(logits, label_ids)
 
-            # Track the number of batches
-            nb_eval_steps += 1
+                # Accumulate the total accuracy.
+                # eval_accuracy += tmp_eval_accuracy
 
-        # Report the final accuracy for this validation run.
-        print("")
-        print("  Average validation loss: {0:.4f}".format(eval_loss / nb_eval_steps))
-        print("  Validation took: {:}".format(format_time(time.time() - t0)))
+                # Track the number of batches
+                nb_eval_steps += 1
+
+            # Report the final accuracy for this validation run.
+            avg_validation_loss = eval_loss / nb_eval_steps
+            print("")
+            print("  Average validation loss: {0:.5f}".format(avg_validation_loss))
+            print("  Validation took: {:}".format(format_time(time.time() - t0)))
+
+            metrics.append('Average validation loss: ' + str(avg_validation_loss) + '\n')
+
+
+        else:
+            print('*** skipping validation ***')
 
         # Writing model
         if write:
@@ -211,7 +223,14 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
                 epoch_dir = os.path.join(exp_path, 'epoch{}'.format(epoch_i))
                 os.mkdir(epoch_dir)
-                model.save_pretrained(epoch_dir)  # save
+
+                model.save_pretrained(epoch_dir)  # save model
+
+                results_path = os.path.join(epoch_dir, 'results.txt')
+                f = open(results_path, "w")
+                for m in metrics:
+                    f.write(m)
+
             else:
                 print('MODEL PATH DOES NOT EXIST')
         else:
@@ -296,24 +315,30 @@ def trec_output():
 
 if __name__ == "__main__":
 
-    # train_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle.pt'
-    # dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle.pt'
-    #
-    # train_tensor = torch.load(train_path)
-    # validation_tensor = torch.load(dev_path)
-    #
-    # train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
-    #                                                             validation_tensor=validation_tensor,
-    #                                                             batch_size=8)
-    #
-    # pretrained_weights = 'bert-base-uncased'
-    # relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
-    #
-    # fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
-    #                            validation_dataloader=validation_dataloader, epochs=5, lr=5e-5, eps=1e-8, seed_val=42,
-    #                            write=False, model_path=None, experiment_name='test')
 
-    set_name = 'test'
-    output_dir = 'TODO'
-    data_path = '/home/imackie/Documents/github/bert-reranker/'
-    write_trec_output(set_name, output_dir, data_path)
+    #train_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_from_pickle_v2.pt'
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle_v2.pt'
+
+    train_tensor = torch.load(dev_path)
+    validation_tensor = torch.load(dev_path)
+
+    train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
+                                                                validation_tensor=validation_tensor, batch_size=8)
+
+    pretrained_weights = 'bert-base-uncased'
+    relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
+    epochs = 2
+    lr = 5e-5
+    eps = 1e-8
+    seed_val = 42
+    write = True
+    model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
+    experiment_name = 'test_run_1'
+    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
+                               validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
+                               seed_val=seed_val, write=write, model_path=model_path, experiment_name=experiment_name)
+
+    # set_name = 'test'
+    # output_dir = 'TODO'
+    # data_path = '/home/imackie/Documents/github/bert-reranker/'
+    # write_trec_output(set_name, output_dir, data_path)
