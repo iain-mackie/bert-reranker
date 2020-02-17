@@ -225,27 +225,27 @@ def build_data_loader(train_tensor, validation_tensor, batch_size):
 
 if __name__ == "__main__":
 
-    # pretrained_weights = 'bert-base-uncased'
-    # tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
-    #
-    # paragraphs = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    # corpus = load_corpus(paragraphs)
+    pretrained_weights = 'bert-base-uncased'
+    tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
+
+    paragraphs = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
+    corpus = load_corpus(paragraphs)
 
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
 
     max_length = 512
 
-    set_name = 'test'
+    #set_name = 'test'
     # make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
-    #                     max_length=max_length)
+    #                     max_length=max_length)cd
 
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle.pt'
-    convert_dataset_to_pt(set_name=set_name, data_path=data_dir, output_path=output_path)
+    set_name = 'dev'
+    make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
+                        max_length=max_length)
 
-    # set_name = 'dev'
-    # make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
-    #                     max_length=max_length)
-    #
-    # set_name = 'train'
-    # make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
-    #                     max_length=max_length)
+    set_name = 'train'
+    make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
+                        max_length=max_length)
+
+    #output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle.pt'
+    #convert_dataset_to_pt(set_name=set_name, data_path=data_dir, output_path=output_path)
