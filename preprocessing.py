@@ -239,9 +239,9 @@ if __name__ == "__main__":
     # make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
     #                     max_length=max_length)cd
 
-    set_name = 'dev'
-    make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
-                        max_length=max_length)
+    # set_name = 'dev'
+    # make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
+    #                     max_length=max_length)
 
     set_name = 'train'
     make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
