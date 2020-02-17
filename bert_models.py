@@ -328,7 +328,7 @@ if __name__ == "__main__":
 
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
-    epochs = 2
+    epochs = 5
     lr = 5e-5
     eps = 1e-8
     seed_val = 42
