@@ -220,17 +220,17 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         if write:
             print('Writing model to file')
             if os.path.isdir(model_path):
-                exp_path = os.path.join(model_path, experiment_name)
+                exp_path = model_path + experiment_name + '/'
 
                 if os.path.isdir(exp_path) == False:
                     os.mkdir(exp_path)
 
-                epoch_dir = os.path.join(exp_path, 'epoch{}'.format(epoch_i))
+                epoch_dir = exp_path + 'epoch{}/'.format(epoch_i)
                 os.mkdir(epoch_dir)
 
                 model.save_pretrained(epoch_dir)  # save model
 
-                results_path = os.path.join(epoch_dir, 'results.txt')
+                results_path = epoch_dir + 'results.txt'
                 f = open(results_path, "w")
                 for m in metrics:
                     f.write(m)
