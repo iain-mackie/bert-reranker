@@ -35,6 +35,6 @@ RUN pip install transformers
 # RUN git config --global user.email "aquaktus@yahoo.co.uk"
 # RUN git config --global user.name "aquaktus"
 
-WORKDIR /nfs/trec_car/data/bert_reranker_dataset/bert-reranker/
-CMD python3 preprocessing.py
+CMD echo "STARTED POD"
+CMD python3 /nfs/trec_car/data/bert_reranker_datasets/bert-reranker/preprocessing.py
 

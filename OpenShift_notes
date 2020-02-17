@@ -22,7 +22,7 @@ spec:
   containers:
   - env: 
     name: bert-reranker-preprocessing-container
-    image: iainmackie/bert-reranker-preprocessing:v1
+    image: iainmackie/bert-reranker-preprocessing:v5
     imagePullPolicy: IfNotPresent
     resources:
       requests:
@@ -34,4 +34,5 @@ spec:
     volumeMounts: 
     - mountPath: /nfs/
       name: nfs-access
+  serviceAccount: containerroot
   restartPolicy: Never
