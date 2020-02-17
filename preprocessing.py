@@ -225,11 +225,11 @@ def build_data_loader(train_tensor, validation_tensor, batch_size):
 
 if __name__ == "__main__":
 
-    pretrained_weights = 'bert-base-uncased'
-    tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
-
-    paragraphs = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    corpus = load_corpus(paragraphs)
+    # pretrained_weights = 'bert-base-uncased'
+    # tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
+    #
+    # paragraphs = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
+    # corpus = load_corpus(paragraphs)
 
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
 
