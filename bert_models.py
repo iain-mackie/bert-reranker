@@ -214,7 +214,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
         # Writing model & metrics
         if write:
-            print('Writing model to file')
+            print('Writing epoch model to file')
             if os.path.isdir(model_path):
                 exp_path = model_path + experiment_name + '/'
 
@@ -226,10 +226,12 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
                 model.save_pretrained(epoch_dir)  # save model
 
+                print('writing epoch metrics')
                 results_path = epoch_dir + 'results.txt'
-                f = open(results_path, "w")
+                f = open(results_path, "a+")
                 for m in metrics:
                     f.write(m)
+                f.close()
 
             else:
                 print('MODEL PATH DOES NOT EXIST')
@@ -313,10 +315,10 @@ def trec_output():
 if __name__ == "__main__":
 
 
-    #train_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_from_pickle_v2.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_from_pickle_v2.pt'
     dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle_v2.pt'
 
-    train_tensor = torch.load(dev_path)
+    train_tensor = torch.load(train_path)
     validation_tensor = torch.load(dev_path)
     batch_size = 8
 
@@ -332,7 +334,7 @@ if __name__ == "__main__":
     seed_val = 42
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'exp_test_1'
+    experiment_name = 'exp_dev_1'
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
                                validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
                                seed_val=seed_val, write=write, model_path=model_path, experiment_name=experiment_name)
