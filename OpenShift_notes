@@ -1,0 +1,37 @@
+Commands to run to make files read/write
+
+- end of scripts groupwrite permissons (run chmod -R 775 *)
+- copy scp (chmod -R 775 * && chgrp -R nfsnobody *)
+
+
+serviceAccount: containerroot
+
+######################
+OpenShift: iainmackie/bert-reranker-preprocessing
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bert-reranker-preprocessing
+  namespace: imackieproject
+spec:
+  volumes:
+  - name: nfs-access
+    persistentVolumeClaim:
+      claimName: imackievol1claim
+  containers:
+  - env: 
+    name: bert-reranker-preprocessing-container
+    image: iainmackie/bert-reranker-preprocessing:v1
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: "16000m"
+        memory: "128Gi"
+      limits:
+        cpu: "32000m"
+        memory: "128Gi"
+    volumeMounts: 
+    - mountPath: /nfs/
+      name: nfs-access
+  restartPolicy: Never
