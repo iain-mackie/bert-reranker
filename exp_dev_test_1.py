@@ -19,6 +19,7 @@ if __name__ == "__main__":
                                                                 validation_tensor=validation_tensor,
                                                                 batch_size=batch_size)
 
+    print('init Bert')
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
     epochs = 5
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     seed_val = 42
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'exp_dev_test_1'
+    experiment_name = 'exp_dev_test_2'
     do_eval = True
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
                                validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,

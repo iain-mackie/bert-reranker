@@ -46,6 +46,9 @@ metadata:
   name: bert-reranker-fine-tuning
   namespace: imackieproject
 spec:
+  nodeSelector:
+    node-role.ida/gputitan: "true"
+        # node-role.ida/gpu2080ti: "true"
   volumes:
   - name: nfs-access
     persistentVolumeClaim:
