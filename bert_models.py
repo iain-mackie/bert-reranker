@@ -117,6 +117,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
                 # Report progress.
                 print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
+                print('  MSE = {}'.format(total_loss/step+1))
 
             b_input_ids = batch[0].to(device)
             b_token_type_ids = batch[1].to(device)
