@@ -36,3 +36,36 @@ spec:
       name: nfs-access
   serviceAccount: containerroot
   restartPolicy: Never
+
+######################
+OpenShift: iainmackie/bert-reranker-fine-tuning
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bert-reranker-fine-tuning
+  namespace: imackieproject
+spec:
+  volumes:
+  - name: nfs-access
+    persistentVolumeClaim:
+      claimName: imackievol1claim
+  containers:
+  - env:
+    name: bert-reranker-fine-tuning-container
+    image: iainmackie/bert-reranker-fine-tuning:v1
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: "2000m"
+        memory: "128Gi"
+        nvidia.com/gpu: 1
+      limits:
+        cpu: "16000m"
+        memory: "350Gi"
+        nvidia.com/gpu: 1
+    volumeMounts:
+    - mountPath: /nfs/
+      name: nfs-access
+  serviceAccount: containerroot
+  restartPolicy: Never

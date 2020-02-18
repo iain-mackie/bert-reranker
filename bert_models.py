@@ -325,7 +325,6 @@ def trec_output():
 
 if __name__ == "__main__":
 
-
     dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_from_pickle_v2.pt'
     test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle_v2.pt'
 
