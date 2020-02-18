@@ -50,8 +50,8 @@ if __name__ == "__main__":
     relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
 
     # Train & validation run
-    model_path = os.path.join(os.getcwd(), 'models')
-    experiment_name = 'test3'
+    model_path = os.path.join(os.getcwd(), 'models/')
+    experiment_name = 'test5'
     write = True
     do_eval = True
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,

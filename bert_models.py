@@ -320,7 +320,7 @@ if __name__ == "__main__":
 
     train_tensor = torch.load(train_path)
     validation_tensor = torch.load(dev_path)
-    batch_size = 8
+    batch_size = 16
 
     train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
                                                                 validation_tensor=validation_tensor,

@@ -51,6 +51,9 @@ def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=
     labels = []
     for i, query in enumerate(data):
 
+        if i > 12000000:
+            break
+
         try:
             qrels, doc_titles = data[query]
             query = query.replace('enwiki:', '')
