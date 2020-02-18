@@ -116,8 +116,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 elapsed = format_time(time.time() - t0)
 
                 # Report progress.
-                print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.'.format(step, len(train_dataloader), elapsed))
-                print('  MSE = {}'.format(total_loss/step+1))
+                print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(step, len(train_dataloader),
+                                                                                        elapsed, total_loss/step+1))
 
             b_input_ids = batch[0].to(device)
             b_token_type_ids = batch[1].to(device)
@@ -316,12 +316,12 @@ def trec_output():
 if __name__ == "__main__":
 
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_from_pickle_v2.pt'
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle_v2.pt'
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_from_pickle_v2.pt'
+    test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle_v2.pt'
 
-    train_tensor = torch.load(train_path)
-    validation_tensor = torch.load(dev_path)
-    batch_size = 16
+    train_tensor = torch.load(dev_path)
+    validation_tensor = torch.load(test_path)
+    batch_size = 8
 
     train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
                                                                 validation_tensor=validation_tensor,
