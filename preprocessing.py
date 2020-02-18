@@ -51,7 +51,7 @@ def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=
     labels = []
     for i, query in enumerate(data):
 
-        if i > 10000000:
+        if i > 1000000:
             break
 
         try:
@@ -247,7 +247,7 @@ if __name__ == "__main__":
     #                     max_length=max_length)
 
     set_name = 'train'
-    write_name = 'train_0_10000000'
+    write_name = 'train_0_1000000'
     make_tensor_dataset(corpus=corpus, set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
                         max_length=max_length)
 
