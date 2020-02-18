@@ -82,7 +82,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         device = torch.device("cuda")
 
         logging.info('There are %d GPU(s) available.' % torch.cuda.device_count())
-        logging.info('We will use the GPU:', torch.cuda.get_device_name(0))
+        logging.info('We will use the GPU: {}'.format(torch.cuda.get_device_name(0)))
 
         model.cuda()
 
