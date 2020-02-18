@@ -345,7 +345,7 @@ if __name__ == "__main__":
     seed_val = 42
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'exp_dev_1'
+    experiment_name = 'logging_test'
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
                                validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
                                seed_val=seed_val, write=write, model_path=model_path, experiment_name=experiment_name)
