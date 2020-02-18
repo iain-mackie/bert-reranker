@@ -215,10 +215,12 @@ def make_tensor_dataset(corpus, set_name, write_name, tokenizer, data_path, max_
 
 def build_data_loader(train_tensor, validation_tensor, batch_size):
 
+    print('building training data loader')
     # Create the DataLoader for our training set.
     train_sampler = RandomSampler(train_tensor)
     train_dataloader = DataLoader(train_tensor, sampler=train_sampler, batch_size=batch_size)
 
+    print('building validation data loader')
     # Create the DataLoader for our validation set.
     validation_sampler = SequentialSampler(validation_tensor)
     validation_dataloader = DataLoader(validation_tensor, sampler=validation_sampler, batch_size=batch_size)

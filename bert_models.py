@@ -60,7 +60,7 @@ def format_time(elapsed):
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
                                seed_val=42, write=False, model_path=None, experiment_name='test', do_eval=False):
     # Set the seed value all over the place to make this reproducible.
-
+    print('starting fine tuning')
     random.seed(seed_val)
     np.random.seed(seed_val)
     torch.manual_seed(seed_val)
