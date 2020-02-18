@@ -13,7 +13,7 @@ if __name__ == "__main__":
     train_tensor = torch.load(dev_path)
     print('loading dev tensor')
     validation_tensor = torch.load(test_path)
-    batch_size = 16
+    batch_size = 8
 
     train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
                                                                 validation_tensor=validation_tensor,
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     seed_val = 42
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'exp_dev_test_2'
+    experiment_name = 'exp_dev_test_3'
     do_eval = True
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
                                validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
