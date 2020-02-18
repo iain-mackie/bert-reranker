@@ -51,36 +51,37 @@ def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=
     labels = []
     for i, query in enumerate(data):
 
-        if i > 1000000:
-            break
+        if i < 1000000:
+            pass
 
-        try:
-            qrels, doc_titles = data[query]
-            query = query.replace('enwiki:', '')
-            query = query.replace('%20', ' ')
-            query = query.replace('/', ' ')
-            query = convert_to_unicode(query)
-            if i % 1000 == 0:
-                print('query', query)
+        else:
+            try:
+                qrels, doc_titles = data[query]
+                query = query.replace('enwiki:', '')
+                query = query.replace('%20', ' ')
+                query = query.replace('/', ' ')
+                query = convert_to_unicode(query)
+                if i % 1000 == 0:
+                    print('query', query)
 
-            for d in doc_titles:
-                q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(corpus[d]), max_length=max_length,
-                    add_special_tokens=True, pad_to_max_length=True
-                                            )
-                input_ids += [q_d['input_ids']]
-                token_type_ids += [q_d['token_type_ids']]
-                attention_mask += [q_d['attention_mask']]
+                for d in doc_titles:
+                    q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(corpus[d]), max_length=max_length,
+                        add_special_tokens=True, pad_to_max_length=True
+                                                )
+                    input_ids += [q_d['input_ids']]
+                    token_type_ids += [q_d['token_type_ids']]
+                    attention_mask += [q_d['attention_mask']]
 
-            labels += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
+                labels += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
 
-            if i % 1000 == 0:
-                print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
-                time_passed = time.time() - start_time
-                est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
-                print('estimated total hours to save: {}'.format(est_hours))
+                if i % 1000 == 0:
+                    print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
+                    time_passed = time.time() - start_time
+                    est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
+                    print('estimated total hours to save: {}'.format(est_hours))
 
-        except:
-            print('*** Exception on query {}: {}'.format(i, query))
+            except:
+                print('*** Exception on query {}: {}'.format(i, query))
 
     print('len of input_ids: {}'.format(len(input_ids)))
     print('len of token_type_ids: {}'.format(len(token_type_ids)))
@@ -249,7 +250,7 @@ if __name__ == "__main__":
     #                     max_length=max_length)
 
     set_name = 'train'
-    write_name = 'train_0_1000000'
+    write_name = 'train_1000000+'
     make_tensor_dataset(corpus=corpus, set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
                         max_length=max_length)
 
