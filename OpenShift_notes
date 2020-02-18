@@ -26,11 +26,11 @@ spec:
     imagePullPolicy: IfNotPresent
     resources:
       requests:
-        cpu: "16000m"
-        memory: "128Gi"
+        cpu: "4000m"
+        memory: "250Gi"
       limits:
         cpu: "32000m"
-        memory: "128Gi"
+        memory: "350Gi"
     volumeMounts: 
     - mountPath: /nfs/
       name: nfs-access
