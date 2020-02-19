@@ -314,9 +314,7 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
             end_idx = counter_written * num_rank + num_rank
 
             scores = pred_list[start_idx:end_idx]
-            print(scores)
             query_docids = query_docids_map[start_idx:end_idx]
-            print(query_docids)
 
             queries, doc_ids = zip(*query_docids)
             assert len(set(queries)) == 1, "Queries must be all the same."
@@ -325,8 +323,8 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
             d = {i[0]:i[1] for i in zip(doc_ids, scores)}
             od = collections.OrderedDict(sorted(d.items(), key=lambda item: item[1], reverse=True))
 
+            rank = 1
             for doc_id in od.keys():
-                rank = 1
 
                 output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(od[doc_id]), "BERT"))
                 run_file.write(output_line + "\n")
