@@ -59,7 +59,7 @@ def format_time(elapsed):
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
                                seed_val=42, write=False, model_path=None, experiment_name='test', do_eval=False,
-                               logging_steps=250):
+                               logging_steps=100):
     # Set the seed value all over the place to make this reproducible.
     print('starting fine tuning')
     random.seed(seed_val)
@@ -330,11 +330,11 @@ def trec_output():
 
 if __name__ == "__main__":
 
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/train__dataset_from_pickle_v2.pt'
-    test_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_from_pickle_v2.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train__dataset_from_pickle_v2.pt'
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/toy_.pt'
 
-    train_tensor = torch.load(test_path)
-    validation_tensor = torch.load(test_path)
+    train_tensor = torch.load(train_path)
+    validation_tensor = torch.load(dev_path)
     batch_size = 8
 
     train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
@@ -343,13 +343,13 @@ if __name__ == "__main__":
 
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
-    epochs = 2
+    epochs = 5
     lr = 5e-5
     eps = 1e-8
     seed_val = 42
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'test_run_test_datasets'
+    experiment_name = 'toy_bert_run'
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
                                validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
                                seed_val=seed_val, write=write, model_path=model_path, experiment_name=experiment_name)
