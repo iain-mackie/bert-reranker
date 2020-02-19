@@ -9,6 +9,7 @@ from transformers import BertTokenizer
 from torch.utils.data import TensorDataset
 import torch
 import pickle
+import json
 
 #TODO - make datasets (paragraph + sentence)
 
@@ -24,6 +25,11 @@ def convert_to_unicode(text):
             raise ValueError("Unsupported string type: %s" % (type(text)))
     else:
         raise ValueError("Not running on Python 3?")
+
+def write_to_json(data, path):
+
+    with open(path, 'w') as fp:
+        json.dump(data, fp, indent=4)
 
 
 def write_to_pickle(data, path):
@@ -81,17 +87,17 @@ def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=
     print('len of labels: {}'.format(len(labels)))
 
     print('Writing lists to pickles')
-    path = data_path + '{}_input_ids.pickle'.format(set_name)
-    write_to_pickle(data=input_ids, path=path)
+    path = data_path + '{}_input_ids.json'.format(set_name)
+    write_to_json(data=input_ids, path=path)
 
-    path = data_path + '{}_token_type_ids.pickle'.format(set_name)
-    write_to_pickle(data=token_type_ids, path=path)
+    path = data_path + '{}_token_type_ids.json'.format(set_name)
+    write_to_json(data=token_type_ids, path=path)
 
-    path = data_path + '{}_attention_mask.pickle'.format(set_name)
-    write_to_pickle(data=attention_mask, path=path)
+    path = data_path + '{}_attention_mask.json'.format(set_name)
+    write_to_json(data=attention_mask, path=path)
 
-    path = data_path + '{}_labels.pickle'.format(set_name)
-    write_to_pickle(data=labels, path=path)
+    path = data_path + '{}_labels.json'.format(set_name)
+    write_to_json(data=labels, path=path)
     print('Done')
 
 
@@ -195,17 +201,26 @@ def merge(qrels, run):
     return data
 
 
-def make_tensor_dataset(set_name, write_name, tokenizer, data_path, corpus_path, max_length=512):
+def make_tensor_dataset(set_name, write_name, tokenizer, data_path, corpus_path, max_length=512, temp_file=True):
 
     run_path = data_path + '{}.run'.format(set_name)
     run, ids = load_run(path=run_path)
+    if temp_file:
+        path = data_path + set_name + '_run.json'
+        write_to_json(data=run, path=path)
 
     qrels_path = data_path + '{}.qrels'.format(set_name)
     qrels = load_qrels(path=qrels_path)
+    if temp_file:
+        path = data_path + set_name + '_qrels.json'
+        write_to_json(data=qrels, path=path)
 
     data = merge(qrels=qrels, run=run)
 
     corpus = load_corpus(path=corpus_path, ids=ids)
+    if temp_file:
+        path = data_path + set_name + '_corpus.json'
+        write_to_json(data=corpus, path=path)
 
     build_dataset(data=data, corpus=corpus, set_name=write_name, tokenizer=tokenizer, data_path=data_path,
                   max_length=max_length)
@@ -236,11 +251,16 @@ if __name__ == "__main__":
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
     corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
     max_length = 512
+    temp_file = True
     make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
-                        corpus_path=corpus_path, max_length=max_length)
+                        corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
 
-    # set_name = 'toy_train'
-    # write_name = 'toy_train'
-    # make_tensor_dataset(corpus=corpus, set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
-    #                     max_length=max_length)
+    set_name = 'toy_train'
+    write_name = 'toy_train'
+    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
+    max_length = 512
+    temp_file = True
+    make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
+                        corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
 
