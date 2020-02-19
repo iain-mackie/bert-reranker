@@ -136,12 +136,12 @@ def convert_dataset_to_pt(set_name, data_path, output_path):
 
 def load_qrels(path):
     """Loads qrels into a dict of key: topic, value: list of relevant doc ids."""
-    qrels = collections.defaultdict(set)
+    qrels = collections.defaultdict(list)
     with open(path) as f:
         for i, line in enumerate(f):
             topic, _, doc_title, relevance = line.rstrip().split(' ')
             if int(relevance) >= 1:
-                qrels[topic].add(doc_title)
+                qrels[topic].append(doc_title)
             if i % 1000000 == 0:
                 print('Loading qrels {}'.format(i))
     return qrels
