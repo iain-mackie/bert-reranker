@@ -26,13 +26,21 @@ def convert_to_unicode(text):
     else:
         raise ValueError("Not running on Python 3?")
 
+
 def write_to_json(data, path):
 
-    with open(path, 'w') as fp:
-        json.dump(data, fp, indent=4)
+    with open(path, 'w') as f:
+        json.dump(data, f, indent=4)
 
 
-def write_to_pickle(data, path):
+def read_from_json(path):
+
+    with open(path) as f:
+        data = json.load(f)
+    return data
+
+
+def read_to_pickle(data, path):
 
     pickle_out = open(path, "wb")
     pickle.dump(data, pickle_out)
@@ -106,17 +114,21 @@ def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=
 
 def convert_dataset_to_pt(set_name, data_path, output_path):
 
-    path = data_path + '{}_input_ids.pickle'.format(set_name)
-    input_ids = read_from_pickle(path=path)
+    path = data_path + '{}_input_ids.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    input_ids = read_from_json(path=path)
 
-    path = data_path + '{}_token_type_ids.pickle'.format(set_name)
-    token_type_ids = read_from_pickle(path=path)
+    path = data_path + '{}_token_type_ids.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    token_type_ids = read_from_json(path=path)
 
-    path = data_path + '{}_attention_mask.pickle'.format(set_name)
-    attention_mask = read_from_pickle(path=path)
+    path = data_path + '{}_attention_mask.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    attention_mask = read_from_json(path=path)
 
-    path = data_path + '{}_labels.pickle'.format(set_name)
-    labels = read_from_pickle(path=path)
+    path = data_path + '{}_labels.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    labels = read_from_json(path=path)
 
     input_ids_tensor = torch.tensor(input_ids)
     token_type_ids_tensor = torch.tensor(token_type_ids)
@@ -253,20 +265,25 @@ if __name__ == "__main__":
     tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
 
     set_name = 'toy_dev'
-    write_name = 'toy_dev'
-    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    max_length = 512
-    temp_file = True
-    make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
-                        corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
+    data_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/'
+    output_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/toy_dev_dataset.pt'
+    convert_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
 
-    set_name = 'toy_train'
-    write_name = 'toy_train'
-    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    max_length = 512
-    temp_file = True
-    make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
-                        corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
+    # set_name = 'toy_dev'
+    # write_name = 'toy_dev'
+    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    # corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
+    # max_length = 512
+    # temp_file = True
+    # make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
+    #                     corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
+    #
+    # set_name = 'toy_train'
+    # write_name = 'toy_train'
+    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    # corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
+    # max_length = 512
+    # temp_file = True
+    # make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
+    #                     corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
 
