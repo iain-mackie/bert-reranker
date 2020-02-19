@@ -28,7 +28,7 @@ if __name__ == "__main__":
     seed_val = 42
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'exp_train_dev_3'
+    experiment_name = 'exp_toy_1'
     do_eval = True
     logging_steps = 30
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
