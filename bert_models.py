@@ -13,6 +13,9 @@ import datetime
 import numpy as np
 import random
 import os
+import itertools
+import collections
+
 
 #TODO - cosine similarity of q & d
 
@@ -49,6 +52,20 @@ class BertReRanker(BertPreTrainedModel):
         outputs = (loss,) + outputs
 
         return outputs  # (loss), logits, (hidden_states), (attentions)
+
+    def pred(self, input_ids=None, attention_mask=None, token_type_ids=None, position_ids=None, head_mask=None,
+             inputs_embeds=None):
+
+        outputs = self.bert(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
+                            position_ids=position_ids, head_mask=head_mask, inputs_embeds=inputs_embeds)
+
+        pooled_output = outputs[1]
+
+        logits = sigmoid(self.relevance_pred(pooled_output))
+
+        return logits
+
+
 
 
 def format_time(elapsed):
@@ -179,9 +196,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
             model.eval()
             eval_loss = 0
-            #eval_accuracy = 0
             nb_eval_steps = 0
-            #nb_eval_examples = 0, 0
 
             for batch in validation_dataloader:
 
@@ -195,22 +210,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                                     labels=b_labels)
 
                 loss = outputs[0]
-                #print('*** LOSS ***')
                 eval_loss += loss
-
-                #print('*** PRED ***')
-                #pred = outputs[1].numpy().tolist()
-                #print(pred)
-
-                #print('*** GT ***')
-                #gt = b_labels.numpy().tolist()
-                #print(gt)
-
-                # Calculate the accuracy for this batch of test sentences.
-                # tmp_eval_accuracy = flat_accuracy(logits, label_ids)
-
-                # Accumulate the total accuracy.
-                # eval_accuracy += tmp_eval_accuracy
 
                 # Track the number of batches
                 nb_eval_steps += 1
@@ -259,14 +259,13 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
     # TODO - trec output wrtiter
 
-def inference_bert_re_ranker(model_path, dataloader, seed_val=42):
+
+def flatten_list(l):
+    return list(itertools.chain(*l))
+
+def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path, num_rank=10):
 
     model = BertReRanker.from_pretrained(model_path)
-
-    random.seed(seed_val)
-    np.random.seed(seed_val)
-    torch.manual_seed(seed_val)
-    torch.cuda.manual_seed_all(seed_val)
 
     # If there's a GPU available...
     if torch.cuda.is_available():
@@ -285,33 +284,55 @@ def inference_bert_re_ranker(model_path, dataloader, seed_val=42):
         print('No GPU available, using the CPU instead.')
         device = torch.device("cpu")
 
+    pred_list = []
+    counter_written = 0
+
+    model.eval()
+
+    run_file = open(run_path, 'a+')
     for batch in dataloader:
 
         b_input_ids = batch[0].to(device)
         b_token_type_ids = batch[1].to(device)
         b_attention_mask = batch[2].to(device)
-        b_labels = batch[3].to(device, dtype=torch.float)
 
         with torch.no_grad():
-            outputs = model(input_ids=b_input_ids, token_type_ids=b_token_type_ids, attention_mask=b_attention_mask,
-                            labels=b_labels)
+            outputs = model.pred(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
+                                 attention_mask=b_attention_mask)
 
-        loss = outputs[0]
-        # print('*** LOSS ***')
-        #eval_loss += loss
+        pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
 
-        # print('*** PRED ***')
-        # pred = outputs[1].numpy().tolist()
-        # print(pred)
+        possible_write = len(pred_list) // num_rank
 
-        # print('*** GT ***')
-        # gt = b_labels.numpy().tolist()
-        # print(gt)
+        while counter_written < possible_write:
+
+            start_idx = counter_written * num_rank
+            end_idx = counter_written * num_rank + num_rank
+
+            scores = pred_list[start_idx:end_idx]
+            query_docids = query_docids_map[start_idx:end_idx]
+
+            queries, doc_ids = zip(*query_docids)
+            assert len(set(queries)) == 1, "Queries must be all the same."
+            query = queries[0]
+
+            d = {i[0]:i[1] for i in zip(doc_ids, scores)}
+            od = collections.OrderedDict(sorted(d.items(), key=lambda item: item[1], reverse=True))
+
+            for doc_id in od.keys():
+                rank = 1
+
+                output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(od[doc_id]), "BERT"))
+                run_file.write(output_line + "\n")
+                rank += 1
+
+            counter_written += 1
+
+    run_file.close()
 
 
-def write_trec_output(set_name, output_dir, data_path):
+def get_query_docids_map(set_name, data_path):
 
-    #trec_path = output_dir + "bert_predictions_" + set_name + ".run"
     run_path = os.path.join(data_path, set_name + ".run")
 
     query_docids_map = []
@@ -322,6 +343,8 @@ def write_trec_output(set_name, output_dir, data_path):
 
             query_docids_map.append((query, doc_id))
 
+    return query_docids_map
+
 
 
 def trec_output():
@@ -330,8 +353,8 @@ def trec_output():
 
 if __name__ == "__main__":
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train__dataset_from_pickle_v2.pt'
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/toy_.pt'
+    train_path = os.path.join(os.getcwd(), 'toy_dev_dataset.pt')
+    dev_path = os.path.join(os.getcwd(), 'toy_dev_dataset.pt')
 
     train_tensor = torch.load(train_path)
     validation_tensor = torch.load(dev_path)
@@ -340,21 +363,31 @@ if __name__ == "__main__":
     train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
                                                                 validation_tensor=validation_tensor,
                                                                 batch_size=batch_size)
+    #
+    #
+    #
+    # pretrained_weights = 'bert-base-uncased'
+    # relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
+    # epochs = 5
+    # lr = 5e-5
+    # eps = 1e-8
+    # seed_val = 42
+    # write = True
+    # model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
+    # experiment_name = 'toy_bert_run'
+    # fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
+    #                            validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
+    #                            seed_val=seed_val, write=write, model_path=model_path, experiment_name=experiment_name)
 
-    pretrained_weights = 'bert-base-uncased'
-    relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
-    epochs = 5
-    lr = 5e-5
-    eps = 1e-8
-    seed_val = 42
-    write = True
-    model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'toy_bert_run'
-    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
-                               seed_val=seed_val, write=write, model_path=model_path, experiment_name=experiment_name)
+    set_name = 'toy_train'
+    data_path = '/Users/iain/LocalStorage/coding/github/bert-reranker'
+    query_docids_map = get_query_docids_map(set_name, data_path)
 
-    # set_name = 'test'
-    # output_dir = 'TODO'
-    # data_path = '/home/imackie/Documents/github/bert-reranker/'
-    # write_trec_output(set_name, output_dir, data_path)
+    print(query_docids_map)
+    print(len(query_docids_map))
+    model_path = os.path.join(os.getcwd(), 'models', 'test_preds_4', 'epoch1')
+    run_path = os.path.join(os.getcwd(), 'bert.run')
+    inference_bert_re_ranker(model_path=model_path, dataloader=validation_dataloader, query_docids_map=query_docids_map,
+                             run_path=run_path, num_rank=10)
+
+

@@ -12,6 +12,7 @@ import pickle
 import json
 
 #TODO - make datasets (paragraph + sentence)
+#TODO - sense check
 
 
 def convert_to_unicode(text):

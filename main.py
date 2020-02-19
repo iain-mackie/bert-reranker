@@ -46,17 +46,17 @@ if __name__ == "__main__":
     train_dataloader, validation_dataloader = build_data_loader(train_tensor=both_tensor, validation_tensor=both_tensor,
                                                                 batch_size=2)
 
-    # Init Bert Re-Ranker
-    relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
-
-    # Train & validation run
-    model_path = os.path.join(os.getcwd(), 'models/')
-    experiment_name = 'test_preds_3'
-    write = True
-    do_eval = True
-    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8, write=write,
-                               experiment_name=experiment_name, model_path=model_path, do_eval=do_eval)
+    # # Init Bert Re-Ranker
+    # relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
+    #
+    # # Train & validation run
+    # model_path = os.path.join(os.getcwd(), 'models/')
+    # experiment_name = 'test_preds_4'
+    # write = True
+    # do_eval = True
+    # fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
+    #                            validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8, write=write,
+    #                            experiment_name=experiment_name, model_path=model_path, do_eval=do_eval)
 
     # Run Inference
     # model_path = os.path.join(os.getcwd(), 'models', 'test', 'epoch1')
