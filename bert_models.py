@@ -263,6 +263,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 def flatten_list(l):
     return list(itertools.chain(*l))
 
+
 def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path, num_rank=10):
 
     model = BertReRanker.from_pretrained(model_path)
@@ -289,8 +290,10 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
 
     model.eval()
 
+    total_steps = len(train_dataloader)
+
     run_file = open(run_path, 'a+')
-    for batch in dataloader:
+    for step, batch in enumerate(dataloader):
 
         b_input_ids = batch[0].to(device)
         b_token_type_ids = batch[1].to(device)
@@ -302,6 +305,7 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
 
         pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
 
+
         possible_write = len(pred_list) // num_rank
 
         while counter_written < possible_write:
@@ -310,7 +314,9 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
             end_idx = counter_written * num_rank + num_rank
 
             scores = pred_list[start_idx:end_idx]
+            print(scores)
             query_docids = query_docids_map[start_idx:end_idx]
+            print(query_docids)
 
             queries, doc_ids = zip(*query_docids)
             assert len(set(queries)) == 1, "Queries must be all the same."
@@ -344,7 +350,6 @@ def get_query_docids_map(set_name, data_path):
             query_docids_map.append((query, doc_id))
 
     return query_docids_map
-
 
 
 def trec_output():
