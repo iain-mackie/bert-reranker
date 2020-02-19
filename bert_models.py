@@ -290,7 +290,7 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
 
     model.eval()
 
-    total_steps = len(dataloader)
+    #total_steps = len(dataloader)
 
     run_file = open(run_path, 'a+')
     for step, batch in enumerate(dataloader):
