@@ -58,7 +58,8 @@ def format_time(elapsed):
 
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
-                               seed_val=42, write=False, model_path=None, experiment_name='test', do_eval=False):
+                               seed_val=42, write=False, model_path=None, experiment_name='test', do_eval=False,
+                               logging_steps=250):
     # Set the seed value all over the place to make this reproducible.
     print('starting fine tuning')
     random.seed(seed_val)
@@ -135,7 +136,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             total_loss += loss.item()
 
             # Progress update every 250 batches.
-            if step % 1 == 0 and not step == 0:
+            if step % logging_steps == 0 and not step == 0:
                 # Calculate elapsed time in minutes.
                 elapsed = format_time(time.time() - t0)
 
