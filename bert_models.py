@@ -142,8 +142,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 # Report progress.
                 logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
                     step, len(train_dataloader), elapsed, total_loss/step+1))
-                logging.info('      Prediction : {} '.format(outputs[1].detach().numpy().tolist()))
-                logging.info('      Labels     : {} '.format(b_labels.numpy().tolist()))
+                logging.info('      Prediction : {} '.format(outputs[1].cpu().detach().numpy().tolist()))
+                logging.info('      Labels     : {} '.format(b_labels.cpu().numpy().tolist()))
 
 
             loss.backward()
