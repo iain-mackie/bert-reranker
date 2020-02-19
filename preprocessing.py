@@ -219,6 +219,9 @@ def make_tensor_dataset(set_name, write_name, tokenizer, data_path, corpus_path,
         write_to_json(data=qrels, path=path)
 
     data = merge(qrels=qrels, run=run)
+    if temp_file:
+        path = data_path + set_name + '_merge.json'
+        write_to_json(data=data, path=path)
 
     corpus = load_corpus(path=corpus_path, ids=ids)
     if temp_file:
