@@ -72,3 +72,34 @@ spec:
       name: nfs-access
   serviceAccount: containerroot
   restartPolicy: Never
+
+######################
+OpenShift: iainmackie/bert-reranker-convert-dataset-to-pt
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bert-reranker-convert-dataset-to-pt
+  namespace: imackieproject
+spec:
+  volumes:
+  - name: nfs-access
+    persistentVolumeClaim:
+      claimName: imackievol1claim
+  containers:
+  - env:
+    name: bert-reranker-convert-dataset-to-pt-container
+    image: iainmackie/bert-reranker-convert-dataset-to-pt:v1
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: "4000m"
+        memory: "250Gi"
+      limits:
+        cpu: "32000m"
+        memory: "450Gi"
+    volumeMounts:
+    - mountPath: /nfs/
+      name: nfs-access
+  serviceAccount: containerroot
+  restartPolicy: Never
