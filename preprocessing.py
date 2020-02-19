@@ -73,7 +73,10 @@ def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=
             token_type_ids += [q_d['token_type_ids']]
             attention_mask += [q_d['attention_mask']]
 
-        labels += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
+            if d in qrels:
+                labels += [[1]]
+            else:
+                labels += [[0]]
 
         if i % 1000 == 0:
             print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
