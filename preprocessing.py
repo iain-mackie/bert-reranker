@@ -49,39 +49,31 @@ def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=
     token_type_ids = []
     attention_mask = []
     labels = []
+
     for i, query in enumerate(data):
 
-        if i < 1000000:
-            pass
+        qrels, doc_titles = data[query]
+        query = query.replace('enwiki:', '')
+        query = query.replace('%20', ' ')
+        query = query.replace('/', ' ')
+        query = convert_to_unicode(query)
+        if i % 1000 == 0:
+            print('query', query)
 
-        else:
-            try:
-                qrels, doc_titles = data[query]
-                query = query.replace('enwiki:', '')
-                query = query.replace('%20', ' ')
-                query = query.replace('/', ' ')
-                query = convert_to_unicode(query)
-                if i % 1000 == 0:
-                    print('query', query)
+        for d in doc_titles:
+            q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(corpus[d]), max_length=max_length,
+                                        add_special_tokens=True, pad_to_max_length=True)
+            input_ids += [q_d['input_ids']]
+            token_type_ids += [q_d['token_type_ids']]
+            attention_mask += [q_d['attention_mask']]
 
-                for d in doc_titles:
-                    q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(corpus[d]), max_length=max_length,
-                        add_special_tokens=True, pad_to_max_length=True
-                                                )
-                    input_ids += [q_d['input_ids']]
-                    token_type_ids += [q_d['token_type_ids']]
-                    attention_mask += [q_d['attention_mask']]
+        labels += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
 
-                labels += [[1] if doc_title in qrels else [0] for doc_title in doc_titles]
-
-                if i % 1000 == 0:
-                    print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
-                    time_passed = time.time() - start_time
-                    est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
-                    print('estimated total hours to save: {}'.format(est_hours))
-
-            except:
-                print('*** Exception on query {}: {}'.format(i, query))
+        if i % 1000 == 0:
+            print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
+            time_passed = time.time() - start_time
+            est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
+            print('estimated total hours to save: {}'.format(est_hours))
 
     print('len of input_ids: {}'.format(len(input_ids)))
     print('len of token_type_ids: {}'.format(len(token_type_ids)))
@@ -163,26 +155,29 @@ def load_run(path):
 
     # Sort candidate docs by rank.
     sorted_run = collections.OrderedDict()
+    ids = []
     for topic, doc_titles_ranks in run.items():
         sorted(doc_titles_ranks, key=lambda x: x[1])
         doc_titles = [doc_titles for doc_titles, _ in doc_titles_ranks]
         sorted_run[topic] = doc_titles
+        ids += doc_titles
 
-    return sorted_run
+    return sorted_run, list(set(ids))
 
 
-def load_corpus(path):
+def load_corpus(path, ids):
     """Loads TREC-CAR's paraghaphs into a dict of key: title, value: paragraph."""
     corpus = {}
     start_time = time.time()
     APPROX_TOTAL_PARAGRAPHS = 30000000
     with open(path, 'rb') as f:
         for i, p in enumerate(iter_paragraphs(f)):
-            para_txt = [elem.text if isinstance(elem, ParaText)
-                        else elem.anchor_text
-                        for elem in p.bodies]
+            if p.para_id in ids:
+                para_txt = [elem.text if isinstance(elem, ParaText)
+                            else elem.anchor_text
+                            for elem in p.bodies]
 
-            corpus[p.para_id] = ' '.join(para_txt)
+                corpus[p.para_id] = ' '.join(para_txt)
             if i % 1000000 == 0:
                 print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
                 time_passed = time.time() - start_time
@@ -200,15 +195,17 @@ def merge(qrels, run):
     return data
 
 
-def make_tensor_dataset(corpus, set_name, write_name, tokenizer, data_path, max_length=512):
+def make_tensor_dataset(set_name, write_name, tokenizer, data_path, corpus_path, max_length=512):
 
     run_path = data_path + '{}.run'.format(set_name)
-    run = load_run(path=run_path)
+    run, ids = load_run(path=run_path)
 
     qrels_path = data_path + '{}.qrels'.format(set_name)
     qrels = load_qrels(path=qrels_path)
 
     data = merge(qrels=qrels, run=run)
+
+    corpus = load_corpus(path=corpus_path, ids=ids)
 
     build_dataset(data=data, corpus=corpus, set_name=write_name, tokenizer=tokenizer, data_path=data_path,
                   max_length=max_length)
@@ -234,25 +231,16 @@ if __name__ == "__main__":
     pretrained_weights = 'bert-base-uncased'
     tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
 
-    paragraphs = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    corpus = load_corpus(paragraphs)
-
+    set_name = 'toy_dev'
+    write_name = 'toy_dev'
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-
+    corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
     max_length = 512
+    make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
+                        corpus_path=corpus_path, max_length=max_length)
 
-    #set_name = 'test'
-    # make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
-    #                     max_length=max_length)cd
-
-    # set_name = 'dev'
-    # make_tensor_dataset(corpus=corpus, set_name=set_name, tokenizer=tokenizer, data_path=data_dir,
+    # set_name = 'toy_train'
+    # write_name = 'toy_train'
+    # make_tensor_dataset(corpus=corpus, set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
     #                     max_length=max_length)
 
-    set_name = 'train'
-    write_name = 'train_1000000+'
-    make_tensor_dataset(corpus=corpus, set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
-                        max_length=max_length)
-
-    #output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle.pt'
-    #convert_dataset_to_pt(set_name=set_name, data_path=data_dir, output_path=output_path)
