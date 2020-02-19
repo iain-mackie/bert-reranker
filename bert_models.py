@@ -120,15 +120,6 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
         for step, batch in enumerate(train_dataloader):
 
-            # Progress update every 40 batches.
-            if step % 250 == 0 and not step == 0:
-                # Calculate elapsed time in minutes.
-                elapsed = format_time(time.time() - t0)
-
-                # Report progress.
-                logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
-                    step, len(train_dataloader),elapsed, total_loss/step+1))
-
             b_input_ids = batch[0].to(device)
             b_token_type_ids = batch[1].to(device)
             b_attention_mask = batch[2].to(device)
@@ -142,6 +133,18 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             loss = outputs[0]
 
             total_loss += loss.item()
+
+            # Progress update every 250 batches.
+            if step % 1 == 0 and not step == 0:
+                # Calculate elapsed time in minutes.
+                elapsed = format_time(time.time() - t0)
+
+                # Report progress.
+                logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
+                    step, len(train_dataloader), elapsed, total_loss/step+1))
+                logging.info('      Prediction : {} '.format(outputs[1].detach().numpy().tolist()))
+                logging.info('      Labels     : {} '.format(b_labels.numpy().tolist()))
+
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -233,7 +236,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     os.mkdir(exp_path)
 
                 epoch_dir = exp_path + 'epoch{}/'.format(epoch_i)
-                os.mkdir(epoch_dir)
+                if os.path.isdir(epoch_dir) == False:
+                    os.mkdir(epoch_dir)
 
                 model.save_pretrained(epoch_dir)  # save model
 
@@ -325,8 +329,8 @@ def trec_output():
 
 if __name__ == "__main__":
 
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_from_pickle_v2.pt'
-    test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset_from_pickle_v2.pt'
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/train__dataset_from_pickle_v2.pt'
+    test_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset_from_pickle_v2.pt'
 
     train_tensor = torch.load(test_path)
     validation_tensor = torch.load(test_path)
