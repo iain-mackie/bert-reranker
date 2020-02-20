@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     # Train & validation run
     model_path = os.path.join(os.getcwd(), 'models/')
-    experiment_name = 'test_model'
+    experiment_name = 'testmodel'
     write = True
     do_eval = True
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,

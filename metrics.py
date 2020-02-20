@@ -36,12 +36,8 @@ def get_bert_labels(labels, scores):
 
 
 def get_stats(labels, scores):
-    print('get stats')
-    print('labels', labels)
-    print('scores', scores)
 
     bert_labels = get_bert_labels(labels=labels, scores=scores)
-    print('bert labels', bert_labels)
 
     map_labels = get_map(run=labels)
     map_bert_labels = get_map(run=bert_labels)
