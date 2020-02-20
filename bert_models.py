@@ -217,6 +217,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
                     scores = pred_list[start_idx:end_idx]
                     labels = label_list[start_idx:end_idx]
+
                     counter_written += 1
 
 

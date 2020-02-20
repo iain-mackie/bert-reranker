@@ -263,27 +263,20 @@ if __name__ == "__main__":
 
     pretrained_weights = 'bert-base-uncased'
     tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
+    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
 
     set_name = 'toy_dev'
-    data_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/'
-    output_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/toy_dev_dataset.pt'
-    convert_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
+    write_name = 'toy_dev'
+    max_length = 512
+    temp_file = True
+    make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
+                        corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
 
-    # set_name = 'toy_dev'
-    # write_name = 'toy_dev'
-    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    # corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    # max_length = 512
-    # temp_file = True
-    # make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
-    #                     corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
-    #
-    # set_name = 'toy_train'
-    # write_name = 'toy_train'
-    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    # corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    # max_length = 512
-    # temp_file = True
-    # make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
-    #                     corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
+    set_name = 'toy_train'
+    write_name = 'toy_train'
+    max_length = 512
+    temp_file = True
+    make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
+                        corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
 
