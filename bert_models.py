@@ -182,7 +182,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 if step % logging_steps == 0 and not step == 0:
                     elapsed = format_time(time.time() - t0)
                     logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
-                        step, len(train_dataloader), elapsed, total_loss / (step + 1)))
+                        step, len(validation_dataloader), elapsed, total_loss / (step + 1)))
 
 
                 b_input_ids = batch[0].to(device)
