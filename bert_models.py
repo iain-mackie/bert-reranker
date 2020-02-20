@@ -5,6 +5,7 @@ from transformers import get_linear_schedule_with_warmup
 from trec_car_preprocessing import build_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
+from metrics import get_stats
 
 import logging
 import torch
@@ -40,15 +41,12 @@ class BertReRanker(BertPreTrainedModel):
                             position_ids=position_ids, head_mask=head_mask, inputs_embeds=inputs_embeds)
 
         pooled_output = outputs[1]
-
         pooled_output = self.dropout(pooled_output)
         logits = sigmoid(self.relevance_pred(pooled_output))
-
         outputs = (logits,) + outputs[2:]  # add hidden states and attention if they are here
 
         loss_fct = MSELoss()
         loss = loss_fct(logits.view(-1), labels.view(-1))
-
         outputs = (loss,) + outputs
 
         return outputs  # (loss), logits, (hidden_states), (attentions)
@@ -60,14 +58,11 @@ class BertReRanker(BertPreTrainedModel):
                             position_ids=position_ids, head_mask=head_mask, inputs_embeds=inputs_embeds)
 
         pooled_output = outputs[1]
-
         logits = sigmoid(self.relevance_pred(pooled_output))
-
         return logits
 
 
 def format_time(elapsed):
-
     # Format as hh:mm:ss
     return str(datetime.timedelta(seconds=int(round((elapsed)))))
 
@@ -96,10 +91,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
         # Tell PyTorch to use the GPU.
         device = torch.device("cuda")
-
         logging.info('There are %d GPU(s) available.' % torch.cuda.device_count())
         logging.info('We will use the GPU: {}'.format(torch.cuda.get_device_name(0)))
-
         model.cuda()
 
     # If not...
@@ -113,8 +106,10 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
 
     loss_values = []
+    epoch_i = 0
+    for i in range(0, epochs):
 
-    for epoch_i in range(0, epochs):
+        epoch_i += 1
 
         metrics = []
 
@@ -123,7 +118,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         # ========================================
 
         logging.info("")
-        logging.info('======== Epoch {:} / {:} ========'.format(epoch_i + 1, epochs))
+        logging.info('======== Epoch {:} / {:} ========'.format(epoch_i, epochs))
         logging.info('Training...')
 
         t0 = time.time()
@@ -138,19 +133,14 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             b_labels = batch[3].to(device, dtype=torch.float)
 
             model.zero_grad()
-
             outputs = model.forward(input_ids=b_input_ids, attention_mask=b_attention_mask,
                                     token_type_ids=b_token_type_ids, labels=b_labels)
-
             loss = outputs[0]
             total_loss += loss.item()
 
             # Progress update every 250 batches.
             if step % logging_steps == 0 and not step == 0:
-                # Calculate elapsed time in minutes.
                 elapsed = format_time(time.time() - t0)
-
-                # Report progress.
                 logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
                     step, len(train_dataloader), elapsed, total_loss/(step+1)))
                 logging.info('      Prediction : {} '.format(outputs[1].cpu().detach().numpy().tolist()))
@@ -160,15 +150,10 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
 
             optimizer.step()
-
-            # Update the learning rate.
             scheduler.step()
 
-        # Calculate the average loss over the training data.
         avg_train_loss = total_loss / len(train_dataloader)
-        metrics.append('Epoch {} -  Average training loss: '.format(epoch_i) + str(avg_train_loss) + '\n')
-
-        # Store the loss value for plotting the learning curve.
+        metrics.append('Epoch {} -  Average training loss: '.format(str(epoch_i)) + str(avg_train_loss) + '\n')
         loss_values.append(avg_train_loss)
 
         logging.info("")
@@ -184,13 +169,14 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             logging.info('Validation...')
 
             t0 = time.time()
-
-            model.eval()
             eval_loss = 0
             counter_written = 0
+            counter_map_labels = 0
+            counter_map_bert_labels = 0
             pred_list = []
             label_list = []
 
+            model.eval()
             for batch in validation_dataloader:
 
                 b_input_ids = batch[0].to(device)
@@ -200,14 +186,11 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 with torch.no_grad():
                     outputs = model.pred(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
                                          attention_mask=b_attention_mask)
-
                 loss = outputs[0]
                 eval_loss += loss.item()
 
                 pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
                 label_list += batch[3].cpu().numpy().tolist()
-                print(pred_list)
-                print(label_list)
 
                 possible_write = len(pred_list) // num_rank
                 while counter_written < possible_write:
@@ -218,9 +201,11 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     scores = pred_list[start_idx:end_idx]
                     labels = label_list[start_idx:end_idx]
 
+                    map_labels, map_bert_labels = get_stats(labels=labels, scores=scores)
+                    counter_map_labels += map_labels
+                    counter_map_bert_labels += map_bert_labels
+
                     counter_written += 1
-
-
 
             # Report the final accuracy for this validation run.
             avg_validation_loss = eval_loss / len(validation_dataloader)
@@ -228,10 +213,12 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             logging.info("  Average validation loss: {0:.5f}".format(avg_validation_loss))
             logging.info("  Validation took: {:}".format(format_time(time.time() - t0)))
 
-            metrics.append('Epoch {} -  Average validation loss: '.format(epoch_i) + str(avg_validation_loss) + '\n')
-
+            metrics.append('Epoch {} -  Average validation loss: '.format(str(epoch_i)) + str(avg_validation_loss) + '\n')
+            metrics.append('Epoch {} -  Average label MAP: '.format(str(epoch_i)) + str(counter_map_labels/counter_written) + '\n')
+            metrics.append('Epoch {} -  Average BERT MAP: '.format(str(epoch_i)) + str(counter_map_bert_labels/counter_written) + '\n')
 
         else:
+
             logging.info('*** skipping validation ***')
 
         # Writing model & metrics

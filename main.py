@@ -15,8 +15,12 @@ tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
 queries = ["find me a good match for my query, please"]
 docs = [("Great query I am", 1.0),
         ("Yup, I'm a rubbish query", 0.0),
+        ("Okay query for sure", 0.0),
+        ("no idea", 1.0),
+        ("please help!!! I have no idea", 0.0),
+        ("Who knows", 0.0),
         ("Okay query for sure", 1.0),
-        ("Who knows", 0.0)
+        ("Awesome friggin awesome", 1.0)
         ]
 
 # Build fake dataset
@@ -52,7 +56,7 @@ if __name__ == "__main__":
 
     # Train & validation run
     model_path = os.path.join(os.getcwd(), 'models/')
-    experiment_name = 'test_preds_' + str(time.time)
+    experiment_name = 'test_preds_' + str(time.time())
     write = True
     do_eval = True
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
