@@ -184,7 +184,6 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
                         step, len(validation_dataloader), elapsed, total_loss / (step + 1)))
 
-
                 b_input_ids = batch[0].to(device)
                 b_token_type_ids = batch[1].to(device)
                 b_attention_mask = batch[2].to(device)
@@ -315,6 +314,7 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
             assert len(set(queries)) == 1, "Queries must be all the same. \n queries: {} \n doc_ids: {}".format(queries, doc_ids)
             assert len(query_docids) == len(scores) == num_rank, 'not correct dimensions'
             query = queries[0]
+            print(query)
 
             d = {i[0]:i[1] for i in zip(doc_ids, scores)}
             od = collections.OrderedDict(sorted(d.items(), key=lambda item: item[1], reverse=True))
@@ -352,16 +352,7 @@ def trec_output():
 
 if __name__ == "__main__":
 
-    train_path = os.path.join(os.getcwd(), 'toy_dev_dataset.pt')
-    dev_path = os.path.join(os.getcwd(), 'toy_dev_dataset.pt')
 
-    train_tensor = torch.load(train_path)
-    validation_tensor = torch.load(dev_path)
-    batch_size = 8
-
-    train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
-                                                                validation_tensor=validation_tensor,
-                                                                batch_size=batch_size)
     #
     #
     #
@@ -378,11 +369,22 @@ if __name__ == "__main__":
     #                            validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
     #                            seed_val=seed_val, write=write, model_path=model_path, experiment_name=experiment_name)
 
-    set_name = 'toy_train'
-    data_path = '/Users/iain/LocalStorage/coding/github/bert-reranker'
+    train_path = os.path.join(os.getcwd(), 'toy_dev_dataset.pt')
+    dev_path = os.path.join(os.getcwd(), 'toy_dev_dataset.pt')
+
+    train_tensor = torch.load(train_path)
+    validation_tensor = torch.load(dev_path)
+    batch_size = 8
+
+    train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
+                                                                validation_tensor=validation_tensor,
+                                                                batch_size=batch_size)
+
+    set_name = 'toy_dev'
+    data_path = os.getcwd()
     query_docids_map = get_query_docids_map(set_name, data_path)
 
-    model_path = os.path.join(os.getcwd(), 'models', 'test_preds_4', 'epoch1')
+    model_path = os.path.join(os.getcwd(), 'models', 'test_model', 'epoch2')
     run_path = os.path.join(os.getcwd(), 'bert.run')
     inference_bert_re_ranker(model_path=model_path, dataloader=validation_dataloader, query_docids_map=query_docids_map,
                              run_path=run_path, num_rank=10)
