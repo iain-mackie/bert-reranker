@@ -25,10 +25,10 @@ if __name__ == "__main__":
     epochs = 10
     lr = 5e-5
     eps = 1e-8
-    seed_val = 42
+    seed_val = 121
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'exp_toy_4'
+    experiment_name = 'exp_toy_5'
     do_eval = True
     logging_steps = 20
     num_rank = 10
