@@ -6,8 +6,8 @@ from trec_car_preprocessing import build_data_loader
 if __name__ == "__main__":
 
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/toy_train_dataset.pt'
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/toy_dev_dataset.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/toy_train_large_dataset.pt'
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/toy_dev_large_dataset.pt'
 
     print('loading train tensor: {}'.format(train_path))
     train_tensor = torch.load(train_path)
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     seed_val = 121
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'exp_toy_5'
+    experiment_name = 'exp_toy_large_1'
     do_eval = True
     logging_steps = 20
     num_rank = 10
