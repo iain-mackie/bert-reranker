@@ -317,7 +317,7 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
             query_docids = query_docids_map[start_idx:end_idx]
 
             queries, doc_ids = zip(*query_docids)
-            assert len(set(queries)) == 1, "Queries must be all the same."
+            assert len(set(queries)) == 1, "Queries must be all the same. \n queries: {} \n doc_ids: {}".format(queries, doc_ids)
             query = queries[0]
 
             d = {i[0]:i[1] for i in zip(doc_ids, scores)}
