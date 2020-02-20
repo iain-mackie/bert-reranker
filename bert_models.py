@@ -2,7 +2,7 @@
 from transformers import BertModel, BertPreTrainedModel
 from transformers.optimization import AdamW
 from transformers import get_linear_schedule_with_warmup
-from preprocessing import build_data_loader
+from trec_car_preprocessing import build_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
 
@@ -66,8 +66,6 @@ class BertReRanker(BertPreTrainedModel):
         return logits
 
 
-
-
 def format_time(elapsed):
 
     # Format as hh:mm:ss
@@ -76,7 +74,7 @@ def format_time(elapsed):
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
                                seed_val=42, write=False, model_path=None, experiment_name='test', do_eval=False,
-                               logging_steps=100):
+                               logging_steps=100, num_rank=10):
     # Set the seed value all over the place to make this reproducible.
     print('starting fine tuning')
     random.seed(seed_val)
@@ -111,9 +109,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         device = torch.device("cpu")
 
     optimizer = AdamW(model.parameters(), lr=lr, eps=eps)
-
     total_steps = len(train_dataloader) * epochs
-
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
 
     loss_values = []
@@ -131,9 +127,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         logging.info('Training...')
 
         t0 = time.time()
-
         total_loss = 0
-
         model.train()
 
         for step, batch in enumerate(train_dataloader):
@@ -145,11 +139,10 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
             model.zero_grad()
 
-            outputs = model(input_ids=b_input_ids, attention_mask=b_attention_mask, token_type_ids=b_token_type_ids,
-                            labels=b_labels)
+            outputs = model.forward(input_ids=b_input_ids, attention_mask=b_attention_mask,
+                                    token_type_ids=b_token_type_ids, labels=b_labels)
 
             loss = outputs[0]
-
             total_loss += loss.item()
 
             # Progress update every 250 batches.
@@ -159,10 +152,9 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
                 # Report progress.
                 logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
-                    step, len(train_dataloader), elapsed, total_loss/step+1))
+                    step, len(train_dataloader), elapsed, total_loss/(step+1)))
                 logging.info('      Prediction : {} '.format(outputs[1].cpu().detach().numpy().tolist()))
                 logging.info('      Labels     : {} '.format(b_labels.cpu().numpy().tolist()))
-
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -174,8 +166,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
         # Calculate the average loss over the training data.
         avg_train_loss = total_loss / len(train_dataloader)
-
-        metrics.append('Average training loss: ' + str(avg_train_loss) + '\n')
+        metrics.append('Epoch {} -  Average training loss: '.format(epoch_i) + str(avg_train_loss) + '\n')
 
         # Store the loss value for plotting the learning curve.
         loss_values.append(avg_train_loss)
@@ -196,32 +187,47 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
             model.eval()
             eval_loss = 0
-            nb_eval_steps = 0
+            counter_written = 0
+            pred_list = []
+            label_list = []
 
             for batch in validation_dataloader:
 
                 b_input_ids = batch[0].to(device)
                 b_token_type_ids = batch[1].to(device)
                 b_attention_mask = batch[2].to(device)
-                b_labels = batch[3].to(device, dtype=torch.float)
 
                 with torch.no_grad():
-                    outputs = model(input_ids=b_input_ids, token_type_ids=b_token_type_ids, attention_mask=b_attention_mask,
-                                    labels=b_labels)
+                    outputs = model.pred(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
+                                         attention_mask=b_attention_mask)
 
                 loss = outputs[0]
-                eval_loss += loss
+                eval_loss += loss.item()
 
-                # Track the number of batches
-                nb_eval_steps += 1
+                pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
+                label_list += batch[3].cpu().numpy().tolist()
+                print(pred_list)
+                print(label_list)
+
+                possible_write = len(pred_list) // num_rank
+                while counter_written < possible_write:
+
+                    start_idx = counter_written * num_rank
+                    end_idx = counter_written * num_rank + num_rank
+
+                    scores = pred_list[start_idx:end_idx]
+                    labels = label_list[start_idx:end_idx]
+                    counter_written += 1
+
+
 
             # Report the final accuracy for this validation run.
-            avg_validation_loss = eval_loss / nb_eval_steps
+            avg_validation_loss = eval_loss / len(validation_dataloader)
             logging.info("")
             logging.info("  Average validation loss: {0:.5f}".format(avg_validation_loss))
             logging.info("  Validation took: {:}".format(format_time(time.time() - t0)))
 
-            metrics.append('Average validation loss: ' + str(avg_validation_loss) + '\n')
+            metrics.append('Epoch {} -  Average validation loss: '.format(epoch_i) + str(avg_validation_loss) + '\n')
 
 
         else:
@@ -243,7 +249,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 model.save_pretrained(epoch_dir)  # save model
 
                 logging.info('writing epoch metrics')
-                results_path = epoch_dir + 'results.txt'
+                results_path = exp_path + 'results.txt'
                 f = open(results_path, "a+")
                 for m in metrics:
                     f.write(m)
@@ -290,8 +296,6 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
 
     model.eval()
 
-    #total_steps = len(dataloader)
-
     run_file = open(run_path, 'a+')
     for step, batch in enumerate(dataloader):
 
@@ -304,10 +308,7 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
                                  attention_mask=b_attention_mask)
 
         pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
-
-
         possible_write = len(pred_list) // num_rank
-
         while counter_written < possible_write:
 
             start_idx = counter_written * num_rank
@@ -318,6 +319,7 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
 
             queries, doc_ids = zip(*query_docids)
             assert len(set(queries)) == 1, "Queries must be all the same. \n queries: {} \n doc_ids: {}".format(queries, doc_ids)
+            assert len(query_docids) == len(scores) == num_rank, 'not correct dimensions'
             query = queries[0]
 
             d = {i[0]:i[1] for i in zip(doc_ids, scores)}
@@ -386,8 +388,6 @@ if __name__ == "__main__":
     data_path = '/Users/iain/LocalStorage/coding/github/bert-reranker'
     query_docids_map = get_query_docids_map(set_name, data_path)
 
-    print(query_docids_map)
-    print(len(query_docids_map))
     model_path = os.path.join(os.getcwd(), 'models', 'test_preds_4', 'epoch1')
     run_path = os.path.join(os.getcwd(), 'bert.run')
     inference_bert_re_ranker(model_path=model_path, dataloader=validation_dataloader, query_docids_map=query_docids_map,

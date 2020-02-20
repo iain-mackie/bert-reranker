@@ -9,3 +9,5 @@ dedup.articles-paragraphs.cbor
 *.qrels
 *.run
 models/*
+*.json
+*.pt

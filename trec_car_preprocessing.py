@@ -98,7 +98,7 @@ def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=
     print('len of attention_mask: {}'.format(len(attention_mask)))
     print('len of labels: {}'.format(len(labels)))
 
-    print('Writing lists to pickles')
+    print('Writing lists to jsons')
     path = data_path + '{}_input_ids.json'.format(set_name)
     write_to_json(data=input_ids, path=path)
 
@@ -258,7 +258,6 @@ def build_data_loader(train_tensor, validation_tensor, batch_size):
     validation_dataloader = DataLoader(validation_tensor, sampler=validation_sampler, batch_size=batch_size)
 
     return train_dataloader, validation_dataloader
-
 
 if __name__ == "__main__":
 
