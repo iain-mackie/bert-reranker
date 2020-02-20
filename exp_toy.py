@@ -28,7 +28,7 @@ if __name__ == "__main__":
     seed_val = 42
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'exp_toy_3'
+    experiment_name = 'exp_toy_4'
     do_eval = True
     logging_steps = 20
     num_rank = 10
