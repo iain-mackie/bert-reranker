@@ -177,7 +177,13 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             label_list = []
 
             model.eval()
-            for batch in validation_dataloader:
+            for step, batch in enumerate(validation_dataloader):
+
+                if step % logging_steps == 0 and not step == 0:
+                    elapsed = format_time(time.time() - t0)
+                    logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
+                        step, len(train_dataloader), elapsed, total_loss / (step + 1)))
+
 
                 b_input_ids = batch[0].to(device)
                 b_token_type_ids = batch[1].to(device)
