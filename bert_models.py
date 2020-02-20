@@ -195,7 +195,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 eval_loss += loss.item()
 
                 pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
-                label_list += batch[3].cpu().numpy().tolist()
+                label_list += flatten_list(batch[3].cpu().numpy().tolist())
 
                 possible_write = len(pred_list) // num_rank
                 while counter_written < possible_write:

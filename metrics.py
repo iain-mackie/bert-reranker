@@ -1,5 +1,6 @@
 
 def get_map(run):
+
     correct_docs_sum = sum(run)
 
     if correct_docs_sum > 0.0:
