@@ -1,4 +1,5 @@
 
+
 from transformers import BertModel, BertPreTrainedModel
 from transformers.optimization import AdamW
 from transformers import get_linear_schedule_with_warmup
@@ -112,6 +113,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         epoch_i += 1
 
         metrics = []
+        metrics.append('------------------------\n')
 
         # ========================================
         #               Training

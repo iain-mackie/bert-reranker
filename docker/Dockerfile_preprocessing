@@ -36,5 +36,5 @@ RUN pip install transformers
 # RUN git config --global user.name "aquaktus"
 
 CMD echo "STARTED POD"
-CMD python3 /nfs/trec_car/data/bert_reranker_datasets/bert-reranker/preprocessing.py
+CMD python3 /nfs/trec_car/data/bert_reranker_datasets/bert-reranker/trec_car_preprocessing.py
 
