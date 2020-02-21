@@ -177,29 +177,26 @@ def load_run(path):
 
     # Sort candidate docs by rank.
     sorted_run = collections.OrderedDict()
-    ids = []
     for topic, doc_titles_ranks in run.items():
         sorted(doc_titles_ranks, key=lambda x: x[1])
         doc_titles = [doc_titles for doc_titles, _ in doc_titles_ranks]
         sorted_run[topic] = doc_titles
-        ids += doc_titles
 
-    return sorted_run, list(set(ids))
+    return sorted_run
 
 
-def load_corpus(path, ids):
+def load_corpus(path):
     """Loads TREC-CAR's paraghaphs into a dict of key: title, value: paragraph."""
     corpus = {}
     start_time = time.time()
     APPROX_TOTAL_PARAGRAPHS = 30000000
     with open(path, 'rb') as f:
         for i, p in enumerate(iter_paragraphs(f)):
-            if p.para_id in ids:
-                para_txt = [elem.text if isinstance(elem, ParaText)
-                            else elem.anchor_text
-                            for elem in p.bodies]
+            para_txt = [elem.text if isinstance(elem, ParaText)
+                        else elem.anchor_text
+                        for elem in p.bodies]
 
-                corpus[p.para_id] = ' '.join(para_txt)
+            corpus[p.para_id] = ' '.join(para_txt)
             if i % 1000000 == 0:
                 print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
                 time_passed = time.time() - start_time
@@ -218,10 +215,10 @@ def merge(qrels, run):
 
 
 def make_tensor_dataset(set_name, write_name, tokenizer, data_path, corpus_path, max_length=512, temp_file=True):
-    
+
     print('building run')
     run_path = data_path + '{}.run'.format(set_name)
-    run, ids = load_run(path=run_path)
+    run = load_run(path=run_path)
     if temp_file:
         path = data_path + set_name + '_run.json'
         write_to_json(data=run, path=path)
@@ -240,10 +237,10 @@ def make_tensor_dataset(set_name, write_name, tokenizer, data_path, corpus_path,
         write_to_json(data=data, path=path)
 
     print('building corpus')
-    corpus = load_corpus(path=corpus_path, ids=ids)
-    if temp_file:
-        path = data_path + set_name + '_corpus.json'
-        write_to_json(data=corpus, path=path)
+    corpus = load_corpus(path=corpus_path)
+    #if temp_file:
+    #    path = data_path + set_name + '_corpus.json'
+    #    write_to_json(data=corpus, path=path)
 
     print('building dataset')
     build_dataset(data=data, corpus=corpus, set_name=write_name, tokenizer=tokenizer, data_path=data_path,
