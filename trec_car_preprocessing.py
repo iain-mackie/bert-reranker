@@ -218,29 +218,34 @@ def merge(qrels, run):
 
 
 def make_tensor_dataset(set_name, write_name, tokenizer, data_path, corpus_path, max_length=512, temp_file=True):
-
+    
+    print('building run')
     run_path = data_path + '{}.run'.format(set_name)
     run, ids = load_run(path=run_path)
     if temp_file:
         path = data_path + set_name + '_run.json'
         write_to_json(data=run, path=path)
 
+    print('building qrels')
     qrels_path = data_path + '{}.qrels'.format(set_name)
     qrels = load_qrels(path=qrels_path)
     if temp_file:
         path = data_path + set_name + '_qrels.json'
         write_to_json(data=qrels, path=path)
 
+    print('merging run + qrels')
     data = merge(qrels=qrels, run=run)
     if temp_file:
         path = data_path + set_name + '_merge.json'
         write_to_json(data=data, path=path)
 
+    print('building corpus')
     corpus = load_corpus(path=corpus_path, ids=ids)
     if temp_file:
         path = data_path + set_name + '_corpus.json'
         write_to_json(data=corpus, path=path)
 
+    print('building dataset')
     build_dataset(data=data, corpus=corpus, set_name=write_name, tokenizer=tokenizer, data_path=data_path,
                   max_length=max_length)
 

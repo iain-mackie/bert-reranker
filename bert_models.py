@@ -181,11 +181,6 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             model.eval()
             for step, batch in enumerate(validation_dataloader):
 
-                if step % logging_steps == 0 and not step == 0:
-                    elapsed = format_time(time.time() - t0)
-                    logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
-                        step, len(validation_dataloader), elapsed, total_loss / (step + 1)))
-
                 b_input_ids = batch[0].to(device)
                 b_token_type_ids = batch[1].to(device)
                 b_attention_mask = batch[2].to(device)
@@ -195,6 +190,11 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                                          attention_mask=b_attention_mask)
                 loss = outputs[0]
                 eval_loss += loss.item()
+
+                if step % logging_steps == 0 and not step == 0:
+                    elapsed = format_time(time.time() - t0)
+                    logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
+                        step, len(validation_dataloader), elapsed, eval_loss/(step+1)))
 
                 pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
                 label_list += flatten_list(batch[3].cpu().numpy().tolist())
@@ -373,8 +373,6 @@ if __name__ == "__main__":
     #                            validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
     #                            seed_val=seed_val, write=write, model_path=model_path, experiment_name=experiment_name)
 
-    train_path = os.path.join(os.getcwd(), 'toy_dev_dataset.pt')
-    dev_path = os.path.join(os.getcwd(), 'toy_dev_dataset.pt')
 
     train_tensor = torch.load(train_path)
     validation_tensor = torch.load(dev_path)
