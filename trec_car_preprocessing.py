@@ -266,24 +266,24 @@ if __name__ == "__main__":
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
     corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
 
-    set_name = 'toy_dev_large'
-    write_name = 'toy_dev_large'
+    set_name = 'test'
+    write_name = 'test'
     max_length = 512
     temp_file = True
     make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
                         corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
 
-    set_name = 'toy_train_large'
-    write_name = 'toy_train_large'
-    max_length = 512
-    temp_file = True
-    make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
-                        corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
+    # set_name = 'toy_train_large'
+    # write_name = 'toy_train_large'
+    # max_length = 512
+    # temp_file = True
+    # make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
+    #                     corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
 
-    set_name = 'toy_dev_large'
+    set_name = 'test'
     output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(set_name)
     convert_dataset_to_pt(set_name, data_path=data_dir, output_path=output_path)
 
-    set_name = 'toy_train_large'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(set_name)
-    convert_dataset_to_pt(set_name, data_path=data_dir, output_path=output_path)
+    # set_name = 'toy_train_large'
+    # output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(set_name)
+    # convert_dataset_to_pt(set_name, data_path=data_dir, output_path=output_path)
