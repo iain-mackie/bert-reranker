@@ -396,7 +396,9 @@ if __name__ == "__main__":
 
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/epoch7/'
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/bert_epoch7.run'
+    num_rank = 1000
+    #TODO - make learn queries same size
     inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, query_docids_map=query_docids_map,
-                             run_path=run_path, num_rank=10)
+                             run_path=run_path, num_rank=num_rank)
 
 
