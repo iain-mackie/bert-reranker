@@ -356,9 +356,19 @@ def trec_output():
 
 if __name__ == "__main__":
 
+    # train_path = '/nfs/trec_car/data/bert_reranker_datasets/terain_dataset.pt'
+    # dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_dataset.pt'
+    #
+    # print('loading train tensor: {}'.format(train_path))
+    # train_tensor = torch.load(train_path)
+    # print('loading dev tensor: {}'.format(dev_path))
+    # validation_tensor = torch.load(dev_path)
+    # batch_size = 8
+    #
+    # train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
+    #                                                             validation_tensor=validation_tensor,
+    #                                                             batch_size=batch_size)
 
-    #
-    #
     #
     # pretrained_weights = 'bert-base-uncased'
     # relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
@@ -373,22 +383,20 @@ if __name__ == "__main__":
     #                            validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
     #                            seed_val=seed_val, write=write, model_path=model_path, experiment_name=experiment_name)
 
+    test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
 
-    train_tensor = torch.load(train_path)
-    validation_tensor = torch.load(dev_path)
+    print('loading test  tensor: {}'.format(test_path))
+    test_tensor = torch.load(test_path)
     batch_size = 8
 
-    train_dataloader, validation_dataloader = build_data_loader(train_tensor=train_tensor,
-                                                                validation_tensor=validation_tensor,
-                                                                batch_size=batch_size)
+    _, test_tensor = build_data_loader(train_tensor=test_tensor,validation_tensor=test_tensor, batch_size=batch_size)
+    set_name = 'test'
+    data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
+    query_docids_map = get_query_docids_map(set_name=set_name, data_path=data_path)
 
-    set_name = 'toy_dev'
-    data_path = os.getcwd()
-    query_docids_map = get_query_docids_map(set_name, data_path)
-
-    model_path = os.path.join(os.getcwd(), 'models', 'test_model', 'epoch2')
-    run_path = os.path.join(os.getcwd(), 'bert.run')
-    inference_bert_re_ranker(model_path=model_path, dataloader=validation_dataloader, query_docids_map=query_docids_map,
+    model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/epoch7/'
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/bert_epoch7.run'
+    inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, query_docids_map=query_docids_map,
                              run_path=run_path, num_rank=10)
 
 
