@@ -188,23 +188,26 @@ def load_run(path):
 
 def load_corpus(read_path, write_path):
     """Loads TREC-CAR's paraghaphs into a dict of key: title, value: paragraph."""
-    corpus = {}
     start_time = time.time()
     APPROX_TOTAL_PARAGRAPHS = 30000000
     mydict = SqliteDict(write_path, autocommit=True)
+    counter = 0
     with open(read_path, 'rb') as f:
         for i, p in enumerate(iter_paragraphs(f)):
+            if counter > 10:
+                break
             para_txt = [elem.text if isinstance(elem, ParaText)
                         else elem.anchor_text
                         for elem in p.bodies]
             mydict[p.para_id] = ' '.join(para_txt)
+            print(p.para_id)
+            print(' '.join(para_txt))
             if i % 1000000 == 0:
                 print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
                 time_passed = time.time() - start_time
                 hours_remaining = (APPROX_TOTAL_PARAGRAPHS - i) * time_passed / (max(1.0, i) * 3600)
                 print('Estimated hours remaining to load corpus: {}'.format(hours_remaining))
-
-    return corpus
+            counter += 1
 
 
 def merge(qrels, run):
@@ -251,14 +254,17 @@ def build_validation_data_loader(tensor, batch_size):
 
 if __name__ == "__main__":
 
-
-    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    # set_name = 'test'
-    # temp_file = True
-    # preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir, temp_file=True)
+    print('build corpus DB')
     read_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
     write_path = '/nfs/trec_car/index/anserini_paragraphs/lucene-index.car17v2.0.paragraphsv2.sqlite'
     load_corpus(read_path=read_path, write_path=write_path)
+
+    print('preprocessing runs and qrels')
+    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    set_name = 'test'
+    temp_file = True
+    preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir, temp_file=True)
+
 
 
 
