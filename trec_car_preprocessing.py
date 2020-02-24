@@ -256,7 +256,7 @@ if __name__ == "__main__":
     # set_name = 'test'
     # temp_file = True
     # preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir, temp_file=True)
-    read_path ='/nfs/trec_car/index/anserini_paragraphs/lucene-index.car17v2.0.paragraphsv2'
+    read_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
     write_path = '/nfs/trec_car/index/anserini_paragraphs/lucene-index.car17v2.0.paragraphsv2.sqlite'
     load_corpus(read_path=read_path, write_path=write_path)
 
