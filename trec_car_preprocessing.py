@@ -11,6 +11,7 @@ import torch
 import pickle
 import json
 from sqlitedict import SqliteDict
+from contextlib import closing
 
 #TODO - make datasets (paragraph + sentence)
 #TODO - sense check
@@ -190,20 +191,21 @@ def load_corpus(read_path, write_path):
     """Loads TREC-CAR's paraghaphs into a dict of key: title, value: paragraph."""
     start_time = time.time()
     APPROX_TOTAL_PARAGRAPHS = 30000000
-    mydict = SqliteDict(write_path, autocommit=True)
     counter = 0
-    with open(read_path, 'rb') as f:
-        for i, p in enumerate(iter_paragraphs(f)):
-            para_txt = [elem.text if isinstance(elem, ParaText)
-                        else elem.anchor_text
-                        for elem in p.bodies]
-            mydict[str(p.para_id)] = ' '.join(para_txt)
-            if i % 1000000 == 0:
-                print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
-                time_passed = time.time() - start_time
-                hours_remaining = (APPROX_TOTAL_PARAGRAPHS - i) * time_passed / (max(1.0, i) * 3600)
-                print('Estimated hours remaining to load corpus: {}'.format(hours_remaining))
-            counter += 1
+    with closing(SqliteDict(write_path, autocommit=True)) as mydict:
+        with open(read_path, 'rb') as f:
+            for i, p in enumerate(iter_paragraphs(f)):
+                para_txt = [elem.text if isinstance(elem, ParaText)
+                            else elem.anchor_text
+                            for elem in p.bodies]
+                mydict[str(p.para_id)] = ' '.join(para_txt)
+                if i % 100000 == 0:
+                    print(str(p.para_id))
+                    print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
+                    time_passed = time.time() - start_time
+                    hours_remaining = (APPROX_TOTAL_PARAGRAPHS - i) * time_passed / (max(1.0, i) * 3600)
+                    print('Estimated hours remaining to load corpus: {}'.format(hours_remaining))
+                counter += 1
 
 
 def merge(qrels, run):
