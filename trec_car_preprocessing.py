@@ -10,6 +10,7 @@ from torch.utils.data import TensorDataset
 import torch
 import pickle
 import json
+from sqlitedict import SqliteDict
 
 #TODO - make datasets (paragraph + sentence)
 #TODO - sense check
@@ -185,18 +186,18 @@ def load_run(path):
     return sorted_run
 
 
-def load_corpus(path):
+def load_corpus(read_path, write_path):
     """Loads TREC-CAR's paraghaphs into a dict of key: title, value: paragraph."""
     corpus = {}
     start_time = time.time()
     APPROX_TOTAL_PARAGRAPHS = 30000000
-    with open(path, 'rb') as f:
+    mydict = SqliteDict(write_path, autocommit=True)
+    with open(read_path, 'rb') as f:
         for i, p in enumerate(iter_paragraphs(f)):
             para_txt = [elem.text if isinstance(elem, ParaText)
                         else elem.anchor_text
                         for elem in p.bodies]
-
-            corpus[p.para_id] = ' '.join(para_txt)
+            mydict[p.para_id] = ' '.join(para_txt)
             if i % 1000000 == 0:
                 print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
                 time_passed = time.time() - start_time
@@ -214,7 +215,7 @@ def merge(qrels, run):
     return data
 
 
-def make_tensor_dataset(set_name, write_name, tokenizer, data_path, corpus_path, max_length=512, temp_file=True):
+def preprocess_runs_and_qrels(set_name, data_path, temp_file=True):
 
     print('building run')
     run_path = data_path + '{}.run'.format(set_name)
@@ -236,56 +237,28 @@ def make_tensor_dataset(set_name, write_name, tokenizer, data_path, corpus_path,
         path = data_path + set_name + '_merge.json'
         write_to_json(data=data, path=path)
 
-    print('building corpus')
-    corpus = load_corpus(path=corpus_path)
-    #if temp_file:
-    #    path = data_path + set_name + '_corpus.json'
-    #    write_to_json(data=corpus, path=path)
 
-    print('building dataset')
-    build_dataset(data=data, corpus=corpus, set_name=write_name, tokenizer=tokenizer, data_path=data_path,
-                  max_length=max_length)
-
-
-def build_data_loader(train_tensor, validation_tensor, batch_size):
-
+def build_trainig_data_loader(tensor, batch_size):
     print('building training data loader')
-    # Create the DataLoader for our training set.
-    train_sampler = RandomSampler(train_tensor)
-    train_dataloader = DataLoader(train_tensor, sampler=train_sampler, batch_size=batch_size)
+    train_sampler = RandomSampler(tensor)
+    return DataLoader(tensor, sampler=train_sampler, batch_size=batch_size)
 
-    print('building validation data loader')
-    # Create the DataLoader for our validation set.
-    validation_sampler = SequentialSampler(validation_tensor)
-    validation_dataloader = DataLoader(validation_tensor, sampler=validation_sampler, batch_size=batch_size)
 
-    return train_dataloader, validation_dataloader
+def build_validation_data_loader(tensor, batch_size):
+    print('building training data loader')
+    validation_sampler = SequentialSampler(tensor)
+    return DataLoader(tensor, sampler=validation_sampler, batch_size=batch_size)
 
 if __name__ == "__main__":
 
-    pretrained_weights = 'bert-base-uncased'
-    tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
-    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
 
-    set_name = 'test'
-    write_name = 'test'
-    max_length = 512
-    temp_file = True
-    make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
-                        corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
-
-    # set_name = 'toy_train_large'
-    # write_name = 'toy_train_large'
-    # max_length = 512
+    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    # set_name = 'test'
     # temp_file = True
-    # make_tensor_dataset(set_name=set_name, write_name=write_name, tokenizer=tokenizer, data_path=data_dir,
-    #                     corpus_path=corpus_path, max_length=max_length, temp_file=temp_file)
+    # preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir, temp_file=True)
+    read_path ='/nfs/trec_car/index/anserini_paragraphs/lucene-index.car17v2.0.paragraphsv2'
+    write_path = '/nfs/trec_car/index/anserini_paragraphs/lucene-index.car17v2.0.paragraphsv2.sqlite'
+    load_corpus(read_path=read_path, write_path=write_path)
 
-    set_name = 'test'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(set_name)
-    convert_dataset_to_pt(set_name, data_path=data_dir, output_path=output_path)
 
-    # set_name = 'toy_train_large'
-    # output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(set_name)
-    # convert_dataset_to_pt(set_name, data_path=data_dir, output_path=output_path)
+
