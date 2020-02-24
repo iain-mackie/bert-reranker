@@ -194,8 +194,6 @@ def load_corpus(read_path, write_path):
     counter = 0
     with open(read_path, 'rb') as f:
         for i, p in enumerate(iter_paragraphs(f)):
-            if counter > 10:
-                break
             para_txt = [elem.text if isinstance(elem, ParaText)
                         else elem.anchor_text
                         for elem in p.bodies]
