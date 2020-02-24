@@ -36,11 +36,15 @@ def write_to_json(data, path):
         json.dump(data, f, indent=4)
 
 
-def read_from_json(path):
-
-    with open(path) as f:
-        data = json.load(f)
-    return data
+def read_from_json(path, ordered_dict=False):
+    if ordered_dict == False:
+        with open(path) as f:
+            data = json.load(f)
+        return data
+    else:
+        with open(path) as f:
+            data = json.load(f, object_pairs_hook=collections.OrderedDict)
+        return data
 
 
 def read_to_pickle(data, path):
@@ -57,43 +61,50 @@ def read_from_pickle(path):
     return data
 
 
-def build_dataset(data, corpus, set_name, tokenizer, data_path=None, max_length=512):
+def build_validation_dataset(data_path, corpus_path, set_name, tokenizer, max_length=512):
 
     print('Building {} dataset as pickles'.format(set_name))
     start_time = time.time()
+
+    print('reading merged data')
+    read_path = data_path + set_name + '_merge.json'
+    data = read_from_json(path=read_path, ordered_dict=True)
 
     input_ids = []
     token_type_ids = []
     attention_mask = []
     labels = []
 
-    for i, query in enumerate(data):
+    with SqliteDict(corpus_path) as mydict:
 
-        qrels, doc_titles = data[query]
-        query = query.replace('enwiki:', '')
-        query = query.replace('%20', ' ')
-        query = query.replace('/', ' ')
-        query = convert_to_unicode(query)
-        if i % 1000 == 0:
-            print('query', query)
+        for i, query in enumerate(data):
 
-        for d in doc_titles:
-            q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(corpus[d]), max_length=max_length,
-                                        add_special_tokens=True, pad_to_max_length=True)
-            input_ids += [q_d['input_ids']]
-            token_type_ids += [q_d['token_type_ids']]
-            attention_mask += [q_d['attention_mask']]
+            qrels, doc_titles = data[query]
+            query = query.replace('enwiki:', '')
+            query = query.replace('%20', ' ')
+            query = query.replace('/', ' ')
+            query = convert_to_unicode(query)
+            if i % 1000 == 0:
+                print('query', query)
 
-            if d in qrels:
-                labels += [[1]]
-            else:
-                labels += [[0]]
+            for d in doc_titles:
+                text = mydict[d]
+                q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(text), max_length=max_length,
+                                            add_special_tokens=True, pad_to_max_length=True)
+                input_ids += [q_d['input_ids']]
+                token_type_ids += [q_d['token_type_ids']]
+                attention_mask += [q_d['attention_mask']]
 
-        if i % 1000 == 0:
-            print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
-            time_passed = time.time() - start_time
-            est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
-            print('estimated total hours to save: {}'.format(est_hours))
+                if d in qrels:
+                    labels += [[1]]
+                else:
+                    labels += [[0]]
+
+            if i % 1000 == 0:
+                print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
+                time_passed = time.time() - start_time
+                est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
+                print('estimated total hours to save: {}'.format(est_hours))
 
     print('len of input_ids: {}'.format(len(input_ids)))
     print('len of token_type_ids: {}'.format(len(token_type_ids)))
@@ -191,7 +202,6 @@ def load_corpus(read_path, write_path):
     """Loads TREC-CAR's paraghaphs into a dict of key: title, value: paragraph."""
     start_time = time.time()
     APPROX_TOTAL_PARAGRAPHS = 30000000
-    counter = 0
     with closing(SqliteDict(write_path, autocommit=True)) as mydict:
         with open(read_path, 'rb') as f:
             for i, p in enumerate(iter_paragraphs(f)):
@@ -199,13 +209,12 @@ def load_corpus(read_path, write_path):
                             else elem.anchor_text
                             for elem in p.bodies]
                 mydict[str(p.para_id)] = ' '.join(para_txt)
-                if i % 100000 == 0:
+                if i % 1000000 == 0:
                     print(str(p.para_id))
                     print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
                     time_passed = time.time() - start_time
                     hours_remaining = (APPROX_TOTAL_PARAGRAPHS - i) * time_passed / (max(1.0, i) * 3600)
                     print('Estimated hours remaining to load corpus: {}'.format(hours_remaining))
-                counter += 1
 
 
 def merge(qrels, run):
@@ -219,24 +228,21 @@ def merge(qrels, run):
 def preprocess_runs_and_qrels(set_name, data_path, temp_file=True):
 
     print('building run')
-    run_path = data_path + '{}.run'.format(set_name)
-    run = load_run(path=run_path)
-    if temp_file:
-        path = data_path + set_name + '_run.json'
-        write_to_json(data=run, path=path)
+    read_path = data_path + '{}.run'.format(set_name)
+    write_path = data_path + set_name + '_run.json'
+    run = load_run(path=read_path)
+    write_to_json(data=run, path=write_path)
 
     print('building qrels')
-    qrels_path = data_path + '{}.qrels'.format(set_name)
-    qrels = load_qrels(path=qrels_path)
-    if temp_file:
-        path = data_path + set_name + '_qrels.json'
-        write_to_json(data=qrels, path=path)
+    read_path = data_path + '{}.qrels'.format(set_name)
+    write_path = data_path + set_name + '_qrels.json'
+    qrels = load_qrels(path=read_path)
+    write_to_json(data=qrels, path=write_path)
 
     print('merging run + qrels')
+    write_path = data_path + set_name + '_merge.json'
     data = merge(qrels=qrels, run=run)
-    if temp_file:
-        path = data_path + set_name + '_merge.json'
-        write_to_json(data=data, path=path)
+    write_to_json(data=data, path=write_path)
 
 
 def build_trainig_data_loader(tensor, batch_size):
