@@ -200,7 +200,7 @@ def load_corpus(read_path, write_path):
                         else elem.anchor_text
                         for elem in p.bodies]
             mydict[p.para_id] = ' '.join(para_txt)
-            print(p.para_id)
+            print(str(p.para_id))
             print(' '.join(para_txt))
             if i % 1000000 == 0:
                 print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
