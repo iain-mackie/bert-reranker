@@ -61,9 +61,87 @@ def read_from_pickle(path):
     return data
 
 
+def build_training_dataset(data_path, corpus_path, set_name, tokenizer, max_length=512):
+
+    print('Building {} dataset as jsons'.format(set_name))
+    start_time = time.time()
+
+    print('reading merged data')
+    read_path = data_path + set_name + '_merge.json'
+    data = read_from_json(path=read_path, ordered_dict=True)
+
+    input_ids_rel = []
+    token_type_ids_rel = []
+    attention_mask_rel = []
+    labels_rel = []
+
+    input_ids_not_rel = []
+    token_type_ids_not_rel = []
+    attention_mask_not_rel = []
+    labels_not_rel= []
+
+    with SqliteDict(corpus_path) as mydict:
+
+        for i, query in enumerate(data):
+
+            qrels, doc_titles = data[query]
+            query = query.replace('enwiki:', '')
+            query = query.replace('%20', ' ')
+            query = query.replace('/', ' ')
+            query = convert_to_unicode(query)
+            if i % 1000 == 0:
+                print('query', query)
+
+            all_docs = list(set(doc_titles + qrels))
+
+            for d in all_docs:
+
+                text = mydict[d]
+                q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(text), max_length=max_length,
+                                            add_special_tokens=True, pad_to_max_length=True)
+
+                if d in qrels:
+                    input_ids_rel += [q_d['input_ids']]
+                    token_type_ids_rel += [q_d['token_type_ids']]
+                    attention_mask_rel += [q_d['attention_mask']]
+                    labels_rel += [[1]]
+                else:
+                    input_ids_not_rel += [q_d['input_ids']]
+                    token_type_ids_not_rel += [q_d['token_type_ids']]
+                    attention_mask_not_rel += [q_d['attention_mask']]
+                    labels_not_rel += [[0]]
+
+            if i % 1000 == 0:
+                print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
+                time_passed = time.time() - start_time
+                est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
+                print('estimated total hours to save: {}'.format(est_hours))
+
+    print('len of input_ids: rel {}, not rel: {}'.format(len(input_ids_rel), len(input_ids_not_rel)))
+    print('len of token_type_ids: rel {}, not rel: {}'.format(len(token_type_ids_rel), len(token_type_ids_not_rel)))
+    print('len of attention_mask: rel {}, not rel: {}'.format(len(attention_mask_rel), len(attention_mask_not_rel)))
+    print('len of labels: rel {}, not rel: {}'.format(len(labels_rel), len(labels_not_rel)))
+
+
+
+    # print('Writing lists to jsons')
+    # path = data_path + '{}_input_ids.json'.format(set_name)
+    # write_to_json(data=input_ids, path=path)
+    #
+    # path = data_path + '{}_token_type_ids.json'.format(set_name)
+    # write_to_json(data=token_type_ids, path=path)
+    #
+    # path = data_path + '{}_attention_mask.json'.format(set_name)
+    # write_to_json(data=attention_mask, path=path)
+    #
+    # path = data_path + '{}_labels.json'.format(set_name)
+    # write_to_json(data=labels, path=path)
+    # print('Done')
+
+
 def build_validation_dataset(data_path, corpus_path, set_name, tokenizer, max_length=512):
 
-    print('Building {} dataset as pickles'.format(set_name))
+    print('Building {} dataset as jsons'.format(set_name))
     start_time = time.time()
 
     print('reading merged data')
@@ -260,7 +338,7 @@ if __name__ == "__main__":
 
     print('build corpus DB')
     read_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    write_path = '/nfs/trec_car/index/anserini_paragraphs/lucene-index.car17v2.0.paragraphsv2.sqlite'
+    write_path = '/nfs/trec_car/index/anserini_paragraphs/lucene-index.car17v2.0.paragraphsv2.sqlite.v2'
     load_corpus(read_path=read_path, write_path=write_path)
 
     print('preprocessing runs and qrels')
@@ -269,6 +347,8 @@ if __name__ == "__main__":
     temp_file = True
     preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir, temp_file=True)
 
-
+    from sqlitedict import SqliteDict
+    with SqliteDict('/nfs/trec_car/index/anserini_paragraphs/lucene-index.car17v2.0.paragraphsv2.sqlite.v8') as mydict:
+        print(mydict['327cca6c4d38953196fa6789f615546f03287b25'])
 
 
