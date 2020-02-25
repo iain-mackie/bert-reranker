@@ -65,7 +65,7 @@ class BertReRanker(BertPreTrainedModel):
 
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
-                               seed_val=42, write=False, model_path=None, experiment_name='test', do_eval=False,
+                               seed_val=42, write=False, model_path=None, experiment_name='test', do_eval=True,
                                logging_steps=100, num_rank=10):
     # Set the seed value all over the place to make this reproducible.
     print('starting fine tuning')
@@ -351,9 +351,11 @@ if __name__ == "__main__":
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
     experiment_name = 'benchmarkY1_1'
-    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
-                               seed_val=seed_val, write=write, model_path=model_path, experiment_name=experiment_name)
+    do_eval = True
+
+    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader, validation_dataloader=validation_dataloader,
+                               epochs=epochs, lr=lr, eps=eps, seed_val=seed_val, write=write, model_path=model_path,
+                               experiment_name=experiment_name, do_eval=do_eval, logging_steps=100, num_rank=10)
 
     # test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
     #
