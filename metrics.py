@@ -54,11 +54,13 @@ def get_recall(run, k=40):
 def get_ndcg_cut(run, k=20):
     k_run = run[:k]
     rank = 1
+    i_dcg = 0
     dcg = 0
     for r in k_run:
-        dcg += r / np.log2(rank + 2)
+        i_dcg += 1 / np.log2(rank + 1)
+        dcg += r / np.log2(rank + 1)
 
-    return dcg
+    return dcg / i_dcg
 
 
 def get_bert_labels(labels, scores):
