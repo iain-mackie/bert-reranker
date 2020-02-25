@@ -3,7 +3,7 @@
 from transformers import BertModel, BertPreTrainedModel
 from transformers.optimization import AdamW
 from transformers import get_linear_schedule_with_warmup
-from trec_car_preprocessing import build_data_loader
+from trec_car_preprocessing import build_validation_data_loader, build_trainig_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
 from metrics import get_stats
@@ -35,6 +35,7 @@ class BertReRanker(BertPreTrainedModel):
         self.relevance_pred = nn.Linear(config.hidden_size, 1)
         self.init_weights()
 
+
     def forward(self, input_ids=None, attention_mask=None, token_type_ids=None, position_ids=None, head_mask=None,
                 inputs_embeds=None, labels=None):
 
@@ -52,6 +53,7 @@ class BertReRanker(BertPreTrainedModel):
 
         return outputs  # (loss), logits, (hidden_states), (attentions)
 
+
     def pred(self, input_ids=None, attention_mask=None, token_type_ids=None, position_ids=None, head_mask=None,
              inputs_embeds=None):
 
@@ -61,6 +63,7 @@ class BertReRanker(BertPreTrainedModel):
         pooled_output = outputs[1]
         logits = sigmoid(self.relevance_pred(pooled_output))
         return logits
+
 
 
 def format_time(elapsed):
@@ -389,7 +392,7 @@ if __name__ == "__main__":
     test_tensor = torch.load(test_path)
     batch_size = 8
 
-    _, test_tensor = build_data_loader(train_tensor=test_tensor,validation_tensor=test_tensor, batch_size=batch_size)
+    test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
     set_name = 'test'
     data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
     query_docids_map = get_query_docids_map(set_name=set_name, data_path=data_path)

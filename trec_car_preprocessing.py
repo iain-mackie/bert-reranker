@@ -1,130 +1,80 @@
 
 from trec_car_tools import iter_paragraphs, ParaText
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
-import collections
-import time
-import six
-import unicodedata
 from transformers import BertTokenizer
 from torch.utils.data import TensorDataset
+from utils import read_from_json, write_to_json, convert_to_unicode
+
+import collections
+import time
 import torch
-import pickle
-import json
 import lmdb
 
 
-#TODO - make datasets (paragraph + sentence)
-#TODO - sense check
-
-
-def convert_to_unicode(text):
-    """Converts `text` to Unicode (if it's not already), assuming utf-8 input."""
-    if six.PY3:
-        if isinstance(text, str):
-            return text
-        elif isinstance(text, bytes):
-            return text.decode("utf-8", "ignore")
-        else:
-            raise ValueError("Unsupported string type: %s" % (type(text)))
-    else:
-        raise ValueError("Not running on Python 3?")
-
-
-def write_to_json(data, path):
-
-    with open(path, 'w') as f:
-        json.dump(data, f, indent=4)
-
-
-def read_from_json(path, ordered_dict=False):
-    if ordered_dict == False:
-        with open(path) as f:
-            data = json.load(f)
-        return data
-    else:
-        with open(path) as f:
-            data = json.load(f, object_pairs_hook=collections.OrderedDict)
-        return data
-
-
-def read_to_pickle(data, path):
-
-    pickle_out = open(path, "wb")
-    pickle.dump(data, pickle_out)
-    pickle_out.close()
-
-
-def read_from_pickle(path):
-
-    pickle_in = open(path, "rb")
-    data = pickle.load(pickle_in)
-    return data
-
-
-def build_training_dataset(data_path, corpus_path, set_name, tokenizer, max_length=512):
-
-    print('Building {} dataset as jsons'.format(set_name))
-    start_time = time.time()
-
-    print('reading merged data')
-    read_path = data_path + set_name + '_merge.json'
-    data = read_from_json(path=read_path, ordered_dict=True)
-
-    input_ids_rel = []
-    token_type_ids_rel = []
-    attention_mask_rel = []
-    labels_rel = []
-
-    input_ids_not_rel = []
-    token_type_ids_not_rel = []
-    attention_mask_not_rel = []
-    labels_not_rel= []
-
-    with SqliteDict(corpus_path) as mydict:
-
-        for i, query in enumerate(data):
-
-            qrels, doc_titles = data[query]
-            query = query.replace('enwiki:', '')
-            query = query.replace('%20', ' ')
-            query = query.replace('/', ' ')
-            query = convert_to_unicode(query)
-            if i % 1000 == 0:
-                print('query', query)
-
-            all_docs = list(set(doc_titles + qrels))
-
-            for d in all_docs:
-
-                text = mydict[d]
-                q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(text), max_length=max_length,
-                                            add_special_tokens=True, pad_to_max_length=True)
-
-                if d in qrels:
-                    input_ids_rel += [q_d['input_ids']]
-                    token_type_ids_rel += [q_d['token_type_ids']]
-                    attention_mask_rel += [q_d['attention_mask']]
-                    labels_rel += [[1]]
-                else:
-                    input_ids_not_rel += [q_d['input_ids']]
-                    token_type_ids_not_rel += [q_d['token_type_ids']]
-                    attention_mask_not_rel += [q_d['attention_mask']]
-                    labels_not_rel += [[0]]
-
-            if i % 1000 == 0:
-                print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
-                time_passed = time.time() - start_time
-                est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
-                print('estimated total hours to save: {}'.format(est_hours))
-
-    print('len of input_ids: rel {}, not rel: {}'.format(len(input_ids_rel), len(input_ids_not_rel)))
-    print('len of token_type_ids: rel {}, not rel: {}'.format(len(token_type_ids_rel), len(token_type_ids_not_rel)))
-    print('len of attention_mask: rel {}, not rel: {}'.format(len(attention_mask_rel), len(attention_mask_not_rel)))
-    print('len of labels: rel {}, not rel: {}'.format(len(labels_rel), len(labels_not_rel)))
-
-
-
-    # print('Writing lists to jsons')
+# def build_training_dataset(data_path, corpus_path, set_name, tokenizer, max_length=512):
+#
+#     print('Building {} dataset as jsons'.format(set_name))
+#     start_time = time.time()
+#
+#     print('reading merged data')
+#     read_path = data_path + set_name + '_merge.json'
+#     data = read_from_json(path=read_path, ordered_dict=True)
+#
+#     input_ids_rel = []
+#     token_type_ids_rel = []
+#     attention_mask_rel = []
+#     labels_rel = []
+#
+#     input_ids_not_rel = []
+#     token_type_ids_not_rel = []
+#     attention_mask_not_rel = []
+#     labels_not_rel= []
+#
+#     with SqliteDict(corpus_path) as mydict:
+#
+#         for i, query in enumerate(data):
+#
+#             qrels, doc_titles = data[query]
+#             query = query.replace('enwiki:', '')
+#             query = query.replace('%20', ' ')
+#             query = query.replace('/', ' ')
+#             query = convert_to_unicode(query)
+#             if i % 1000 == 0:
+#                 print('query', query)
+#
+#             all_docs = list(set(doc_titles + qrels))
+#
+#             for d in all_docs:
+#
+#                 text = mydict[d]
+#                 q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(text), max_length=max_length,
+#                                             add_special_tokens=True, pad_to_max_length=True)
+#
+#                 if d in qrels:
+#                     input_ids_rel += [q_d['input_ids']]
+#                     token_type_ids_rel += [q_d['token_type_ids']]
+#                     attention_mask_rel += [q_d['attention_mask']]
+#                     labels_rel += [[1]]
+#                 else:
+#                     input_ids_not_rel += [q_d['input_ids']]
+#                     token_type_ids_not_rel += [q_d['token_type_ids']]
+#                     attention_mask_not_rel += [q_d['attention_mask']]
+#                     labels_not_rel += [[0]]
+#
+#             if i % 1000 == 0:
+#                 print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
+#                 time_passed = time.time() - start_time
+#                 est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
+#                 print('estimated total hours to save: {}'.format(est_hours))
+#
+#     print('len of input_ids: rel {}, not rel: {}'.format(len(input_ids_rel), len(input_ids_not_rel)))
+#     print('len of token_type_ids: rel {}, not rel: {}'.format(len(token_type_ids_rel), len(token_type_ids_not_rel)))
+#     print('len of attention_mask: rel {}, not rel: {}'.format(len(attention_mask_rel), len(attention_mask_not_rel)))
+#     print('len of labels: rel {}, not rel: {}'.format(len(labels_rel), len(labels_not_rel)))
+#
+#
+#
+#     # print('Writing lists to jsons')
     # path = data_path + '{}_input_ids.json'.format(set_name)
     # write_to_json(data=input_ids, path=path)
     #
@@ -139,7 +89,7 @@ def build_training_dataset(data_path, corpus_path, set_name, tokenizer, max_leng
     # print('Done')
 
 
-def build_validation_dataset(data_path, corpus_path, set_name, tokenizer, max_length=512):
+def build_validation_dataset(data_path, lmdb_path, set_name, tokenizer, max_length=512):
 
     print('Building {} dataset as jsons'.format(set_name))
     start_time = time.time()
@@ -153,7 +103,8 @@ def build_validation_dataset(data_path, corpus_path, set_name, tokenizer, max_le
     attention_mask = []
     labels = []
 
-    with SqliteDict(corpus_path) as mydict:
+    env = lmdb.open(lmdb_path, readonly=True)
+    with env.begin() as txn:
 
         for i, query in enumerate(data):
 
@@ -166,7 +117,7 @@ def build_validation_dataset(data_path, corpus_path, set_name, tokenizer, max_le
                 print('query', query)
 
             for d in doc_titles:
-                text = mydict[d]
+                text = txn.get(d.ecode())
                 q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(text), max_length=max_length,
                                             add_special_tokens=True, pad_to_max_length=True)
                 input_ids += [q_d['input_ids']]
@@ -238,6 +189,26 @@ def convert_dataset_to_pt(set_name, data_path, output_path):
     torch.save(dataset, output_path)
 
 
+def load_corpus(corpus_path, lmdb_path, map_size=1e11):
+    """Loads TREC-CAR's paraghaphs into a dict of key: title, value: paragraph."""
+    start_time = time.time()
+    APPROX_TOTAL_PARAGRAPHS = 30000000
+    env = lmdb.open(path=lmdb_path, map_size=map_size)
+    with env.begin(write=True) as txn:
+        with open(corpus_path, 'rb') as f:
+            for i, p in enumerate(iter_paragraphs(f)):
+                para_txt = [elem.text if isinstance(elem, ParaText)
+                            else elem.anchor_text
+                            for elem in p.bodies]
+                txn.put(str(p.para_id).encode(), ' '.join(para_txt).encode())
+                if i % 1000000 == 0:
+                    print(str(p.para_id))
+                    print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
+                    time_passed = time.time() - start_time
+                    hours_remaining = (APPROX_TOTAL_PARAGRAPHS - i) * time_passed / (max(1.0, i) * 3600)
+                    print('Estimated hours remaining to load corpus: {}'.format(hours_remaining))
+
+
 def load_qrels(path):
     """Loads qrels into a dict of key: topic, value: list of relevant doc ids."""
     qrels = collections.defaultdict(list)
@@ -253,7 +224,6 @@ def load_qrels(path):
 
 def load_run(path):
     """Loads run into a dict of key: topic, value: list of candidate doc ids."""
-
     # We want to preserve the order of runs so we can pair the run file with the
     # TFRecord file.
     run = collections.OrderedDict()
@@ -276,26 +246,6 @@ def load_run(path):
     return sorted_run
 
 
-def load_corpus(read_path, write_path, map_size=1e11):
-    """Loads TREC-CAR's paraghaphs into a dict of key: title, value: paragraph."""
-    start_time = time.time()
-    APPROX_TOTAL_PARAGRAPHS = 30000000
-    env = lmdb.open(path=write_path, map_size=map_size)
-    with env.begin(write=True) as txn:
-        with open(read_path, 'rb') as f:
-            for i, p in enumerate(iter_paragraphs(f)):
-                para_txt = [elem.text if isinstance(elem, ParaText)
-                            else elem.anchor_text
-                            for elem in p.bodies]
-                txn.put(str(p.para_id).encode(), ' '.join(para_txt).encode())
-                if i % 1000000 == 0:
-                    print(str(p.para_id))
-                    print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
-                    time_passed = time.time() - start_time
-                    hours_remaining = (APPROX_TOTAL_PARAGRAPHS - i) * time_passed / (max(1.0, i) * 3600)
-                    print('Estimated hours remaining to load corpus: {}'.format(hours_remaining))
-
-
 def merge(qrels, run):
     """Merge qrels and runs into a single dict of key: topic, value: tuple(relevant_doc_ids, candidate_doc_ids)"""
     data = collections.OrderedDict()
@@ -304,7 +254,7 @@ def merge(qrels, run):
     return data
 
 
-def preprocess_runs_and_qrels(set_name, data_path, temp_file=True):
+def preprocess_runs_and_qrels(set_name, data_path):
 
     print('building run')
     read_path = data_path + '{}.run'.format(set_name)
@@ -338,15 +288,29 @@ def build_validation_data_loader(tensor, batch_size):
 if __name__ == "__main__":
 
     print('build corpus DB')
-    read_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    write_path = '/nfs/trec_car/data/bert_reranker_datasets/trec_car_lmdb'
-    load_corpus(read_path=read_path, write_path=write_path)
+    corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
+    lmdb_path = '/nfs/trec_car/data/bert_reranker_datasets/trec_car_lmdb'
+    load_corpus(corpus_path=corpus_path, lmdb_path=lmdb_path)
 
-    # print('preprocessing runs and qrels')
-    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    # set_name = 'test'
-    # temp_file = True
-    # preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir, temp_file=True)
+    print('preprocessing runs and qrels')
+    # will look for {set_name}.run + {set_name}.qrels
+    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    set_name = 'test'
+    temp_file = True
+    is_train = False
+    preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
+
+    max_length = 512
+    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    if is_train:
+        print('building training dataset: {}'.format(set_name))
+
+    else:
+        print('building validation / test dataset: {}'.format(set_name))
+        build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
+                                 max_length=max_length)
+
+
 
 
 
