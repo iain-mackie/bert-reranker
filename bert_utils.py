@@ -76,10 +76,24 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_rel
             required_reduced = int((num_rel - (percent_rel * num_rel)) / percent_rel)
             print('reducing rel docs from {} -> {}'.format(num_rel, required_reduced))
 
-            input_ids_rel_reduced = input_ids_rel[0:required_reduced]
-            token_type_ids_rel_reduced = token_type_ids_rel[0:required_reduced]
-            attention_mask_rel_reduced = attention_mask_rel[0:required_reduced]
-            labels_rel_reduced = labels_rel[0:required_reduced]
+            input_ids_rel_reduced = []
+            token_type_ids_rel_reduced = []
+            attention_mask_rel_reduced = []
+            labels_rel_reduced = []
+
+            random_ids = list(range(num_rel))
+            random.shuffle(random_ids)
+
+            for i in random_ids:
+
+                if len(input_ids_rel_reduced) >= required_reduced:
+                    break
+
+                input_ids_rel_reduced += [input_ids_rel[i]]
+                token_type_ids_rel_reduced += [token_type_ids_rel[i]]
+                attention_mask_rel_reduced += [attention_mask_rel[i]]
+                labels_rel_reduced += [labels_rel[i]]
+
 
             input_ids = input_ids_rel_reduced + input_ids_not_rel
             token_type_ids = token_type_ids_rel_reduced + token_type_ids_not_rel
@@ -93,10 +107,23 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_rel
             required_reduced = int((num_rel - (percent_rel * num_rel)) / percent_rel)
             print('reducing not rel docs from {} -> {}'.format(num_not_rel, required_reduced))
 
-            input_ids_not_rel_reduced = input_ids_not_rel[0:required_reduced]
-            token_type_ids_not_rel_reduced = token_type_ids_not_rel[0:required_reduced]
-            attention_mask_not_rel_reduced = attention_mask_not_rel[0:required_reduced]
-            labels_not_rel_reduced = labels_not_rel[0:required_reduced]
+            input_ids_not_rel_reduced = []
+            token_type_ids_not_rel_reduced = []
+            attention_mask_not_rel_reduced = []
+            labels_not_rel_reduced = []
+
+            random_ids = list(range(num_rel))
+            random.shuffle(random_ids)
+
+            for i in random_ids:
+
+                if len(input_ids_not_rel_reduced) >= required_reduced:
+                    break
+
+                input_ids_not_rel_reduced += [input_ids_not_rel[i]]
+                token_type_ids_not_rel_reduced += [token_type_ids_not_rel[i]]
+                attention_mask_not_rel_reduced += [attention_mask_not_rel[i]]
+                labels_not_rel_reduced += [labels_not_rel[i]]
 
             input_ids = input_ids_rel + input_ids_not_rel_reduced
             token_type_ids = token_type_ids_rel + token_type_ids_not_rel_reduced
