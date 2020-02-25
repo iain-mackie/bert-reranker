@@ -10,9 +10,7 @@ import random
 #TODO - add data shuffle
 
 
-def get_query_docids_map(set_name, data_path):
-
-    run_path = os.path.join(data_path, set_name + ".run")
+def get_query_docids_map(run_path):
 
     query_docids_map = []
     with open(run_path) as ref_file:

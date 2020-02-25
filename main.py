@@ -3,7 +3,7 @@ from transformers import BertTokenizer
 from torch.utils.data import TensorDataset
 import torch
 from bert_models import BertReRanker, fine_tuning_bert_re_ranker, inference_bert_re_ranker
-from trec_car_preprocessing import build_data_loader
+from bert_utils import build_training_data_loader, build_validation_data_loader
 import os
 import time
 
@@ -48,21 +48,21 @@ if __name__ == "__main__":
 
     # Construct data loaders
     both_tensor = TensorDataset(input_ids_tensor, token_type_ids_tensor, attention_mask_tensor, labels_tensor)
-    train_dataloader, validation_dataloader = build_data_loader(train_tensor=both_tensor, validation_tensor=both_tensor,
-                                                                batch_size=2)
+    validation_dataloader = build_validation_data_loader(tensor=both_tensor, batch_size=2)
 
     # Init Bert Re-Ranker
     relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
 
     # Train & validation run
     model_path = os.path.join(os.getcwd(), 'models/')
-    experiment_name = 'testmodel'
+    experiment_name = 'test_model_1'
     write = True
     do_eval = True
-    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
+    run_path = os.path.join(os.getcwd(), 'test_model.run')
+    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=validation_dataloader,
                                validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8, write=write,
                                experiment_name=experiment_name, model_path=model_path, do_eval=do_eval, logging_steps=1,
-                               num_rank=2)
+                               run_path=run_path)
 
     # Run Inference
     # model_path = os.path.join(os.getcwd(), 'models', 'test', 'epoch1')

@@ -44,3 +44,22 @@ def get_stats(labels, scores):
 
     return map_labels, map_bert_labels
 
+
+def split_bert_outputs(label_list, score_list, query_docids_map):
+
+    for i in zip(label_list, score_list, query_docids_map):
+        print(i[0])
+        print(i[1])
+        print(i[2])
+
+
+
+
+
+
+
+
+
+
+
+

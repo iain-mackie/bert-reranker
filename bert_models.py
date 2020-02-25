@@ -6,7 +6,7 @@ from transformers import get_linear_schedule_with_warmup
 from bert_utils import build_validation_data_loader, build_training_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
-from metrics import get_stats
+from metrics import split_bert_outputs
 from bert_utils import format_time, flatten_list, get_query_docids_map
 import logging
 import torch
@@ -66,7 +66,7 @@ class BertReRanker(BertPreTrainedModel):
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
                                seed_val=42, write=False, model_path=None, experiment_name='test', do_eval=True,
-                               logging_steps=100, num_rank=10):
+                               logging_steps=100, run_path=None):
     # Set the seed value all over the place to make this reproducible.
     print('starting fine tuning')
     random.seed(seed_val)
@@ -101,6 +101,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
     optimizer = AdamW(model.parameters(), lr=lr, eps=eps)
     total_steps = len(train_dataloader) * epochs
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
+
+    query_docids_map = get_query_docids_map(run_path=run_path)
 
     loss_values = []
     epoch_i = 0
@@ -195,24 +197,27 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
                 label_list += flatten_list(batch[3].cpu().numpy().tolist())
 
-                possible_write = len(pred_list) // num_rank
-                while counter_written < possible_write:
-                    # TODO - on list
-
-                    start_idx = counter_written * num_rank
-                    end_idx = counter_written * num_rank + num_rank
-
-                    scores = pred_list[start_idx:end_idx]
-                    labels = label_list[start_idx:end_idx]
-
-                    map_labels, map_bert_labels = get_stats(labels=labels, scores=scores)
-                    counter_map_labels += map_labels
-                    counter_map_bert_labels += map_bert_labels
-
-                    counter_written += 1
+                # possible_write = len(pred_list) // num_rank
+                # while counter_written < possible_write:
+                #     # TODO - on list
+                #
+                #     start_idx = counter_written * num_rank
+                #     end_idx = counter_written * num_rank + num_rank
+                #
+                #     scores = pred_list[start_idx:end_idx]
+                #     labels = label_list[start_idx:end_idx]
+                #
+                #     map_labels, map_bert_labels = get_stats(labels=labels, scores=scores)
+                #     counter_map_labels += map_labels
+                #     counter_map_bert_labels += map_bert_labels
+                #
+                #     counter_written += 1
 
             # Report the final accuracy for this validation run.
             avg_validation_loss = eval_loss / len(validation_dataloader)
+
+            split_bert_outputs(score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map)
+
             logging.info("")
             logging.info("  Average validation loss: {0:.5f}".format(avg_validation_loss))
             logging.info("  Average label MAP: {0:.5f}".format(counter_map_labels/counter_written))
@@ -354,11 +359,11 @@ if __name__ == "__main__":
     experiment_name = 'benchmarkY1_1'
     do_eval = True
     logging_steps = 100
-    num_rank = 10
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/dev_benchmarkY1.run'
 
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader, validation_dataloader=validation_dataloader,
                                epochs=epochs, lr=lr, eps=eps, seed_val=seed_val, write=write, model_path=model_path,
-                               experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps, num_rank=num_rank)
+                               experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps, run_path=run_path)
 
     # test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
     #
