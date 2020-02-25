@@ -74,8 +74,7 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_rel
             print('percent_rel_current > percent_rel -> reduce relevent docs')
 
             required_reduced = int((num_rel - (percent_rel * num_rel)) / percent_rel)
-            print('reducing rel docs from {} -> {}'.format(num_rel, required_reduced))
-
+            print('keeping {} not rel docs ||| reducing rel docs from {} -> {}'.format(num_not_rel, num_rel, required_reduced))
             input_ids_rel_reduced = []
             token_type_ids_rel_reduced = []
             attention_mask_rel_reduced = []
@@ -105,14 +104,14 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_rel
             print('percent_rel_current < percent_rel -> reduce not relevent docs')
 
             required_reduced = int((num_rel - (percent_rel * num_rel)) / percent_rel)
-            print('reducing not rel docs from {} -> {}'.format(num_not_rel, required_reduced))
+            print('keeping {} rel docs ||| reducing not rel docs from {} -> {}'.format(num_rel, num_not_rel, required_reduced))
 
             input_ids_not_rel_reduced = []
             token_type_ids_not_rel_reduced = []
             attention_mask_not_rel_reduced = []
             labels_not_rel_reduced = []
 
-            random_ids = list(range(num_rel))
+            random_ids = list(range(num_not_rel))
             random.shuffle(random_ids)
 
             for i in random_ids:
