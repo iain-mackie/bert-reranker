@@ -32,28 +32,69 @@ def flatten_list(l):
     return list(itertools.chain(*l))
 
 
-def convert_training_dataset_to_pt(set_name, data_path, output_path, ):
+def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_train=None):
 
-    path = data_path + '{}_input_ids.json'.format(set_name)
-    print('reading file: {}'.format(path))
-    input_ids = read_from_json(path=path)
+    if isinstance(percent_train, float):
 
-    path = data_path + '{}_token_type_ids.json'.format(set_name)
-    print('reading file: {}'.format(path))
-    token_type_ids = read_from_json(path=path)
+        path = data_path + '{}_input_ids.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        input_ids = read_from_json(path=path)
 
-    path = data_path + '{}_attention_mask.json'.format(set_name)
-    print('reading file: {}'.format(path))
-    attention_mask = read_from_json(path=path)
+        path = data_path + '{}_token_type_ids.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        token_type_ids = read_from_json(path=path)
 
-    path = data_path + '{}_labels.json'.format(set_name)
-    print('reading file: {}'.format(path))
-    labels = read_from_json(path=path)
+        path = data_path + '{}_attention_mask.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        attention_mask = read_from_json(path=path)
+
+        path = data_path + '{}_labels.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        labels = read_from_json(path=path)
+
+        input_ids_tensor = torch.tensor(input_ids)
+        token_type_ids_tensor = torch.tensor(token_type_ids)
+        attention_mask_tensor = torch.tensor(attention_mask)
+        labels_tensor = torch.tensor(labels)
+
+    else:
+        path = data_path + '{}_input_ids_rel.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        input_ids_rel = read_from_json(path=path)
+        path = data_path + '{}_token_type_ids_rel.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        token_type_ids_rel = read_from_json(path=path)
+        path = data_path + '{}_attention_mask_rel.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        attention_mask_rel = read_from_json(path=path)
+        path = data_path + '{}_labels_rel.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        labels_rel = read_from_json(path=path)
+
+        path = data_path + '{}_input_ids_not_rel.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        input_ids_not_rel = read_from_json(path=path)
+        path = data_path + '{}_token_type_ids_not_rel.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        token_type_ids_not_rel = read_from_json(path=path)
+        path = data_path + '{}_attention_mask_not_rel.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        attention_mask_not_rel = read_from_json(path=path)
+        path = data_path + '{}_labels_not_rel.json'.format(set_name)
+        print('reading file: {}'.format(path))
+        labels_not_rel = read_from_json(path=path)
+
+        input_ids = input_ids_rel + input_ids_not_rel
+        token_type_ids = token_type_ids_rel + token_type_ids_not_rel
+        attention_mask = attention_mask_rel + attention_mask_not_rel
+        labels = labels_rel + labels_not_rel
+
 
     input_ids_tensor = torch.tensor(input_ids)
     token_type_ids_tensor = torch.tensor(token_type_ids)
     attention_mask_tensor = torch.tensor(attention_mask)
     labels_tensor = torch.tensor(labels)
+
 
     print('tensor shape of input_ids: {}'.format(input_ids_tensor.shape))
     print('tensor shape token_type_ids: {}'.format(token_type_ids_tensor.shape))
@@ -111,10 +152,11 @@ def build_validation_data_loader(tensor, batch_size):
     validation_sampler = SequentialSampler(tensor)
     return DataLoader(tensor, sampler=validation_sampler, batch_size=batch_size)
 
+
 if __name__ == '__main__':
 
-    set_name = 'dev_benchmarkY1'
+    set_name = 'train_benchmarkY1'
     data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_None.pt'
     convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
 
