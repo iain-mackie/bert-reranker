@@ -194,8 +194,13 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
                         step, len(validation_dataloader), elapsed, eval_loss/(step+1)))
 
-                pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
-                label_list += flatten_list(batch[3].cpu().numpy().tolist())
+                if device == torch.device("cpu"):
+                    pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
+                    label_list += batch[3].cpu().numpy().tolist()
+                else:
+                    pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
+                    label_list += flatten_list(batch[3].cpu().numpy().tolist())
+
 
                 # possible_write = len(pred_list) // num_rank
                 # while counter_written < possible_write:
@@ -216,17 +221,17 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             # Report the final accuracy for this validation run.
             avg_validation_loss = eval_loss / len(validation_dataloader)
 
-            split_bert_outputs(score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map)
+            map_labels, map_bert_labels = split_bert_outputs(score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map)
 
             logging.info("")
             logging.info("  Average validation loss: {0:.5f}".format(avg_validation_loss))
-            logging.info("  Average label MAP: {0:.5f}".format(counter_map_labels/counter_written))
-            logging.info("  Average BERT MAP: {0:.5f}".format(counter_map_bert_labels/counter_written))
+            logging.info("  Average label MAP: {0:.5f}".format(map_labels))
+            logging.info("  Average BERT MAP: {0:.5f}".format(map_bert_labels))
             logging.info("  Validation took: {:}".format(format_time(time.time() - t0)))
 
             metrics.append('Epoch {} -  Average validation loss: '.format(str(epoch_i)) + str(avg_validation_loss) + '\n')
-            metrics.append('Epoch {} -  Average label MAP: '.format(str(epoch_i)) + str(counter_map_labels/counter_written) + '\n')
-            metrics.append('Epoch {} -  Average BERT MAP: '.format(str(epoch_i)) + str(counter_map_bert_labels/counter_written) + '\n')
+            # metrics.append('Epoch {} -  Average label MAP: '.format(str(epoch_i)) + str(counter_map_labels/counter_written) + '\n')
+            # metrics.append('Epoch {} -  Average BERT MAP: '.format(str(epoch_i)) + str(counter_map_bert_labels/counter_written) + '\n')
 
         else:
 

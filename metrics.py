@@ -47,10 +47,39 @@ def get_stats(labels, scores):
 
 def split_bert_outputs(label_list, score_list, query_docids_map):
 
+    last_query = ''
+    doc_counter = 0
+    labels = []
+    scores = []
+    query_counter = 0
+    map_labels_sum = 0
+    map_bert_labels_sum = 0
     for i in zip(label_list, score_list, query_docids_map):
-        print(i[0])
-        print(i[1])
-        print(i[2])
+        query = i[2][0]
+        if (doc_counter > 0) and (last_query != query):
+
+            map_labels, map_bert_labels = get_stats(labels=labels, scores=scores)
+            query_counter +=1
+            map_labels_sum += map_labels
+            map_bert_labels_sum += map_bert_labels
+
+            doc_counter = 0
+            labels = []
+            scores = []
+
+        labels.append(i[0])
+        scores.append(i[1])
+        last_query = query
+        doc_counter += 1
+
+    map_labels, map_bert_labels = get_stats(labels=labels, scores=scores)
+    map_labels_sum += map_labels
+    map_bert_labels_sum += map_bert_labels
+    query_counter += 1
+
+    return (map_labels_sum / query_counter), (map_bert_labels_sum / query_counter)
+
+
 
 
 
