@@ -230,8 +230,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             logging.info("  Validation took: {:}".format(format_time(time.time() - t0)))
 
             metrics.append('Epoch {} -  Average validation loss: '.format(str(epoch_i)) + str(avg_validation_loss) + '\n')
-            # metrics.append('Epoch {} -  Average label MAP: '.format(str(epoch_i)) + str(counter_map_labels/counter_written) + '\n')
-            # metrics.append('Epoch {} -  Average BERT MAP: '.format(str(epoch_i)) + str(counter_map_bert_labels/counter_written) + '\n')
+            metrics.append('Epoch {} -  Average label MAP: '.format(str(epoch_i)) + str(map_labels) + '\n')
+            metrics.append('Epoch {} -  Average BERT MAP: '.format(str(epoch_i)) + str(map_bert_labels) + '\n')
 
         else:
 
