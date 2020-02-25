@@ -10,8 +10,8 @@ from torch.utils.data import TensorDataset
 import torch
 import pickle
 import json
-from sqlitedict import SqliteDict
-from contextlib import closing
+import lmdb
+
 
 #TODO - make datasets (paragraph + sentence)
 #TODO - sense check
@@ -276,17 +276,18 @@ def load_run(path):
     return sorted_run
 
 
-def load_corpus(read_path, write_path):
+def load_corpus(read_path, write_path, map_size=1e11):
     """Loads TREC-CAR's paraghaphs into a dict of key: title, value: paragraph."""
     start_time = time.time()
     APPROX_TOTAL_PARAGRAPHS = 30000000
-    with closing(SqliteDict(write_path, autocommit=True)) as mydict:
+    env = lmdb.open(path=write_path, map_size=map_size)
+    with env.begin(write=True) as txn:
         with open(read_path, 'rb') as f:
             for i, p in enumerate(iter_paragraphs(f)):
                 para_txt = [elem.text if isinstance(elem, ParaText)
                             else elem.anchor_text
                             for elem in p.bodies]
-                mydict[str(p.para_id)] = ' '.join(para_txt)
+                txn.put(str(p.para_id).encode(), ' '.join(para_txt).encode())
                 if i % 1000000 == 0:
                     print(str(p.para_id))
                     print('Loading paragraph {} of {}'.format(i, APPROX_TOTAL_PARAGRAPHS))
@@ -338,7 +339,7 @@ if __name__ == "__main__":
 
     print('build corpus DB')
     read_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    write_path = '/nfs/trec_car/index/anserini_paragraphs/lucene-index.car17v2.0.paragraphsv2.sqlite.v2'
+    write_path = '/nfs/trec_car/data/bert_reranker_datasets/trec_car_lmdb'
     load_corpus(read_path=read_path, write_path=write_path)
 
     print('preprocessing runs and qrels')
@@ -347,8 +348,5 @@ if __name__ == "__main__":
     temp_file = True
     preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir, temp_file=True)
 
-    from sqlitedict import SqliteDict
-    with SqliteDict('/nfs/trec_car/index/anserini_paragraphs/lucene-index.car17v2.0.paragraphsv2.sqlite.v8') as mydict:
-        print(mydict['327cca6c4d38953196fa6789f615546f03287b25'])
 
 
