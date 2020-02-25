@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
     set_name = 'train_benchmarkY1'
     data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1.pt'
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_None.pt'
     percent_rel = None
     convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, percent_rel=percent_rel)
 
