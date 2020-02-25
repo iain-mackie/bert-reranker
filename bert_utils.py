@@ -52,11 +52,6 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_tra
         print('reading file: {}'.format(path))
         labels = read_from_json(path=path)
 
-        input_ids_tensor = torch.tensor(input_ids)
-        token_type_ids_tensor = torch.tensor(token_type_ids)
-        attention_mask_tensor = torch.tensor(attention_mask)
-        labels_tensor = torch.tensor(labels)
-
     else:
         path = data_path + '{}_input_ids_rel.json'.format(set_name)
         print('reading file: {}'.format(path))
@@ -158,5 +153,6 @@ if __name__ == '__main__':
     set_name = 'train_benchmarkY1'
     data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
     output_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_None.pt'
-    convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
+    percent_train = None
+    convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, percent_train=percent_train)
 
