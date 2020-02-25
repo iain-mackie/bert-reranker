@@ -110,3 +110,11 @@ def build_validation_data_loader(tensor, batch_size):
     print('building training data loader')
     validation_sampler = SequentialSampler(tensor)
     return DataLoader(tensor, sampler=validation_sampler, batch_size=batch_size)
+
+if __name__ == '__main__':
+
+    set_name = 'dev_benchmarkY1'
+    data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
+    output_path = 'dev_benchmarkY1.pt'
+    convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
+
