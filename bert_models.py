@@ -364,7 +364,7 @@ if __name__ == "__main__":
     experiment_name = 'benchmarkY1_2'
     do_eval = True
     logging_steps = 100
-    run_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/dev_benchmarkY1.run'
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
 
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader, validation_dataloader=validation_dataloader,
                                epochs=epochs, lr=lr, eps=eps, seed_val=seed_val, write=write, model_path=model_path,
