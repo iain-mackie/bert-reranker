@@ -272,14 +272,14 @@ if __name__ == "__main__":
     set_name = 'train_benchmarkY1'
     print('building training dataset: {}'.format(set_name))
     preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
-    build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
+    build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
                              max_length=max_length)
 
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
     set_name = 'dev_benchmarkY1'
     print('building training dataset: {}'.format(set_name))
     preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
-    build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
+    build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
                            max_length=max_length)
 
 
