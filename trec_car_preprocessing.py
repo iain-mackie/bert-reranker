@@ -118,7 +118,7 @@ def build_validation_dataset(data_path, lmdb_path, set_name, tokenizer, max_leng
                 print('query', query)
 
             for d in doc_titles:
-                text = txn.get(d.ecode())
+                text = txn.get(d.encode())
                 q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(text), max_length=max_length,
                                             add_special_tokens=True, pad_to_max_length=True)
                 input_ids += [q_d['input_ids']]
