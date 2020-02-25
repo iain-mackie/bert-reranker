@@ -342,11 +342,11 @@ if __name__ == "__main__":
     write_path = '/nfs/trec_car/data/bert_reranker_datasets/trec_car_lmdb'
     load_corpus(read_path=read_path, write_path=write_path)
 
-    print('preprocessing runs and qrels')
-    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    set_name = 'test'
-    temp_file = True
-    preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir, temp_file=True)
+    # print('preprocessing runs and qrels')
+    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    # set_name = 'test'
+    # temp_file = True
+    # preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir, temp_file=True)
 
 
 
