@@ -6,7 +6,7 @@ from transformers import get_linear_schedule_with_warmup
 from bert_utils import build_validation_data_loader, build_training_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
-from metrics import split_bert_outputs
+from metrics import group_bert_outputs_by_query, get_stats
 from bert_utils import format_time, flatten_list, get_query_docids_map
 import logging
 import torch
@@ -170,9 +170,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
             t0 = time.time()
             eval_loss = 0
-            counter_written = 0
-            counter_map_labels = 0
-            counter_map_bert_labels = 0
+
             pred_list = []
             label_list = []
 
@@ -201,37 +199,23 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
                     label_list += flatten_list(batch[3].cpu().numpy().tolist())
 
-
-                # possible_write = len(pred_list) // num_rank
-                # while counter_written < possible_write:
-                #     # TODO - on list
-                #
-                #     start_idx = counter_written * num_rank
-                #     end_idx = counter_written * num_rank + num_rank
-                #
-                #     scores = pred_list[start_idx:end_idx]
-                #     labels = label_list[start_idx:end_idx]
-                #
-                #     map_labels, map_bert_labels = get_stats(labels=labels, scores=scores)
-                #     counter_map_labels += map_labels
-                #     counter_map_bert_labels += map_bert_labels
-                #
-                #     counter_written += 1
-
             # Report the final accuracy for this validation run.
             avg_validation_loss = eval_loss / len(validation_dataloader)
 
-            map_labels, map_bert_labels = split_bert_outputs(score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map)
+            labels_groups, scores_groups, queries_groups, doc_ids_groups = group_bert_outputs_by_query(
+                score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map)
+
+            map_labels, map_bert = get_stats(labels_groups=labels_groups, scores_groups=scores_groups)
 
             logging.info("")
             logging.info("  Average validation loss: {0:.5f}".format(avg_validation_loss))
             logging.info("  Average label MAP: {0:.5f}".format(map_labels))
-            logging.info("  Average BERT MAP: {0:.5f}".format(map_bert_labels))
+            logging.info("  Average BERT MAP: {0:.5f}".format(map_bert))
             logging.info("  Validation took: {:}".format(format_time(time.time() - t0)))
 
             metrics.append('Epoch {} -  Average validation loss: '.format(str(epoch_i)) + str(avg_validation_loss) + '\n')
             metrics.append('Epoch {} -  Average label MAP: '.format(str(epoch_i)) + str(map_labels) + '\n')
-            metrics.append('Epoch {} -  Average BERT MAP: '.format(str(epoch_i)) + str(map_bert_labels) + '\n')
+            metrics.append('Epoch {} -  Average BERT MAP: '.format(str(epoch_i)) + str(map_bert) + '\n')
 
         else:
 
@@ -292,11 +276,9 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
         device = torch.device("cpu")
 
     pred_list = []
-    counter_written = 0
 
     model.eval()
 
-    run_file = open(run_path, 'a+')
     for step, batch in enumerate(dataloader):
 
         b_input_ids = batch[0].to(device)
@@ -308,34 +290,8 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
                                  attention_mask=b_attention_mask)
 
         pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
-        possible_write = len(pred_list) // num_rank
-        while counter_written < possible_write:
 
-            start_idx = counter_written * num_rank
-            end_idx = counter_written * num_rank + num_rank
 
-            scores = pred_list[start_idx:end_idx]
-            query_docids = query_docids_map[start_idx:end_idx]
-
-            queries, doc_ids = zip(*query_docids)
-            assert len(set(queries)) == 1, "Queries must be all the same. \n queries: {} \n doc_ids: {}".format(queries, doc_ids)
-            assert len(query_docids) == len(scores) == num_rank, 'not correct dimensions'
-            query = queries[0]
-            print(query)
-
-            d = {i[0]:i[1] for i in zip(doc_ids, scores)}
-            od = collections.OrderedDict(sorted(d.items(), key=lambda item: item[1], reverse=True))
-
-            rank = 1
-            for doc_id in od.keys():
-
-                output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(od[doc_id]), "BERT"))
-                run_file.write(output_line + "\n")
-                rank += 1
-
-            counter_written += 1
-
-    run_file.close()
 
 
 
@@ -361,7 +317,7 @@ if __name__ == "__main__":
     seed_val = 42
     write = True
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'benchmarkY1_2'
+    experiment_name = 'benchmarkY1_3'
     do_eval = True
     logging_steps = 100
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
