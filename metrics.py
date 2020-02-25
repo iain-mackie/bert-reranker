@@ -1,32 +1,67 @@
 
 import collections
+import numpy as np
+
+#TODO - test metrics
 
 def get_map(run):
 
     correct_docs_sum = sum(run)
-
     if correct_docs_sum > 0.0:
-
         rank = 1
         correct_docs = 1
         correct_docs_weighted_sum = 0
         for r in run:
             assert r == 0.0 or r == 1.0, 'score not 1.0 or 0.0'
-
             if r == 1.0:
                 correct_docs_weighted_sum += correct_docs / rank
                 correct_docs += 1
-
             rank += 1
-
         return correct_docs_weighted_sum * (1 / correct_docs_sum)
-
     else:
         return 0.0
 
 
-def get_bert_labels(labels, scores):
+def get_R_prec(run):
+    R = sum(run)
+    if R > 0:
+        r_run = run[:R]
+        return sum(r_run) / R
+    else:
+        return 0.0
 
+
+def get_recip_rank(run):
+    rank = 1
+    for r in run:
+        if r == 1.0:
+            return 1/rank
+        rank += 1
+    return 0.0
+
+
+def get_precision(run, k=20):
+    k_run = run[:k]
+    return sum(k_run) / k
+
+
+def get_recall(run, k=40):
+    # TODO - need qrels
+    k_run = run[:k]
+    return 0.0
+
+
+def get_ndcg_cut(run, k=20):
+    k_run = run[:k]
+    rank = 1
+    dcg = 0
+    for r in k_run:
+        dcg += r / np.log2(rank + 2)
+
+    return dcg
+
+
+def get_bert_labels(labels, scores):
     bert_labels = []
     ordered_scores = sorted(list(set(scores)), reverse=True)
     for os in ordered_scores:
