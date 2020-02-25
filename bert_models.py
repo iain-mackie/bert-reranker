@@ -3,19 +3,17 @@
 from transformers import BertModel, BertPreTrainedModel
 from transformers.optimization import AdamW
 from transformers import get_linear_schedule_with_warmup
-from trec_car_preprocessing import build_validation_data_loader, build_trainig_data_loader
+from bert_utils import build_validation_data_loader, build_training_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
 from metrics import get_stats
-
+from bert_utils import format_time, flatten_list, get_query_docids_map
 import logging
 import torch
 import time
-import datetime
 import numpy as np
 import random
 import os
-import itertools
 import collections
 
 
@@ -64,11 +62,6 @@ class BertReRanker(BertPreTrainedModel):
         logits = sigmoid(self.relevance_pred(pooled_output))
         return logits
 
-
-
-def format_time(elapsed):
-    # Format as hh:mm:ss
-    return str(datetime.timedelta(seconds=int(round((elapsed)))))
 
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
@@ -266,10 +259,6 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
     # TODO - trec output wrtiter
 
 
-def flatten_list(l):
-    return list(itertools.chain(*l))
-
-
 def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path, num_rank=10):
 
     model = BertReRanker.from_pretrained(model_path)
@@ -337,24 +326,6 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
 
     run_file.close()
 
-
-def get_query_docids_map(set_name, data_path):
-
-    run_path = os.path.join(data_path, set_name + ".run")
-
-    query_docids_map = []
-    with open(run_path) as ref_file:
-
-        for line in ref_file:
-            query, _, doc_id, _, _, _ = line.strip().split(" ")
-
-            query_docids_map.append((query, doc_id))
-
-    return query_docids_map
-
-
-def trec_output():
-    pass
 
 
 if __name__ == "__main__":

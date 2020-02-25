@@ -22,7 +22,7 @@ spec:
   containers:
   - env: 
     name: bert-reranker-preprocessing-container
-    image: iainmackie/bert-reranker-preprocessing:v6
+    image: iainmackie/bert-reranker-preprocessing:v7
     imagePullPolicy: IfNotPresent
     resources:
       requests:
