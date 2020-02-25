@@ -6,6 +6,7 @@ import datetime
 import os
 import itertools
 import torch
+import random
 
 
 def get_query_docids_map(set_name, data_path):
@@ -32,64 +33,94 @@ def flatten_list(l):
     return list(itertools.chain(*l))
 
 
-def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_train=None):
+def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_rel=None):
+    path = data_path + '{}_input_ids_rel.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    input_ids_rel = read_from_json(path=path)
+    path = data_path + '{}_token_type_ids_rel.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    token_type_ids_rel = read_from_json(path=path)
+    path = data_path + '{}_attention_mask_rel.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    attention_mask_rel = read_from_json(path=path)
+    path = data_path + '{}_labels_rel.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    labels_rel = read_from_json(path=path)
 
-    if isinstance(percent_train, float):
+    path = data_path + '{}_input_ids_not_rel.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    input_ids_not_rel = read_from_json(path=path)
+    path = data_path + '{}_token_type_ids_not_rel.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    token_type_ids_not_rel = read_from_json(path=path)
+    path = data_path + '{}_attention_mask_not_rel.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    attention_mask_not_rel = read_from_json(path=path)
+    path = data_path + '{}_labels_not_rel.json'.format(set_name)
+    print('reading file: {}'.format(path))
+    labels_not_rel = read_from_json(path=path)
 
-        path = data_path + '{}_input_ids.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        input_ids = read_from_json(path=path)
+    if isinstance(percent_rel, float):
+        print('balancing classes so {} of data is relevent'.format(percent_rel))
+        if (percent_rel > 1.0) or (percent_rel < 0.0):
+            print('NOT VALID')
 
-        path = data_path + '{}_token_type_ids.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        token_type_ids = read_from_json(path=path)
+        num_rel = len(input_ids_rel)
+        num_not_rel = len(input_ids_not_rel)
+        percent_rel_current = num_rel / (num_rel + num_not_rel)
 
-        path = data_path + '{}_attention_mask.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        attention_mask = read_from_json(path=path)
+        if percent_rel_current > percent_rel:
+            print('percent_rel_current > percent_rel -> reduce relevent docs')
 
-        path = data_path + '{}_labels.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        labels = read_from_json(path=path)
+            required_reduced = int((num_rel - (percent_rel * num_rel)) / percent_rel)
+            print('reducing rel docs from {} -> {}'.format(num_rel, required_reduced))
+
+            input_ids_rel_reduced = random.shuffle(input_ids_rel)[0:required_reduced]
+            token_type_ids_rel_reduced = random.shuffle(token_type_ids_rel)[0:required_reduced]
+            attention_mask_rel_reduced = random.shuffle(attention_mask_rel)[0:required_reduced]
+            labels_rel_reduced = random.shuffle(labels_rel)[0:required_reduced]
+
+            input_ids = input_ids_rel_reduced + input_ids_not_rel
+            token_type_ids = token_type_ids_rel_reduced + token_type_ids_not_rel
+            attention_mask = attention_mask_rel_reduced + attention_mask_not_rel
+            labels = labels_rel_reduced + labels_not_rel
+
+
+        elif percent_rel_current < percent_rel:
+            print('percent_rel_current < percent_rel -> reduce not relevent docs')
+
+            required_reduced = int((num_rel - (percent_rel * num_rel)) / percent_rel)
+            print('reducing not rel docs from {} -> {}'.format(num_not_rel, required_reduced))
+
+            input_ids_not_rel_reduced = random.shuffle(input_ids_not_rel)[0:required_reduced]
+            token_type_ids_not_rel_reduced = random.shuffle(token_type_ids_not_rel)[0:required_reduced]
+            attention_mask_not_rel_reduced = random.shuffle(attention_mask_not_rel)[0:required_reduced]
+            labels_not_rel_reduced = random.shuffle(labels_not_rel)[0:required_reduced]
+
+            input_ids = input_ids_rel + input_ids_not_rel_reduced
+            token_type_ids = token_type_ids_rel + token_type_ids_not_rel_reduced
+            attention_mask = attention_mask_rel + attention_mask_not_rel_reduced
+            labels = labels_rel + labels_not_rel_reduced
+
+        else:
+            print(' percent_current == percent_rel')
+            input_ids = input_ids_rel + input_ids_not_rel
+            token_type_ids = token_type_ids_rel + token_type_ids_not_rel
+            attention_mask = attention_mask_rel + attention_mask_not_rel
+            labels = labels_rel + labels_not_rel
 
     else:
-        path = data_path + '{}_input_ids_rel.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        input_ids_rel = read_from_json(path=path)
-        path = data_path + '{}_token_type_ids_rel.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        token_type_ids_rel = read_from_json(path=path)
-        path = data_path + '{}_attention_mask_rel.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        attention_mask_rel = read_from_json(path=path)
-        path = data_path + '{}_labels_rel.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        labels_rel = read_from_json(path=path)
-
-        path = data_path + '{}_input_ids_not_rel.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        input_ids_not_rel = read_from_json(path=path)
-        path = data_path + '{}_token_type_ids_not_rel.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        token_type_ids_not_rel = read_from_json(path=path)
-        path = data_path + '{}_attention_mask_not_rel.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        attention_mask_not_rel = read_from_json(path=path)
-        path = data_path + '{}_labels_not_rel.json'.format(set_name)
-        print('reading file: {}'.format(path))
-        labels_not_rel = read_from_json(path=path)
+        print('Adding all training data to dataset')
 
         input_ids = input_ids_rel + input_ids_not_rel
         token_type_ids = token_type_ids_rel + token_type_ids_not_rel
         attention_mask = attention_mask_rel + attention_mask_not_rel
         labels = labels_rel + labels_not_rel
 
-
     input_ids_tensor = torch.tensor(input_ids)
     token_type_ids_tensor = torch.tensor(token_type_ids)
     attention_mask_tensor = torch.tensor(attention_mask)
     labels_tensor = torch.tensor(labels)
-
 
     print('tensor shape of input_ids: {}'.format(input_ids_tensor.shape))
     print('tensor shape token_type_ids: {}'.format(token_type_ids_tensor.shape))
@@ -153,6 +184,6 @@ if __name__ == '__main__':
     set_name = 'train_benchmarkY1'
     data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
     output_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1.pt'
-    percent_train = None
-    convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, percent_train=percent_train)
+    percent_rel = None
+    convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, percent_rel=percent_rel)
 
