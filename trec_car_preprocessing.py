@@ -9,6 +9,7 @@ import collections
 import time
 import torch
 import lmdb
+import os
 
 
 # def build_training_dataset(data_path, corpus_path, set_name, tokenizer, max_length=512):
@@ -287,10 +288,15 @@ def build_validation_data_loader(tensor, batch_size):
 
 if __name__ == "__main__":
 
-    print('build corpus DB')
+
+
     corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
     lmdb_path = '/nfs/trec_car/data/bert_reranker_datasets/trec_car_lmdb'
-    load_corpus(corpus_path=corpus_path, lmdb_path=lmdb_path)
+    if os.path.exists(lmdb_path) == False:
+        print('build corpus LMDB')
+        load_corpus(corpus_path=corpus_path, lmdb_path=lmdb_path)
+    else:
+        print('corpus LMDB already exists')
 
     print('preprocessing runs and qrels')
     # will look for {set_name}.run + {set_name}.qrels
