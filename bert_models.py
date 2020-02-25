@@ -330,7 +330,7 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
 
 if __name__ == "__main__":
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_None.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.5.pt'
     dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
 
     print('loading train tensor: {}'.format(train_path))
