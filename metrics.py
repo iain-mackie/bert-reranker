@@ -56,11 +56,22 @@ def get_ndcg(run, k=20):
     i_dcg = 0
     dcg = 0
     rank = 1
-    for r in k_run:
-        i_dcg += 1 / np.log2(rank + 1)
-        dcg += r / np.log2(rank + 1)
-        rank += 1
-    return dcg / i_dcg
+    num_rel = sum(run)
+    if num_rel > 0:
+        for r in k_run:
+            if rank == 1:
+                if rank <= num_rel:
+                    i_dcg += 1
+                dcg += r
+            else:
+                discount = np.log2(rank)
+                if rank <= num_rel:
+                    i_dcg += 1 / discount
+                dcg += r / discount
+            rank += 1
+        return dcg / i_dcg
+    else:
+        return 0
 
 
 def get_bert_labels(labels, scores):
