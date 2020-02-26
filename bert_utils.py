@@ -206,9 +206,8 @@ def build_validation_data_loader(tensor, batch_size):
 
 if __name__ == '__main__':
 
-    set_name = 'train_benchmarkY1'
+    set_name = 'test'
     data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.5.pt'
-    percent_rel = 0.5
-    convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, percent_rel=percent_rel)
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
+    convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
 
