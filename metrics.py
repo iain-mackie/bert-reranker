@@ -8,16 +8,14 @@ def get_map(run):
 
     correct_docs_sum = sum(run)
     if correct_docs_sum > 0.0:
-        rank = 1
-        correct_docs = 1
+        correct_docs = 0
         correct_docs_weighted_sum = 0
-        for r in run:
+        for i, r in enumerate(run):
             assert r == 0.0 or r == 1.0, 'score not 1.0 or 0.0'
             if r == 1.0:
-                correct_docs_weighted_sum += correct_docs / rank
                 correct_docs += 1
-            rank += 1
-        return correct_docs_weighted_sum * (1 / correct_docs_sum)
+                correct_docs_weighted_sum += correct_docs / (i+1)
+        return correct_docs_weighted_sum  / correct_docs_sum
     else:
         return 0.0
 
@@ -32,11 +30,9 @@ def get_R_prec(run):
 
 
 def get_recip_rank(run):
-    rank = 1
-    for r in run:
+    for i, r in enumerate(run):
         if r == 1.0:
-            return 1/rank
-        rank += 1
+            return 1/(i+1)
     return 0.0
 
 
@@ -55,20 +51,18 @@ def get_ndcg(run, k=20):
     k_run = run[:k]
     i_dcg = 0
     dcg = 0
-    rank = 1
     num_rel = sum(run)
     if num_rel > 0:
-        for r in k_run:
-            if rank == 1:
-                if rank <= num_rel:
+        for i, r in enumerate(k_run):
+            if i == 0:
+                if (i+1) <= num_rel:
                     i_dcg += 1
                 dcg += r
             else:
-                discount = np.log2(rank)
-                if rank <= num_rel:
+                discount = np.log2(i+1)
+                if (i+1) <= num_rel:
                     i_dcg += 1 / discount
                 dcg += r / discount
-            rank += 1
         return dcg / i_dcg
     else:
         return 0
@@ -188,8 +182,10 @@ if __name__ == '__main__':
     run2 = [1, 0, 1, 0, 1]
     run3 = [0, 0, 0, 0]
     run4 = [0, 0, 1, 0, 1]
+    run5 = [1, 1, 0, 1, 0]
 
-    for r in [run1, run2, run3, run4]:
+
+    for r in [run1, run2, run3, run4, run5]:
         print('--------------------------')
         print(r)
         map = get_map(r)

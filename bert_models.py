@@ -23,6 +23,8 @@ import collections
 
 #TODO - add comments and change docstring
 
+#TODO - train / validation on multi GPU
+
 
 class BertReRanker(BertPreTrainedModel):
     def __init__(self, config):
