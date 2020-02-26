@@ -308,7 +308,7 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, write_path):
 
         pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
 
-        if step % 1000 == 0:
+        if step % 100 == 0:
             elapsed = format_time(time.time() - t0)
             print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}'.format(step, len(dataloader), elapsed))
 

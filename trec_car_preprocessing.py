@@ -255,38 +255,38 @@ def preprocess_runs_and_qrels(set_name, data_path):
 
 if __name__ == "__main__":
 
-    # corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
-    # lmdb_path = '/nfs/trec_car/data/bert_reranker_datasets/trec_car_lmdb'
-    # if os.path.exists(lmdb_path) == False:
-    #     print('build corpus LMDB')
-    #     load_corpus(corpus_path=corpus_path, lmdb_path=lmdb_path)
-    # else:
-    #     print('corpus LMDB already exists')
-    #
-    # max_length = 512
-    # tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    #
+    corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
+    lmdb_path = '/nfs/trec_car/data/bert_reranker_datasets/trec_car_lmdb'
+    if os.path.exists(lmdb_path) == False:
+        print('build corpus LMDB')
+        load_corpus(corpus_path=corpus_path, lmdb_path=lmdb_path)
+    else:
+        print('corpus LMDB already exists')
+
+    max_length = 512
+    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+
     # print('preprocessing runs and qrels')
     # # will look for {set_name}.run + {set_name}.qrels
     # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    # set_name = 'train_benchmarkY1'
+    # set_name = 'dev_benchmarkY1_100'
     # print('building training dataset: {}'.format(set_name))
     # preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
     # build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
     #                          max_length=max_length)
-    #
-    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    # set_name = 'dev_benchmarkY1'
-    # print('building training dataset: {}'.format(set_name))
-    # preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
-    # build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
-    #                        max_length=max_length)
+
+    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    set_name = 'dev_benchmarkY1_100'
+    print('building validation dataset: {}'.format(set_name))
+    preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
+    build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
+                           max_length=max_length)
 
     from bert_utils import convert_validation_dataset_to_pt
 
-    set_name = 'test'
+    set_name = 'dev_benchmarkY1_100'
     data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100_dataset.pt'
     convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
 
 
