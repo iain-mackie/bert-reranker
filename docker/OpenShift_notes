@@ -56,7 +56,7 @@ spec:
   containers:
   - env:
     name: bert-reranker-fine-tuning-container
-    image: iainmackie/bert-reranker-fine-tuning:v1
+    image: iainmackie/bert-reranker-fine-tuning:v2
     imagePullPolicy: IfNotPresent
     resources:
       requests:

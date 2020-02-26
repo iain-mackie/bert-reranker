@@ -35,4 +35,4 @@ RUN pip install transformers
 # RUN git config --global user.email "aquaktus@yahoo.co.uk"
 # RUN git config --global user.name "aquaktus"
 
-CMD python3 /nfs/trec_car/data/bert_reranker_datasets/bert-reranker/exp_dev_test_1.py
+CMD python3 /nfs/trec_car/data/bert_reranker_datasets/bert-reranker/bert_models.py

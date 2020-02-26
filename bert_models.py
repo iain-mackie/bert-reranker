@@ -300,8 +300,8 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, write_path):
         b_attention_mask = batch[2].to(device)
 
         with torch.no_grad():
-            outputs = model.pred(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
-                                 attention_mask=b_attention_mask)
+            outputs = model.forward(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
+                                    attention_mask=b_attention_mask)
 
         pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
 
