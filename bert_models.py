@@ -306,7 +306,7 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, write_path):
 
         if step % 100 == 0:
             elapsed = format_time(time.time() - t0)
-            print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}'.format(step, len(validation_dataloader), elapsed))
+            print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}'.format(step, len(dataloader), elapsed))
 
     fake_lables = [0] * len(pred_list)
 
