@@ -290,6 +290,8 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, write_path):
 
     model.eval()
 
+    print('beginining inference')
+    t0 = time.time()
     for step, batch in enumerate(dataloader):
 
         b_input_ids = batch[0].to(device)
@@ -302,12 +304,17 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, write_path):
 
         pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
 
+        if step % 100 == 0:
+            elapsed = format_time(time.time() - t0)
+            print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}'.format(step, len(validation_dataloader), elapsed))
 
     fake_lables = [0] * len(pred_list)
 
+    print('sorting groups')
     labels_groups, scores_groups, queries_groups, doc_ids_groups = group_bert_outputs_by_query(
         score_list=pred_list, label_list=fake_lables, query_docids_map=query_docids_map)
 
+    print('writing groups')
     write_trec_run(scores_groups=scores_groups, queries_groups=queries_groups, doc_ids_groups=doc_ids_groups,
                    write_path=write_path)
 
