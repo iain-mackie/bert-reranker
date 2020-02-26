@@ -6,7 +6,7 @@ from transformers import get_linear_schedule_with_warmup
 from bert_utils import build_validation_data_loader, build_training_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
-from metrics import group_bert_outputs_by_query, get_stats, write_trec_run
+from metrics import group_bert_outputs_by_query, get_metrics, write_trec_run
 from bert_utils import format_time, flatten_list, get_query_docids_map
 import logging
 import torch
@@ -65,7 +65,7 @@ class BertReRanker(BertPreTrainedModel):
 
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
-                               seed_val=42, write=False, model_path=None, experiment_name='test', do_eval=True,
+                               seed_val=42, write=False, model_dir=None, experiment_name='test', do_eval=True,
                                logging_steps=100, run_path=None):
     # Set the seed value all over the place to make this reproducible.
     print('starting fine tuning')
@@ -75,9 +75,9 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
     torch.cuda.manual_seed_all(seed_val)
 
     if write:
-        if os.path.isdir(model_path):
+        if os.path.isdir(model_dir):
             print('*** Staring logging ***')
-            exp_path = model_path + experiment_name + '/'
+            exp_path = model_dir + experiment_name + '/'
             if os.path.isdir(exp_path) == False:
                 os.mkdir(exp_path)
             logging_path = exp_path + 'output.log'
@@ -205,17 +205,27 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             labels_groups, scores_groups, queries_groups, doc_ids_groups = group_bert_outputs_by_query(
                 score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map)
 
-            map_labels, map_bert = get_stats(labels_groups=labels_groups, scores_groups=scores_groups)
+            string_labels, label_metrics, bert_metrics = get_metrics(labels_groups=labels_groups,
+                                                                     scores_groups=scores_groups)
+
+            def get_metrics_string(string_labels, metrics, name='BERT'):
+                s = '  Average {}:  '.format(name)
+                for i in zip(string_labels, metrics):
+                    s += i[0] + ': {0:.5f}, '.format(i[1])
+                return s
+
+            label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
+            bert_string = get_metrics_string(string_labels=string_labels, metrics=bert_metrics, name='BERT')
 
             logging.info("")
             logging.info("  Average validation loss: {0:.5f}".format(avg_validation_loss))
-            logging.info("  Average label MAP: {0:.5f}".format(map_labels))
-            logging.info("  Average BERT MAP: {0:.5f}".format(map_bert))
+            logging.info(label_string)
+            logging.info(bert_string)
             logging.info("  Validation took: {:}".format(format_time(time.time() - t0)))
 
             metrics.append('Epoch {} -  Average validation loss: '.format(str(epoch_i)) + str(avg_validation_loss) + '\n')
-            metrics.append('Epoch {} -  Average label MAP: '.format(str(epoch_i)) + str(map_labels) + '\n')
-            metrics.append('Epoch {} -  Average BERT MAP: '.format(str(epoch_i)) + str(map_bert) + '\n')
+            metrics.append('Epoch {} -'.format(str(epoch_i)) + label_string + '\n')
+            metrics.append('Epoch {} -'.format(str(epoch_i)) + bert_string + '\n')
 
         else:
 
@@ -224,8 +234,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         # Writing model & metrics
         if write:
             logging.info('Writing epoch model to file')
-            if os.path.isdir(model_path):
-                exp_path = model_path + experiment_name + '/'
+            if os.path.isdir(model_dir):
+                exp_path = model_dir + experiment_name + '/'
 
                 if os.path.isdir(exp_path) == False:
                     os.mkdir(exp_path)
@@ -258,7 +268,6 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, write_path):
 
     model = BertReRanker.from_pretrained(model_path)
     query_docids_map = get_query_docids_map(run_path=run_path)
-
 
     # If there's a GPU available...
     if torch.cuda.is_available():
@@ -330,9 +339,9 @@ if __name__ == "__main__":
     logging_steps = 100
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
 
-    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader, validation_dataloader=validation_dataloader,
-                               epochs=epochs, lr=lr, eps=eps, seed_val=seed_val, write=write, model_path=model_path,
-                               experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps, run_path=run_path)
+    # fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader, validation_dataloader=validation_dataloader,
+    #                            epochs=epochs, lr=lr, eps=eps, seed_val=seed_val, write=write, model_path=model_path,
+    #                            experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps, run_path=run_path)
 
     # test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
     #

@@ -25,7 +25,7 @@ def get_map(run):
 def get_R_prec(run):
     R = sum(run)
     if R > 0:
-        r_run = run[:R]
+        r_run = run[:int(R)]
         return sum(r_run) / R
     else:
         return 0.0
@@ -48,18 +48,18 @@ def get_precision(run, k=20):
 def get_recall(run, k=40):
     # TODO - need qrels
     k_run = run[:k]
-    return 0.0
+    return None
 
 
-def get_ndcg_cut(run, k=20):
+def get_ndcg(run, k=20):
     k_run = run[:k]
-    rank = 1
     i_dcg = 0
     dcg = 0
+    rank = 1
     for r in k_run:
         i_dcg += 1 / np.log2(rank + 1)
         dcg += r / np.log2(rank + 1)
-
+        rank += 1
     return dcg / i_dcg
 
 
@@ -73,21 +73,47 @@ def get_bert_labels(labels, scores):
     return bert_labels
 
 
-def get_stats(labels_groups, scores_groups):
+def get_metrics(labels_groups, scores_groups):
 
-    map_labels_sum = 0
-    map_bert_sum = 0
+    map_labels_sum, map_bert_sum = 0, 0
+    R_prec_labels_sum, R_prec_bert_sum,  = 0, 0
+    recip_rank_labels_sum, recip_rank_bert_sum = 0, 0
+    precision_20_labels_sum, precision_20_bert_sum = 0, 0
+    ndcg_20_labels_sum, ndcg_20_bert_sum = 0, 0
 
     for i in zip(labels_groups, scores_groups):
-        bert_labels = get_bert_labels(labels=i[0], scores=i[1])
 
-        map_labels_sum += get_map(run=i[0])
+        labels, scores = i[0], i[1]
+        bert_labels = get_bert_labels(labels=labels, scores=scores)
+
+        map_labels_sum += get_map(run=labels)
         map_bert_sum += get_map(run=bert_labels)
 
-    map_labels = map_labels_sum / len(labels_groups)
-    map_bert = map_bert_sum / len(labels_groups)
+        R_prec_labels_sum += get_R_prec(run=labels)
+        R_prec_bert_sum += get_R_prec(run=bert_labels)
 
-    return map_labels, map_bert
+        recip_rank_labels_sum += get_recip_rank(run=labels)
+        recip_rank_bert_sum += get_recip_rank(run=bert_labels)
+
+        precision_20_labels_sum += get_precision(run=labels, k=20)
+        precision_20_bert_sum += get_precision(run=bert_labels, k=20)
+
+        ndcg_20_labels_sum += get_ndcg(run=labels, k=20)
+        ndcg_20_bert_sum += get_ndcg(run=bert_labels, k=20)
+
+    num_queries = len(labels_groups)
+
+    map_labels, map_bert = map_labels_sum / num_queries, map_bert_sum / num_queries
+    R_prec_labels, R_prec_bert = R_prec_labels_sum / num_queries, R_prec_bert_sum / num_queries
+    recip_rank_labels, recip_rank_bert = recip_rank_labels_sum / num_queries, recip_rank_bert_sum / num_queries
+    precision_20_labels, precision_20_bert = precision_20_labels_sum / num_queries, precision_20_bert_sum / num_queries
+    ndcg_20_labels, ndcg_20_bert = ndcg_20_labels_sum / num_queries, ndcg_20_bert_sum / num_queries
+
+    string_labels = ['map', 'R_prec', 'recip_rank', 'precision_20', 'ndcg_20']
+    label_metrics = [map_labels, R_prec_labels, recip_rank_labels, precision_20_labels, ndcg_20_labels]
+    bert_metrics = [map_bert, R_prec_bert, recip_rank_bert, precision_20_bert, ndcg_20_bert]
+
+    return string_labels, label_metrics, bert_metrics
 
 
 def group_bert_outputs_by_query(label_list, score_list, query_docids_map):
@@ -142,56 +168,30 @@ def write_trec_run(scores_groups, queries_groups, doc_ids_groups, write_path):
             for doc_id in od.keys():
                 output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(od[doc_id]), "BERT")) + '\n'
                 f.write(output_line)
-
                 rank += 1
 
 
+if __name__ == '__main__':
 
+    run1 = [1,0,0]
+    run2 = [1, 0, 1, 0, 1]
+    run3 = [0, 0, 0, 0]
+    run4 = [0, 0, 1, 0, 1]
 
-    # d = {i[0]: i[1] for i in zip(doc_ids, scores)}
-    # od = collections.OrderedDict(sorted(d.items(), key=lambda item: item[1], reverse=True))
-    #
-    # run_file
-    # rank = 1
-    # for doc_id in od.keys():
-    #
-    #     output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(od[doc_id]), "BERT"))
-    #     run_file.write(output_line + "\n")
-    #     rank += 1
-
-
-
-
-# possible_write = len(pred_list) // num_rank
-# while counter_written < possible_write:
-#
-#     start_idx = counter_written * num_rank
-#     end_idx = counter_written * num_rank + num_rank
-#
-#     scores = pred_list[start_idx:end_idx]
-#     query_docids = query_docids_map[start_idx:end_idx]
-#
-#     queries, doc_ids = zip(*query_docids)
-#     assert len(set(queries)) == 1, "Queries must be all the same. \n queries: {} \n doc_ids: {}".format(queries, doc_ids)
-#     assert len(query_docids) == len(scores) == num_rank, 'not correct dimensions'
-#     query = queries[0]
-#     print(query)
-#
-#     d = {i[0]:i[1] for i in zip(doc_ids, scores)}
-#     od = collections.OrderedDict(sorted(d.items(), key=lambda item: item[1], reverse=True))
-#
-#     rank = 1
-#     for doc_id in od.keys():
-#
-#         output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(od[doc_id]), "BERT"))
-#         run_file.write(output_line + "\n")
-#         rank += 1
-#
-#     counter_written += 1
-
-
-
-
+    for r in [run1, run2, run3, run4]:
+        print('--------------------------')
+        print(r)
+        map = get_map(r)
+        print('map: {}'.format(map))
+        R_prec = get_R_prec(r)
+        print('R_prec: {}'.format(R_prec))
+        recip_rank = get_recip_rank(r)
+        print('recip_rank: {}'.format(recip_rank))
+        k = 4
+        precision = get_precision(r, k=k)
+        print('precision@{}: {}'.format(k, precision))
+        ndcg = get_ndcg(r, k=k)
+        print('ndcg@{}: {}'.format(k, ndcg))
 
 
 
