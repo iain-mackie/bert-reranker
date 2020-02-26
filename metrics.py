@@ -124,70 +124,26 @@ def group_bert_outputs_by_query(label_list, score_list, query_docids_map):
     return labels_groups, scores_groups, queries_groups, doc_ids_groups
 
 
-# def split_bert_outputs(label_list, score_list, query_docids_map):
-#
-#     last_query = 'Not a query'
-#     doc_counter = 0
-#     labels = []
-#     scores = []
-#     query_counter = 0
-#     map_labels_sum = 0
-#     map_bert_labels_sum = 0
-#
-#     for i in zip(label_list, score_list, query_docids_map):
-#         query = i[2][0]
-#         if (doc_counter > 0) and (last_query != query):
-#
-#             map_labels, map_bert_labels = get_stats(labels=labels, scores=scores)
-#             query_counter += 1
-#             map_labels_sum += map_labels
-#             map_bert_labels_sum += map_bert_labels
-#
-#             doc_counter = 0
-#             labels = []
-#             scores = []
-#
-#         labels.append(i[0])
-#         scores.append(i[1])
-#         last_query = query
-#         doc_counter += 1
-#
-#     map_labels, map_bert_labels = get_stats(labels=labels, scores=scores)
-#     map_labels_sum += map_labels
-#     map_bert_labels_sum += map_bert_labels
-#     query_counter += 1
-#
-#     return (map_labels_sum / query_counter), (map_bert_labels_sum / query_counter)
+def write_trec_run(scores_groups, queries_groups, doc_ids_groups, write_path):
 
-# scores
-# lables
-# query
-# doc_id
+    with open(write_path, "a+") as f:
+        for i in zip(scores_groups, queries_groups, doc_ids_groups):
 
+            queries = i[1]
+            assert len(set(queries)) == 1, 'Too many queries: {}'.format(queries)
 
-def write_trec_run(score_list, query_docids_map):
+            query = queries[0]
+            scores = i[0]
+            doc_ids = i[2]
 
-    last_query = 'Not a query'
-    doc_counter = 0
-    scores = []
-    doc_ids = []
+            d = {i[0]: i[1] for i in zip(doc_ids, scores)}
+            od = collections.OrderedDict(sorted(d.items(), key=lambda item: item[1], reverse=True))
+            rank = 1
+            for doc_id in od.keys():
+                output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(od[doc_id]), "BERT")) + '\n'
+                f.write(output_line)
 
-    for i in zip(score_list, query_docids_map):
-        query = i[0][0]
-        if (doc_counter > 0) and (last_query != query):
-
-            doc_counter = 0
-            scores = []
-            doc_ids = []
-
-        scores.append(i[0])
-        doc_ids.append(i[1][1])
-        last_query = query
-        doc_counter += 1
-
-    scores.append(i[0])
-    doc_ids.append(i[1][1])
-
+                rank += 1
 
 
 

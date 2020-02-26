@@ -6,7 +6,7 @@ from transformers import get_linear_schedule_with_warmup
 from bert_utils import build_validation_data_loader, build_training_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
-from metrics import group_bert_outputs_by_query, get_stats
+from metrics import group_bert_outputs_by_query, get_stats, write_trec_run
 from bert_utils import format_time, flatten_list, get_query_docids_map
 import logging
 import torch
@@ -254,9 +254,11 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
     # TODO - trec output wrtiter
 
 
-def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path, num_rank=10):
+def inference_bert_re_ranker(model_path, dataloader, run_path, write_path):
 
     model = BertReRanker.from_pretrained(model_path)
+    query_docids_map = get_query_docids_map(run_path=run_path)
+
 
     # If there's a GPU available...
     if torch.cuda.is_available():
@@ -292,7 +294,13 @@ def inference_bert_re_ranker(model_path, dataloader, query_docids_map, run_path,
         pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
 
 
+    fake_lables = [0] * len(pred_list)
 
+    labels_groups, scores_groups, queries_groups, doc_ids_groups = group_bert_outputs_by_query(
+        score_list=pred_list, label_list=fake_lables, query_docids_map=query_docids_map)
+
+    write_trec_run(scores_groups=scores_groups, queries_groups=queries_groups, doc_ids_groups=doc_ids_groups,
+                   write_path=write_path)
 
 
 if __name__ == "__main__":

@@ -59,12 +59,17 @@ if __name__ == "__main__":
     write = True
     do_eval = True
     run_path = os.path.join(os.getcwd(), 'test_model.run')
-    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=validation_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8, write=write,
-                               experiment_name=experiment_name, model_path=model_path, do_eval=do_eval, logging_steps=1,
-                               run_path=run_path)
+    # fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=validation_dataloader,
+    #                            validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8, write=write,
+    #                            experiment_name=experiment_name, model_path=model_path, do_eval=do_eval, logging_steps=1,
+    #                            run_path=run_path)
 
     # Run Inference
-    # model_path = os.path.join(os.getcwd(), 'models', 'test', 'epoch1')
-    # inference_bert_re_ranker(model_path=model_path)
+    model_path = os.path.join(os.getcwd(), 'models', 'test_model_9', 'epoch1')
+    write_path = os.path.join(os.getcwd(), 'models', 'test_model_9', 'bert_epoch1.run')
+    #model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/epoch7/'
+    #write_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/bert_epoch7.run'
+
+    inference_bert_re_ranker(model_path=model_path, dataloader=validation_dataloader, run_path=run_path,
+                             write_path=write_path)
 

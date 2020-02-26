@@ -5,9 +5,4 @@ __pycache__/
 .ipynb_checkpoints
 .ipynb_checkpoints/*
 dedup.articles-paragraphs.cbor
-*.topics
-*.qrels
-*.run
 models/*
-*.json
-*.pt
