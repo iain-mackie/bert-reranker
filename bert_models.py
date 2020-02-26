@@ -304,7 +304,7 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, write_path):
 
         pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
 
-        if step % 100 == 0:
+        if step % 1000 == 0:
             elapsed = format_time(time.time() - t0)
             print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}'.format(step, len(dataloader), elapsed))
 
@@ -322,12 +322,12 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, write_path):
 if __name__ == "__main__":
 
     # train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.5.pt'
-    # dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
-    #
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
+
     # print('loading train tensor: {}'.format(train_path))
     # train_tensor = torch.load(train_path)
-    # print('loading dev tensor: {}'.format(dev_path))
-    # validation_tensor = torch.load(dev_path)
+    print('loading dev tensor: {}'.format(dev_path))
+    validation_tensor = torch.load(dev_path)
     # batch_size = 8
     #
     # train_dataloader = build_training_data_loader(tensor=train_tensor, batch_size=batch_size)
@@ -350,11 +350,11 @@ if __name__ == "__main__":
     #                            epochs=epochs, lr=lr, eps=eps, seed_val=seed_val, write=write, model_dir=model_dir,
     #                            experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps, run_path=run_path)
 
-    test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
-    print('loading test  tensor: {}'.format(test_path))
-    test_tensor = torch.load(test_path)
+    # test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
+    # print('loading test  tensor: {}'.format(test_path))
+    # test_tensor = torch.load(test_path)
     batch_size = 8
-    test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
+    test_tensor = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/epoch4/'
     write_path =  '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/bert_epoch4.run'
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
