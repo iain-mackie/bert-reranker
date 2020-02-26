@@ -332,7 +332,7 @@ if __name__ == "__main__":
     # train_tensor = torch.load(train_path)
     print('loading dev tensor: {}'.format(dev_path))
     validation_tensor = torch.load(dev_path)
-    batch_size = 64
+    batch_size = 256
 
     # train_dataloader = build_training_data_loader(tensor=train_tensor, batch_size=batch_size)
     validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
