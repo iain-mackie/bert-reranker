@@ -356,8 +356,8 @@ if __name__ == "__main__":
     batch_size = 8
     test_tensor = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/epoch4/'
-    write_path =  '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/bert_epoch4.run'
-    run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
+    write_path =  '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/bert_epoch4_dev.run'
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
     inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, run_path=run_path, write_path=write_path)
 
 
