@@ -333,15 +333,15 @@ if __name__ == "__main__":
     eps = 1e-8
     seed_val = 42
     write = True
-    model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'benchmarkY1_4'
+    model_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
+    experiment_name = 'benchmarkY1_5'
     do_eval = True
     logging_steps = 100
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
 
-    # fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader, validation_dataloader=validation_dataloader,
-    #                            epochs=epochs, lr=lr, eps=eps, seed_val=seed_val, write=write, model_path=model_path,
-    #                            experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps, run_path=run_path)
+    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader, validation_dataloader=validation_dataloader,
+                               epochs=epochs, lr=lr, eps=eps, seed_val=seed_val, write=write, model_dir=model_dir,
+                               experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps, run_path=run_path)
 
     # test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
     #
