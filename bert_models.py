@@ -360,7 +360,7 @@ if __name__ == "__main__":
     # batch_size = 8
     # test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/epoch4/'
-    write_path =  '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/bert_epoch4_dev_multi.run'
+    write_path =  '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/bert_epoch4_dev_multi.run.v2'
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
     inference_bert_re_ranker(model_path=model_path, dataloader=validation_dataloader, run_path=run_path, write_path=write_path)
 
