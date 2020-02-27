@@ -96,13 +96,12 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         logging.info('No GPU available, using the CPU instead.')
         device = torch.device("cpu")
 
-
+    logging.info('--- SETUP ---')
     setup_strings = ['epochs', 'lr', 'eps', 'seed_val', 'write', 'exp_dir', 'experiment_name', 'do_eval', 'logging_steps', 'run_path', 'qrels_path']
     setup_values = [epochs, lr, eps, seed_val, write, exp_dir, experiment_name, do_eval, logging_steps, run_path, qrels_path]
     for i in zip(setup_strings, setup_values):
-        logging.info('--- SETUP ---')
         logging.info('{}: {}'.format(i[0], i[1]))
-        logging.info('-------------')
+    logging.info('-------------')
 
     optimizer = AdamW(model.parameters(), lr=lr, eps=eps)
     total_steps = len(train_dataloader) * epochs
