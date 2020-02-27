@@ -287,7 +287,7 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write
         device = torch.device("cpu")
 
     pred_list = []
-
+    label_list = []
     model.eval()
 
     print('beginining inference')
@@ -305,22 +305,27 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write
             _, outputs = model.forward(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
                                        attention_mask=b_attention_mask, labels=b_labels)
 
-        pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
+        if device == torch.device("cpu"):
+            pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
+            label_list += batch[3].cpu().numpy().tolist()
+        else:
+            pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
+            label_list += flatten_list(batch[3].cpu().numpy().tolist())
 
         if step % 100 == 0:
             elapsed = format_time(time.time() - t0)
             print('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}'.format(step, len(dataloader), elapsed))
 
-    fake_lables = [0] * len(pred_list)
 
     print('sorting groups')
     labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = group_bert_outputs_by_query(
-        score_list=pred_list, label_list=fake_lables, query_docids_map=query_docids_map, query_rel_doc_map=query_rel_doc_map)
+        score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map, query_rel_doc_map=query_rel_doc_map)
 
     print('getting metrics')
     string_labels, _, bert_metrics = get_metrics(labels_groups=labels_groups,
-                                                  scores_groups=scores_groups,
-                                                  rel_docs_groups=rel_docs_groups)
+                                                 scores_groups=scores_groups,
+                                                 rel_docs_groups=rel_docs_groups)
+
     label_string = get_metrics_string(string_labels=string_labels, metrics=bert_metrics, name='BERT')
     print(label_string)
 
@@ -346,8 +351,8 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
                                                              scores_groups=scores_groups,
                                                              rel_docs_groups=rel_docs_groups)
 
-
     label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
+
     print(label_string)
 
     return label_string
