@@ -318,10 +318,10 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write
         score_list=pred_list, label_list=fake_lables, query_docids_map=query_docids_map, query_rel_doc_map=query_rel_doc_map)
 
     print('getting metrics')
-    string_labels, label_metrics, _ = get_metrics(labels_groups=labels_groups,
+    string_labels, _, bert_metrics = get_metrics(labels_groups=labels_groups,
                                                   scores_groups=scores_groups,
                                                   rel_docs_groups=rel_docs_groups)
-    label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
+    label_string = get_metrics_string(string_labels=string_labels, metrics=bert_metrics, name='BERT')
     print(label_string)
 
     print('writing groups')
@@ -342,7 +342,7 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
         score_list=label_list, label_list=label_list, query_docids_map=query_docids_map,
         query_rel_doc_map=query_rel_doc_map)
 
-    string_labels, label_metrics, bert_metrics = get_metrics(labels_groups=labels_groups,
+    string_labels, label_metrics, _ = get_metrics(labels_groups=labels_groups,
                                                              scores_groups=scores_groups,
                                                              rel_docs_groups=rel_docs_groups)
 
