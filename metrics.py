@@ -46,7 +46,6 @@ def get_recall(run, R, k=40):
 
 
 def get_ndcg(run, k=20):
-    # TODO - still too high?
     k_run = run[:k]
     i_dcg = 0
     dcg = 0

@@ -327,6 +327,38 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, write_path):
                    write_path=write_path)
 
 
+def run_metrics(validation_dataloader, run_path, qrels_path):
+
+    query_docids_map = get_query_docids_map(run_path=run_path)
+    query_rel_doc_map = get_query_rel_doc_map(qrels_path=qrels_path)
+
+    label_list = []
+    for step, batch in enumerate(validation_dataloader):
+        label_list += batch[3].cpu().numpy().tolist()
+
+    pred_list = [0] * label_list
+    labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = group_bert_outputs_by_query(
+        score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map,
+        query_rel_doc_map=query_rel_doc_map)
+
+    string_labels, label_metrics, bert_metrics = get_metrics(labels_groups=labels_groups,
+                                                             scores_groups=scores_groups,
+                                                             rel_docs_groups=rel_docs_groups)
+
+    def get_metrics_string(string_labels, metrics, name='BERT'):
+        s = '  Average {}:  '.format(name)
+        for i in zip(string_labels, metrics):
+            s += i[0] + ': {0:.5f}, '.format(i[1])
+        return s
+
+    label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
+    bert_string = get_metrics_string(string_labels=string_labels, metrics=bert_metrics, name='BERT')
+
+    print(label_list)
+    print(bert_string)
+
+
+
 if __name__ == "__main__":
 
     dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100_dataset.pt'
