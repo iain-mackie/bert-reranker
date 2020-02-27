@@ -5,7 +5,7 @@ import numpy as np
 
 def get_map(run, R):
     correct_docs_sum = sum(run)
-    if correct_docs_sum > 0.0:
+    if (correct_docs_sum > 0.0) and (R > 0):
         precision_sum = 0
         for i, r in enumerate(run):
             if r == 1.0:
@@ -48,7 +48,7 @@ def get_ndcg(run, R, k=20):
     i_dcg = 0
     dcg = 0
     num_rel = sum(run)
-    if num_rel > 0:
+    if (num_rel > 0) and (R > 0):
         for i, r in enumerate(k_run):
             if i == 0:
                 if (i+1) <= R:
@@ -193,34 +193,42 @@ def get_metrics_string(string_labels, metrics, name='BERT'):
         s += i[0] + ': {0:.4f}, '.format(i[1])
     return s
 
+def get_results_string(labels, scores):
+    s = ''
+    for i in zip(labels, scores):
+        s += '(truth: {}, pred: {}), '.format(i[0], i[1])
+    return s
+
 if __name__ == '__main__':
-
-    run1 = [1,0,0]
-    run2 = [1, 0, 1, 0, 1]
-    run3 = [0, 0, 0, 0]
-    run4 = [0, 0, 1, 0, 1]
-    run5 = [1, 1, 0, 1, 0]
-
-
-    for r in [run1, run2, run3, run4, run5]:
-        print('--------------------------')
-        k = 4
-        R = 4
-        print(r)
-        map = get_map(r, R=R)
-        print('map: {}'.format(map))
-        R_prec = get_R_prec(r, R=R)
-        print('R_prec: {}'.format(R_prec))
-        recip_rank = get_recip_rank(r)
-        print('recip_rank: {}'.format(recip_rank))
-        precision = get_precision(r, k=k)
-        print('precision@{}: {}'.format(k, precision))
-        ndcg = get_ndcg(r, k=k, R=R)
-        print('ndcg@{}: {}'.format(k, ndcg))
-        recall = get_recall(r, R=R, k=k)
-        print('recall@{}: {}'.format(k, recall))
-
-
-
-
-
+    l1 = [1, 2, 3, 4, 5]
+    l2 = [0.121212121, 0.34334343434, 0.5656565656, 0.67676767, 0.8989898989]
+    print(get_results_string(labels=l1, scores=l2))
+    # run1 = [1,0,0]
+    # run2 = [1, 0, 1, 0, 1]
+    # run3 = [0, 0, 0, 0]
+    # run4 = [0, 0, 1, 0, 1]
+    # run5 = [1, 1, 0, 1, 0]
+    #
+    #
+    # for r in [run1, run2, run3, run4, run5]:
+    #     print('--------------------------')
+    #     k = 4
+    #     R = 4
+    #     print(r)
+    #     map = get_map(r, R=R)
+    #     print('map: {}'.format(map))
+    #     R_prec = get_R_prec(r, R=R)
+    #     print('R_prec: {}'.format(R_prec))
+    #     recip_rank = get_recip_rank(r)
+    #     print('recip_rank: {}'.format(recip_rank))
+    #     precision = get_precision(r, k=k)
+    #     print('precision@{}: {}'.format(k, precision))
+    #     ndcg = get_ndcg(r, k=k, R=R)
+    #     print('ndcg@{}: {}'.format(k, ndcg))
+    #     recall = get_recall(r, R=R, k=k)
+    #     print('recall@{}: {}'.format(k, recall))
+    #
+    #
+    #
+    #
+    #

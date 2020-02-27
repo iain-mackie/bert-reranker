@@ -6,7 +6,7 @@ from transformers import get_linear_schedule_with_warmup
 from bert_utils import build_validation_data_loader, build_training_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
-from metrics import group_bert_outputs_by_query, get_metrics, write_trec_run, get_metrics_string
+from metrics import group_bert_outputs_by_query, get_metrics, write_trec_run, get_metrics_string, get_results_string
 from bert_utils import format_time, flatten_list, get_query_docids_map, get_query_rel_doc_map
 import logging
 import torch
@@ -141,19 +141,24 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             loss = outputs[0]
             total_loss += loss.item()
 
-            # Progress update every 250 batches.
-            if step % logging_steps == 0 and not step == 0:
-                elapsed = format_time(time.time() - t0)
-                logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
-                    step, len(train_dataloader), elapsed, total_loss/(step+1)))
-                logging.info('      Prediction : {} '.format(outputs[1].cpu().detach().numpy().tolist()))
-                logging.info('      Labels     : {} '.format(b_labels.cpu().numpy().tolist()))
-
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
 
             optimizer.step()
             scheduler.step()
+
+            # Progress update every X batches.
+            if step % logging_steps == 0 and not step == 0:
+                elapsed = format_time(time.time() - t0)
+                logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
+                    step, len(train_dataloader), elapsed, total_loss/(step+1)))
+
+                if device == torch.device("cpu"):
+                    logging.info(get_results_string(labels=batch[3].cpu().numpy().tolist(),
+                                                    scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
+                else:
+                    logging.info(get_results_string(labels=flatten_list(outputs[1].cpu().detach().numpy().tolist()),
+                                                    scores=flatten_list(batch[3].cpu().numpy().tolist())))
 
         avg_train_loss = total_loss / len(train_dataloader)
         metrics.append('Epoch {} -  Average training loss: '.format(str(epoch_i)) + str(avg_train_loss) + '\n')
@@ -190,19 +195,20 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 loss = outputs[0]
                 eval_loss += loss.item()
 
-                if step % logging_steps == 0 and not step == 0:
-                    elapsed = format_time(time.time() - t0)
-                    logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
-                        step, len(validation_dataloader), elapsed, eval_loss/(step+1)))
-                    logging.info('      Prediction : {} '.format(outputs[1].cpu().detach().numpy().tolist()))
-                    logging.info('      Labels     : {} '.format(batch[3].cpu().numpy().tolist()))
-
                 if device == torch.device("cpu"):
                     pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
                     label_list += batch[3].cpu().numpy().tolist()
                 else:
                     pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
                     label_list += flatten_list(batch[3].cpu().numpy().tolist())
+
+                # Progress update every X batches.
+                if step % logging_steps == 0 and not step == 0:
+                    elapsed = format_time(time.time() - t0)
+                    logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
+                        step, len(validation_dataloader), elapsed, eval_loss/(step+1)))
+                    logging.info('      Prediction : {} '.format(outputs[1].cpu().detach().numpy().tolist()))
+                    logging.info('      Labels     : {} '.format(batch[3].cpu().numpy().tolist()))
 
             # Report the final accuracy for this validation run.
             avg_validation_loss = eval_loss / len(validation_dataloader)

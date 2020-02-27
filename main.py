@@ -54,8 +54,8 @@ if __name__ == "__main__":
     relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
 
     # Train & validation run
-    model_dir = os.path.join(os.getcwd(), 'models/')
-    experiment_name = 'test_model_11'
+    exp_dir = os.path.join(os.getcwd(), 'models/')
+    experiment_name = 'test_model_13'
     write = True
     do_eval = True
     run_path = os.path.join(os.getcwd(), 'test_model.run')
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=validation_dataloader,
                                validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8, write=write,
-                               experiment_name=experiment_name, model_dir=model_dir, do_eval=do_eval, logging_steps=1,
+                               experiment_name=experiment_name, exp_dir=exp_dir, do_eval=do_eval, logging_steps=1,
                                run_path=run_path, qrels_path=qrels_path)
 
     #Run Inference
