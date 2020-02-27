@@ -122,7 +122,7 @@ def get_metrics(labels_groups, scores_groups, rel_docs_groups):
     return string_labels, label_metrics, bert_metrics
 
 
-def group_bert_outputs_by_query(label_list, score_list, query_docids_map, query_rel_doc_map=None):
+def group_bert_outputs_by_query(label_list, score_list, query_docids_map, query_rel_doc_map):
 
     last_query = 'Not a query'
     labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = [], [], [], [], []
@@ -187,6 +187,12 @@ def write_trec_run(scores_groups, queries_groups, doc_ids_groups, write_path):
                 rank += 1
 
 
+def get_metrics_string(string_labels, metrics, name='BERT'):
+    s = '  Average {}:  '.format(name)
+    for i in zip(string_labels, metrics):
+        s += i[0] + ': {0:.4f}, '.format(i[1])
+    return s
+
 if __name__ == '__main__':
 
     run1 = [1,0,0]
@@ -201,7 +207,7 @@ if __name__ == '__main__':
         k = 4
         R = 4
         print(r)
-        map = get_map(r)
+        map = get_map(r, R=R)
         print('map: {}'.format(map))
         R_prec = get_R_prec(r, R=R)
         print('R_prec: {}'.format(R_prec))
@@ -209,32 +215,12 @@ if __name__ == '__main__':
         print('recip_rank: {}'.format(recip_rank))
         precision = get_precision(r, k=k)
         print('precision@{}: {}'.format(k, precision))
-        ndcg = get_ndcg(r, k=k)
+        ndcg = get_ndcg(r, k=k, R=R)
         print('ndcg@{}: {}'.format(k, ndcg))
         recall = get_recall(r, R=R, k=k)
         print('recall@{}: {}'.format(k, recall))
 
 
 
-def code():
-    from bert_models import run_metrics
-    from bert_utils import build_validation_data_loader
-    import torch
 
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
-    print('loading dev tensor: {}'.format(dev_path))
-    validation_tensor = torch.load(dev_path)
-    batch_size = 8
-    validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
-    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
-    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
-    run_metrics(validation_dataloader, run_path, qrels_path)
-    """
-    map                   	all	0.1512
-    Rprec                 	all	0.1265
-    recip_rank            	all	0.1983
-    P_20                  	all	0.0202
-    recall_40             	all	0.2521
-    ndcg_cut_20           	all	0.1880
 
-    """
