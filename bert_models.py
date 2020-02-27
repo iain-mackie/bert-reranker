@@ -212,6 +212,13 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
                         step, len(validation_dataloader), elapsed, eval_loss/(step+1)))
 
+                    if device == torch.device("cpu"):
+                        logging.info(get_results_string(labels=batch[3].cpu().numpy().tolist(),
+                                                        scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
+                    else:
+                        logging.info(get_results_string(labels=flatten_list(batch[3].cpu().numpy().tolist()),
+                                                        scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
+
             # Report the final accuracy for this validation run.
             avg_validation_loss = eval_loss / len(validation_dataloader)
 
