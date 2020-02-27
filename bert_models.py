@@ -347,7 +347,7 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
     def get_metrics_string(string_labels, metrics, name='BERT'):
         s = '  Average {}:  '.format(name)
         for i in zip(string_labels, metrics):
-            s += i[0] + ': {0:.5f}, '.format(i[1])
+            s += i[0] + ': {0:.4f}, '.format(i[1])
         return s
 
     label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
