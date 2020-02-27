@@ -418,7 +418,7 @@ if __name__ == "__main__":
 
     batch_size = 64
     epochs = 20
-    lr = 1e-5
+    lr = 2e-5
     eps = 1e-10
     seed_val = 42
     write = True
