@@ -411,14 +411,14 @@ if __name__ == "__main__":
 
     batch_size = 64
     epochs = 20
-    lr = 5e-6
+    lr = 1e-5
     eps = 1e-10
     seed_val = 42
     write = True
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'debug_run_dev_10_v4'
+    experiment_name = 'debug_run_dev_10_v5'
     do_eval = True
-    logging_steps = 10
+    logging_steps = 25
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
     qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
 
