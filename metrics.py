@@ -217,24 +217,25 @@ if __name__ == '__main__':
 
 
 
-from bert_models import run_metrics
-from bert_utils import build_validation_data_loader
-import torch
+def code():
+    from bert_models import run_metrics
+    from bert_utils import build_validation_data_loader
+    import torch
 
-dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
-print('loading dev tensor: {}'.format(dev_path))
-validation_tensor = torch.load(dev_path)
-batch_size = 8
-validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
-run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
-qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
-run_metrics(validation_dataloader, run_path, qrels_path)
-"""
-map                   	all	0.1512
-Rprec                 	all	0.1265
-recip_rank            	all	0.1983
-P_20                  	all	0.0202
-recall_40             	all	0.2521
-ndcg_cut_20           	all	0.1880
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
+    print('loading dev tensor: {}'.format(dev_path))
+    validation_tensor = torch.load(dev_path)
+    batch_size = 8
+    validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
+    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
+    run_metrics(validation_dataloader, run_path, qrels_path)
+    """
+    map                   	all	0.1512
+    Rprec                 	all	0.1265
+    recip_rank            	all	0.1983
+    P_20                  	all	0.0202
+    recall_40             	all	0.2521
+    ndcg_cut_20           	all	0.1880
 
-"""
+    """
