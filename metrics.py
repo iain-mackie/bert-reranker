@@ -91,6 +91,9 @@ def get_metrics(labels_groups, scores_groups, rel_docs_groups):
 
         map_labels_sum += get_map(run=labels)
         map_bert_sum += get_map(run=bert_labels)
+        print('-------------')
+        print(get_map(run=labels))
+        print(labels)
 
         R_prec_labels_sum += get_R_prec(run=labels, R=R)
         R_prec_bert_sum += get_R_prec(run=bert_labels, R=R)
