@@ -7,7 +7,7 @@ from bert_utils import build_validation_data_loader, build_training_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
 from metrics import group_bert_outputs_by_query, get_metrics, write_trec_run
-from bert_utils import format_time, flatten_list, get_query_docids_map
+from bert_utils import format_time, flatten_list, get_query_docids_map, get_query_rel_doc_map
 import logging
 import torch
 import time
@@ -68,7 +68,7 @@ class BertReRanker(BertPreTrainedModel):
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
                                seed_val=42, write=False, model_dir=None, experiment_name='test', do_eval=True,
-                               logging_steps=100, run_path=None):
+                               logging_steps=100, run_path=None, qrels_path=None):
     # Set the seed value all over the place to make this reproducible.
     print('starting fine tuning')
     random.seed(seed_val)
@@ -105,6 +105,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
 
     query_docids_map = get_query_docids_map(run_path=run_path)
+    query_rel_doc_map = get_query_rel_doc_map(qrels_path=qrels_path)
 
     loss_values = []
     epoch_i = 0
@@ -204,11 +205,12 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             # Report the final accuracy for this validation run.
             avg_validation_loss = eval_loss / len(validation_dataloader)
 
-            labels_groups, scores_groups, queries_groups, doc_ids_groups = group_bert_outputs_by_query(
-                score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map)
+            labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = group_bert_outputs_by_query(
+                score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map, query_rel_doc_map=query_rel_doc_map)
 
             string_labels, label_metrics, bert_metrics = get_metrics(labels_groups=labels_groups,
-                                                                     scores_groups=scores_groups)
+                                                                     scores_groups=scores_groups,
+                                                                     rel_docs_groups=rel_docs_groups)
 
             def get_metrics_string(string_labels, metrics, name='BERT'):
                 s = '  Average {}:  '.format(name)
@@ -335,7 +337,6 @@ if __name__ == "__main__":
     validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
 
     # static
-    print('running training & validation')
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
     epochs = 10

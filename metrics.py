@@ -5,25 +5,21 @@ import numpy as np
 #TODO - test metrics
 
 def get_map(run):
-
+    # TODO - still too high?
     correct_docs_sum = sum(run)
     if correct_docs_sum > 0.0:
-        correct_docs = 0
-        correct_docs_weighted_sum = 0
+        precision_sum = 0
         for i, r in enumerate(run):
-            assert r == 0.0 or r == 1.0, 'score not 1.0 or 0.0'
             if r == 1.0:
-                correct_docs += 1
-                correct_docs_weighted_sum += correct_docs / (i+1)
-        return correct_docs_weighted_sum  / correct_docs_sum
+                precision_sum = get_precision(run=run, k=i+1)
+        return precision_sum / correct_docs_sum
     else:
         return 0.0
 
 
-def get_R_prec(run):
-    R = sum(run)
+def get_R_prec(run, R):
     if R > 0:
-        r_run = run[:int(R)]
+        r_run = run[:R]
         return sum(r_run) / R
     else:
         return 0.0
@@ -41,13 +37,16 @@ def get_precision(run, k=20):
     return sum(k_run) / k
 
 
-def get_recall(run, k=40):
-    # TODO - need qrels
+def get_recall(run, R, k=40):
     k_run = run[:k]
-    return None
+    correct_docs_sum = sum(k_run)
+    if R > 0:
+        return correct_docs_sum / R
+    return 1.0
 
 
 def get_ndcg(run, k=20):
+    # TODO - still too high?
     k_run = run[:k]
     i_dcg = 0
     dcg = 0
@@ -78,7 +77,7 @@ def get_bert_labels(labels, scores):
     return bert_labels
 
 
-def get_metrics(labels_groups, scores_groups):
+def get_metrics(labels_groups, scores_groups, rel_docs_groups):
 
     map_labels_sum, map_bert_sum = 0, 0
     R_prec_labels_sum, R_prec_bert_sum,  = 0, 0
@@ -86,16 +85,16 @@ def get_metrics(labels_groups, scores_groups):
     precision_20_labels_sum, precision_20_bert_sum = 0, 0
     ndcg_20_labels_sum, ndcg_20_bert_sum = 0, 0
 
-    for i in zip(labels_groups, scores_groups):
+    for i in zip(labels_groups, scores_groups, rel_docs_groups):
 
-        labels, scores = i[0], i[1]
+        labels, scores, R = i[0], i[1], i[2][0]
         bert_labels = get_bert_labels(labels=labels, scores=scores)
 
         map_labels_sum += get_map(run=labels)
         map_bert_sum += get_map(run=bert_labels)
 
-        R_prec_labels_sum += get_R_prec(run=labels)
-        R_prec_bert_sum += get_R_prec(run=bert_labels)
+        R_prec_labels_sum += get_R_prec(run=labels, R=R)
+        R_prec_bert_sum += get_R_prec(run=bert_labels, R=R)
 
         recip_rank_labels_sum += get_recip_rank(run=labels)
         recip_rank_bert_sum += get_recip_rank(run=bert_labels)
@@ -121,10 +120,10 @@ def get_metrics(labels_groups, scores_groups):
     return string_labels, label_metrics, bert_metrics
 
 
-def group_bert_outputs_by_query(label_list, score_list, query_docids_map):
+def group_bert_outputs_by_query(label_list, score_list, query_docids_map, query_rel_doc_map=None):
 
     last_query = 'Not a query'
-    labels_groups, scores_groups, queries_groups, doc_ids_groups = [], [], [], []
+    labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = [], [], [], [], []
     labels, scores, queries, doc_ids = [], [], [], []
     doc_counter = 0
     for i in zip(label_list, score_list, query_docids_map):
@@ -137,6 +136,11 @@ def group_bert_outputs_by_query(label_list, score_list, query_docids_map):
             scores_groups.append(scores)
             queries_groups.append(queries)
             doc_ids_groups.append(doc_ids)
+            if last_query in query_rel_doc_map:
+                sum_rel_docs = len(query_rel_doc_map[last_query])
+                rel_docs_groups.append([sum_rel_docs])
+            else:
+                rel_docs_groups.append([0])
             labels, scores, queries, doc_ids = [], [], [], []
 
         labels.append(i[0])
@@ -151,8 +155,13 @@ def group_bert_outputs_by_query(label_list, score_list, query_docids_map):
     scores_groups.append(scores)
     queries_groups.append(queries)
     doc_ids_groups.append(doc_ids)
+    if last_query in query_rel_doc_map:
+        sum_rel_docs = len(query_rel_doc_map[last_query])
+        rel_docs_groups.append([sum_rel_docs])
+    else:
+        rel_docs_groups.append([0])
 
-    return labels_groups, scores_groups, queries_groups, doc_ids_groups
+    return labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups
 
 
 def write_trec_run(scores_groups, queries_groups, doc_ids_groups, write_path):
@@ -187,19 +196,21 @@ if __name__ == '__main__':
 
     for r in [run1, run2, run3, run4, run5]:
         print('--------------------------')
+        k = 4
+        R = 4
         print(r)
         map = get_map(r)
         print('map: {}'.format(map))
-        R_prec = get_R_prec(r)
+        R_prec = get_R_prec(r, R=R)
         print('R_prec: {}'.format(R_prec))
         recip_rank = get_recip_rank(r)
         print('recip_rank: {}'.format(recip_rank))
-        k = 4
         precision = get_precision(r, k=k)
         print('precision@{}: {}'.format(k, precision))
         ndcg = get_ndcg(r, k=k)
         print('ndcg@{}: {}'.format(k, ndcg))
-
+        recall = get_recall(r, R=R, k=k)
+        print('recall@{}: {}'.format(k, recall))
 
 
 

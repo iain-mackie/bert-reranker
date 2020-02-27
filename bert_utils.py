@@ -23,6 +23,21 @@ def get_query_docids_map(run_path):
     return query_docids_map
 
 
+def get_query_rel_doc_map(qrels_path):
+    query_rel_doc_map = {}
+    with open(qrels_path) as qrels_file:
+
+        for line in qrels_file:
+            query, _, doc_id, _ = line.strip().split(" ")
+
+            if query in query_rel_doc_map:
+                query_rel_doc_map[query].append(doc_id)
+            else:
+                query_rel_doc_map[query] = [doc_id]
+
+    return query_rel_doc_map
+
+
 def format_time(elapsed):
     # Format as hh:mm:ss
     return str(datetime.timedelta(seconds=int(round((elapsed)))))
@@ -206,8 +221,10 @@ def build_validation_data_loader(tensor, batch_size):
 
 if __name__ == '__main__':
 
-    set_name = 'test'
-    data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
-    convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
+    # set_name = 'test'
+    # data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
+    # output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
+    # convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
+    qrels_path = os.path.join(os.getcwd(), 'test_model.qrels')
+    get_query_rel_doc_map(qrels_path=qrels_path)
 
