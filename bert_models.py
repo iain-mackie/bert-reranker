@@ -334,11 +334,9 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
 
     label_list = []
     for step, batch in enumerate(validation_dataloader):
-        label_list += batch[3].cpu().numpy().tolist()
+        label_list += flatten_list(batch[3].cpu().numpy().tolist())
 
-    print(label_list)
     pred_list = [0.0] * len(label_list)
-    print(pred_list)
 
     labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = group_bert_outputs_by_query(
         score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map,
