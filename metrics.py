@@ -4,14 +4,14 @@ import numpy as np
 
 #TODO - test metrics
 
-def get_map(run):
+def get_map(run, R):
     correct_docs_sum = sum(run)
     if correct_docs_sum > 0.0:
         precision_sum = 0
         for i, r in enumerate(run):
             if r == 1.0:
                 precision_sum += get_precision(run=run, k=(i+1))
-        return precision_sum / correct_docs_sum
+        return precision_sum / R
     else:
         return 0.0
 
@@ -89,11 +89,11 @@ def get_metrics(labels_groups, scores_groups, rel_docs_groups):
         labels, scores, R = i[0], i[1], i[2][0]
         bert_labels = get_bert_labels(labels=labels, scores=scores)
 
-        map_labels_sum += get_map(run=labels)
-        map_bert_sum += get_map(run=bert_labels)
+        map_labels_sum += get_map(run=labels, R=R)
+        map_bert_sum += get_map(run=bert_labels, R=R)
         print('-------------')
         print(labels)
-        print('map: {0:.4f}'.format(get_map(run=labels)))
+        print('map: {0:.4f}'.format(get_map(run=labels, R=R)))
 
         R_prec_labels_sum += get_R_prec(run=labels, R=R)
         R_prec_bert_sum += get_R_prec(run=bert_labels, R=R)
