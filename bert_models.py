@@ -135,8 +135,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             outputs = model.forward(input_ids=b_input_ids, attention_mask=b_attention_mask,
                                     token_type_ids=b_token_type_ids, labels=b_labels)
             loss = outputs[0]
-            print(loss)
-            print(loss.item())
+            # print(loss)
+            # print(loss.item())
             total_loss += 1 #loss.item()
 
             loss.backward()
