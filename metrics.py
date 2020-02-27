@@ -92,29 +92,21 @@ def get_metrics(labels_groups, scores_groups, rel_docs_groups):
 
         map_labels_sum += get_map(run=labels, R=R)
         map_bert_sum += get_map(run=bert_labels, R=R)
-        print('-------------')
-        print(labels)
-        print('map: {0:.4f}'.format(get_map(run=labels, R=R)))
 
         R_prec_labels_sum += get_R_prec(run=labels, R=R)
         R_prec_bert_sum += get_R_prec(run=bert_labels, R=R)
-        print('R_prec: {0:.4f}'.format(get_R_prec(run=bert_labels, R=R)))
 
         recip_rank_labels_sum += get_recip_rank(run=labels)
         recip_rank_bert_sum += get_recip_rank(run=bert_labels)
-        print('recip_rank: {0:.4f}'.format(get_recip_rank(run=labels)))
 
         precision_20_labels_sum += get_precision(run=labels, k=20)
         precision_20_bert_sum += get_precision(run=bert_labels, k=20)
-        print('precision_20: {0:.4f}'.format(get_precision(run=labels, k=20)))
 
         recall_40_labels_sum += get_recall(run=labels, k=40, R=R)
         recall_40_bert_sum += get_recall(run=bert_labels, k=40, R=R)
-        print('recall_40: {0:.4f}'.format(get_recall(run=labels, k=40, R=R)))
 
         ndcg_20_labels_sum += get_ndcg(run=labels, R=R, k=20)
         ndcg_20_bert_sum += get_ndcg(run=bert_labels, R=R, k=20)
-        print('ndcg_20: {0:.4f}'.format(get_ndcg(run=labels, R=R, k=20)))
 
     num_queries = len(labels_groups)
 
