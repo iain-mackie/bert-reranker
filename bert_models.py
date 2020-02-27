@@ -320,13 +320,13 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write
     fake_lables = [0] * len(pred_list)
 
     print('sorting groups')
-    labels_groups, scores_groups, queries_groups, doc_ids_groups = group_bert_outputs_by_query(
-        score_list=pred_list, label_list=fake_lables, query_docids_map=query_docids_map)
+    labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = group_bert_outputs_by_query(
+        score_list=pred_list, label_list=fake_lables, query_docids_map=query_docids_map, query_rel_doc_map=query_rel_doc_map)
 
     print('getting metrics')
     string_labels, label_metrics, _ = get_metrics(labels_groups=labels_groups,
-                                                             scores_groups=scores_groups,
-                                                             rel_docs_groups=rel_docs_groups)
+                                                  scores_groups=scores_groups,
+                                                  rel_docs_groups=rel_docs_groups)
 
     print('writing groups')
     write_trec_run(scores_groups=scores_groups, queries_groups=queries_groups, doc_ids_groups=doc_ids_groups,
