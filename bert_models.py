@@ -418,7 +418,7 @@ if __name__ == "__main__":
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
     experiment_name = 'debug_run_dev_10_v4'
     do_eval = True
-    logging_steps = 100
+    logging_steps = 10
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
     qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
 
