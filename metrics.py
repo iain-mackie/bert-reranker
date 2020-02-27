@@ -60,7 +60,6 @@ def get_ndcg(run, R, k=20):
                 if (i+1) <= R:
                     i_dcg += 1 / discount
                 dcg += r / discount
-            print(i, dcg, i_dcg)
         return dcg / i_dcg
     else:
         return 0
