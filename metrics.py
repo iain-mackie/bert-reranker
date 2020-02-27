@@ -44,7 +44,7 @@ def get_recall(run, R, k=40):
     return 1.0
 
 
-def get_ndcg(run, k=20):
+def get_ndcg(run, R, k=20):
     k_run = run[:k]
     i_dcg = 0
     dcg = 0
@@ -52,14 +52,15 @@ def get_ndcg(run, k=20):
     if num_rel > 0:
         for i, r in enumerate(k_run):
             if i == 0:
-                if (i+1) <= num_rel:
+                if (i+1) <= R:
                     i_dcg += 1
                 dcg += r
             else:
-                discount = np.log2(i+1)
-                if (i+1) <= num_rel:
+                discount = np.log2(i+2)
+                if (i+1) <= R:
                     i_dcg += 1 / discount
                 dcg += r / discount
+            print(i, dcg, i_dcg)
         return dcg / i_dcg
     else:
         return 0
@@ -111,9 +112,9 @@ def get_metrics(labels_groups, scores_groups, rel_docs_groups):
         recall_40_bert_sum += get_recall(run=bert_labels, k=40, R=R)
         print('recall_40: {0:.4f}'.format(get_recall(run=labels, k=40, R=R)))
 
-        ndcg_20_labels_sum += get_ndcg(run=labels, k=20)
-        ndcg_20_bert_sum += get_ndcg(run=bert_labels, k=20)
-        print('ndcg_20: {0:.4f}'.format(get_ndcg(run=labels, k=20)))
+        ndcg_20_labels_sum += get_ndcg(run=labels, R=R, k=20)
+        ndcg_20_bert_sum += get_ndcg(run=bert_labels, R=R, k=20)
+        print('ndcg_20: {0:.4f}'.format(get_ndcg(run=labels, R=R, k=20)))
 
     num_queries = len(labels_groups)
 
