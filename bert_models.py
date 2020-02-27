@@ -419,7 +419,7 @@ if __name__ == "__main__":
     batch_size = 64
     epochs = 20
     lr = 2e-5
-    eps = 1e-10
+    eps = 1e-9
     seed_val = 42
     write = True
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
