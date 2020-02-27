@@ -136,8 +136,6 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                                     token_type_ids=b_token_type_ids, labels=b_labels)
             loss = outputs[0]
             total_loss += loss.sum().item()
-            print(loss)
-            print(total_loss)
 
             loss.sum().backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -192,7 +190,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     outputs = model.forward(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
                                             attention_mask=b_attention_mask, labels=b_labels)
                 loss = outputs[0]
-                eval_loss += loss.item()
+                eval_loss += loss.sum().item()
 
                 if device == torch.device("cpu"):
                     pred_list += flatten_list(outputs[1].cpu().detach().numpy().tolist())
@@ -411,14 +409,14 @@ if __name__ == "__main__":
     #                                    experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps,
     #                                    run_path=run_path)
 
-    batch_size = 32
+    batch_size = 64
     epochs = 20
     lr = 5e-6
     eps = 1e-10
     seed_val = 42
     write = True
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'debug_run_dev_10_v3'
+    experiment_name = 'debug_run_dev_10_v4'
     do_eval = True
     logging_steps = 100
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
