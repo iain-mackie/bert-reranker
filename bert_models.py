@@ -401,7 +401,7 @@ if __name__ == "__main__":
     test_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100_dataset.pt'
     print('loading test  tensor: {}'.format(test_path))
     test_tensor = torch.load(test_path)
-    batch_size = 8
+    batch_size = 16
     test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/epoch4/'
     write_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/bert_epoch4_dev_100_multi.run.debug.v1'
