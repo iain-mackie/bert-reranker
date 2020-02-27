@@ -184,7 +184,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 b_input_ids = batch[0].to(device)
                 b_token_type_ids = batch[1].to(device)
                 b_attention_mask = batch[2].to(device)
-                b_labels = batch[3].to(device)
+                b_labels = batch[3].to(device, dtype=torch.float)
 
                 with torch.no_grad():
                     outputs = model.forward(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
