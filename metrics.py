@@ -83,6 +83,7 @@ def get_metrics(labels_groups, scores_groups, rel_docs_groups):
     recip_rank_labels_sum, recip_rank_bert_sum = 0, 0
     precision_20_labels_sum, precision_20_bert_sum = 0, 0
     ndcg_20_labels_sum, ndcg_20_bert_sum = 0, 0
+    recall_40_labels_sum, recall_40_bert_sum = 0, 0
 
     for i in zip(labels_groups, scores_groups, rel_docs_groups):
 
@@ -104,6 +105,9 @@ def get_metrics(labels_groups, scores_groups, rel_docs_groups):
         ndcg_20_labels_sum += get_ndcg(run=labels, k=20)
         ndcg_20_bert_sum += get_ndcg(run=bert_labels, k=20)
 
+        recall_40_labels_sum += get_recall(run=labels, k=40, R=R)
+        recall_40_bert_sum += get_recall(run=bert_labels, k=40, R=R)
+
     num_queries = len(labels_groups)
 
     map_labels, map_bert = map_labels_sum / num_queries, map_bert_sum / num_queries
@@ -111,10 +115,11 @@ def get_metrics(labels_groups, scores_groups, rel_docs_groups):
     recip_rank_labels, recip_rank_bert = recip_rank_labels_sum / num_queries, recip_rank_bert_sum / num_queries
     precision_20_labels, precision_20_bert = precision_20_labels_sum / num_queries, precision_20_bert_sum / num_queries
     ndcg_20_labels, ndcg_20_bert = ndcg_20_labels_sum / num_queries, ndcg_20_bert_sum / num_queries
+    recall_40_labels, recall_40_bert = recall_40_labels_sum / num_queries, recall_40_bert_sum / num_queries
 
-    string_labels = ['map', 'R_prec', 'recip_rank', 'precision_20', 'ndcg_20']
-    label_metrics = [map_labels, R_prec_labels, recip_rank_labels, precision_20_labels, ndcg_20_labels]
-    bert_metrics = [map_bert, R_prec_bert, recip_rank_bert, precision_20_bert, ndcg_20_bert]
+    string_labels = ['map', 'R_prec', 'recip_rank', 'precision_20', 'ndcg_20', 'recall_40']
+    label_metrics = [map_labels, R_prec_labels, recip_rank_labels, precision_20_labels, ndcg_20_labels, recall_40_labels]
+    bert_metrics = [map_bert, R_prec_bert, recip_rank_bert, precision_20_bert, ndcg_20_bert, recall_40_bert]
 
     return string_labels, label_metrics, bert_metrics
 
