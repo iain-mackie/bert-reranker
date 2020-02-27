@@ -17,10 +17,6 @@ import os
 import collections
 
 
-#TODO - cosine similarity of q & d
-
-#TODO - sentence relevance aggregation (See Birch implmenentation) --> BERT sentence level OR a(BM25+RM3) + (1-a)(S1+...)
-
 #TODO - add comments and change docstring
 
 #TODO - train / validation on multi GPU
@@ -256,7 +252,10 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 if os.path.isdir(epoch_dir) == False:
                     os.mkdir(epoch_dir)
 
-                model.save_pretrained(epoch_dir)  # save model
+                try:
+                    model.module.save_pretrained(epoch_dir)
+                except AttributeError:
+                    model.save_pretrained(epoch_dir)
 
                 logging.info('writing epoch metrics')
                 results_path = exp_path + 'results.txt'
@@ -272,8 +271,6 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
     logging.info("")
     logging.info("Training complete!")
-
-    # TODO - trec output wrtiter
 
 
 def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write_path):

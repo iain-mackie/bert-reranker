@@ -46,32 +46,34 @@ labels_tensor = torch.tensor(labels)
 
 if __name__ == "__main__":
 
-    # Construct data loaders
+    #Construct data loaders
     both_tensor = TensorDataset(input_ids_tensor, token_type_ids_tensor, attention_mask_tensor, labels_tensor)
     validation_dataloader = build_validation_data_loader(tensor=both_tensor, batch_size=2)
 
     # Init Bert Re-Ranker
-    relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
+    relevance_bert = torch.nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
+    #relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
 
     # Train & validation run
     exp_dir = os.path.join(os.getcwd(), 'models/')
-    experiment_name = 'test_model_15'
+    experiment_name = 'test_model_19'
     write = True
     do_eval = True
     run_path = os.path.join(os.getcwd(), 'test_model.run')
     qrels_path = os.path.join(os.getcwd(), 'test_model.qrels')
 
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=validation_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8, write=write,
+                               validation_dataloader=validation_dataloader, epochs=1, lr=5e-5, eps=1e-8, write=write,
                                experiment_name=experiment_name, exp_dir=exp_dir, do_eval=do_eval, logging_steps=1,
                                run_path=run_path, qrels_path=qrels_path)
 
-    #Run Inference
-    model_path = os.path.join(os.getcwd(), 'models', 'test_model_10', 'epoch1')
-    write_path = os.path.join(os.getcwd(), 'models', 'test_model_10', 'bert_epoch1.run')
-    #model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/epoch7/'
-    #write_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/bert_epoch7.run'
-
+    # #Run Inference
+    # model_path = os.path.join(os.getcwd(), 'models', 'test_model_10', 'epoch1')
+    # write_path = os.path.join(os.getcwd(), 'models', 'test_model_10', 'bert_epoch1.run')
+    # model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/epoch7/'
+    # write_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/bert_epoch7.run'
+    #
     # inference_bert_re_ranker(model_path=model_path, dataloader=validation_dataloader, run_path=run_path,
     #                          write_path=write_path)
+
 
