@@ -157,8 +157,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     logging.info(get_results_string(labels=batch[3].cpu().numpy().tolist(),
                                                     scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
                 else:
-                    logging.info(get_results_string(labels=flatten_list(batch[3].cpu().numpy().tolist())),
-                                                    scores=flatten_list(outputs[1].cpu().detach().numpy().tolist()))
+                    logging.info(get_results_string(labels=flatten_list(batch[3].cpu().numpy().tolist()),
+                                                    scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
 
         avg_train_loss = total_loss / len(train_dataloader)
         metrics.append('Epoch {} -  Average training loss: '.format(str(epoch_i)) + str(avg_train_loss) + '\n')
@@ -188,27 +188,33 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 b_input_ids = batch[0].to(device)
                 b_token_type_ids = batch[1].to(device)
                 b_attention_mask = batch[2].to(device)
+                b_labels = batch[3].to(device)
 
                 with torch.no_grad():
-                    outputs = model.pred(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
-                                         attention_mask=b_attention_mask)
+                    outputs = model.forward(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
+                                            attention_mask=b_attention_mask, labels=b_labels)
                 loss = outputs[0]
                 eval_loss += loss.item()
 
                 if device == torch.device("cpu"):
-                    pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
+                    pred_list += flatten_list(outputs[1].cpu().detach().numpy().tolist())
                     label_list += batch[3].cpu().numpy().tolist()
                 else:
-                    pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
-                    label_list += flatten_list(batch[3].cpu().numpy().tolist())
+                    pred_list += flatten_list(outputs[1].cpu().detach().numpy().tolist())
+                    label_list += flatten_list(b_labels.cpu().numpy().tolist())
 
                 # Progress update every X batches.
                 if step % logging_steps == 0 and not step == 0:
                     elapsed = format_time(time.time() - t0)
                     logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
                         step, len(validation_dataloader), elapsed, eval_loss/(step+1)))
-                    logging.info('      Prediction : {} '.format(outputs[1].cpu().detach().numpy().tolist()))
-                    logging.info('      Labels     : {} '.format(batch[3].cpu().numpy().tolist()))
+
+                    if device == torch.device("cpu"):
+                        logging.info(get_results_string(labels=batch[3].cpu().numpy().tolist(),
+                                                        scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
+                    else:
+                        logging.info(get_results_string(labels=flatten_list(batch[3].cpu().numpy().tolist()),
+                                                        scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
 
             # Report the final accuracy for this validation run.
             avg_validation_loss = eval_loss / len(validation_dataloader)

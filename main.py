@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     # Train & validation run
     exp_dir = os.path.join(os.getcwd(), 'models/')
-    experiment_name = 'test_model_13'
+    experiment_name = 'test_model_15'
     write = True
     do_eval = True
     run_path = os.path.join(os.getcwd(), 'test_model.run')
