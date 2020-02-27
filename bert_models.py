@@ -74,7 +74,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
     if write:
         if os.path.isdir(exp_dir):
-            print('*** Staring logging ***')
+            print('*** Starting logging ***')
             exp_path = exp_dir + experiment_name + '/'
             if os.path.isdir(exp_path) == False:
                 os.mkdir(exp_path)
@@ -135,9 +135,9 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             outputs = model.forward(input_ids=b_input_ids, attention_mask=b_attention_mask,
                                     token_type_ids=b_token_type_ids, labels=b_labels)
             loss = outputs[0]
-            # print(loss)
-            # print(loss.item())
-            total_loss += 1 #loss.item()
+            total_loss += loss.sum().item()
+            print(loss)
+            print(total_loss)
 
             loss.sum().backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
