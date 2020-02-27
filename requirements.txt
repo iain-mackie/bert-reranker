@@ -1,4 +1,6 @@
+numpy
 torch>=1.0.0
 tensorflow>=2.0
 transformers
 lmdb
+cbor
