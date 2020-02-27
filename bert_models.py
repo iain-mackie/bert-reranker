@@ -412,7 +412,7 @@ if __name__ == "__main__":
     #                                    experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps,
     #                                    run_path=run_path)
 
-    batch_size = 8
+    batch_size = 32
     epochs = 20
     lr = 5e-6
     eps = 1e-10
@@ -437,7 +437,7 @@ if __name__ == "__main__":
     train_dataloader = build_training_data_loader(tensor=training_tensor, batch_size=batch_size)
 
     pretrained_weights = 'bert-base-uncased'
-    relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
+    relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
 
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
                                validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
