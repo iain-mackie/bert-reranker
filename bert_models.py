@@ -418,12 +418,11 @@ if __name__ == "__main__":
 
     batch_size = 64
     epochs = 20
-    lr = 2e-5
     eps = 1e-10
     seed_val = 42
     write = True
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'debug_run_dev_100_v1'
+    experiment_name_base = 'debug_run_dev_100'
     do_eval = True
     logging_steps = 50
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100.run'
@@ -435,18 +434,25 @@ if __name__ == "__main__":
     validation_tensor = torch.load(dev_path)
     validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.25.pt'
-    print('loading train tensor: {}'.format(train_path))
-    training_tensor = torch.load(train_path)
-    train_dataloader = build_training_data_loader(tensor=training_tensor, batch_size=batch_size)
+    train_path_list = ['/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.25.pt', '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.5.pt']
+    lr_list = [2e-5, 5e-5]
+    for i in zip(['rel_25%', 'rel_50%'], train_path_list):
+        train_flag, train_path = i[0], i[1]
+        for lr in lr_list:
 
-    pretrained_weights = 'bert-base-uncased'
-    relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
+            print('loading train tensor: {}'.format(train_path))
+            training_tensor = torch.load(train_path)
+            train_dataloader = build_training_data_loader(tensor=training_tensor, batch_size=batch_size)
 
-    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
-                               seed_val=seed_val, write=write, exp_dir=exp_dir, experiment_name=experiment_name,
-                               do_eval=do_eval, logging_steps=logging_steps, run_path=run_path, qrels_path=qrels_path)
+            pretrained_weights = 'bert-base-uncased'
+            relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
+
+            experiment_name = experiment_name_base + '_' + str(lr) + '_' + train_flag
+
+            fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
+                                       validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
+                                       seed_val=seed_val, write=write, exp_dir=exp_dir, experiment_name=experiment_name,
+                                       do_eval=do_eval, logging_steps=logging_steps, run_path=run_path, qrels_path=qrels_path)
 
 
     # test_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100_dataset.pt'
