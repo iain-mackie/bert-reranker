@@ -416,7 +416,7 @@ if __name__ == "__main__":
     #                                    experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps,
     #                                    run_path=run_path)
 
-    batch_size = 128
+    batch_size = 64
     epochs = 20
     lr = 2e-5
     eps = 1e-10
