@@ -355,7 +355,7 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
     label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
     bert_string = get_metrics_string(string_labels=string_labels, metrics=bert_metrics, name='BERT')
 
-    print(label_list)
+    print(label_string)
     print(bert_string)
 
 
