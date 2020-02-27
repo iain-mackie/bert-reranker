@@ -194,7 +194,7 @@ def get_metrics_string(string_labels, metrics, name='BERT'):
     return s
 
 def get_results_string(labels, scores):
-    s = ''
+    s = '  '
     for i in zip(labels, scores):
         s += '(truth: {:.3f}, pred: {:.3f}), '.format(i[0], i[1])
     return s
