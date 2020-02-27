@@ -401,15 +401,15 @@ if __name__ == "__main__":
     #                                    experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps,
     #                                    run_path=run_path)
 
-    test_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY.pt'
+    test_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
     print('loading test  tensor: {}'.format(test_path))
     test_tensor = torch.load(test_path)
     batch_size = 8
     test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
     model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/epoch4/'
     write_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/bert_epoch4_dev_multi.run.debug.v1'
-    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY.run'
-    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY.qrels'
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
+    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
     inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, run_path=run_path, qrels_path=qrels_path,
     write_path=write_path)
 
