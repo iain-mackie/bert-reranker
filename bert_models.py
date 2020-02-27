@@ -419,7 +419,7 @@ if __name__ == "__main__":
     seed_val = 42
     write = True
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name = 'debug_run_dev_10_v2'
+    experiment_name = 'debug_run_dev_10_v3'
     do_eval = True
     logging_steps = 100
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
