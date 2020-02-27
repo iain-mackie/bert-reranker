@@ -194,6 +194,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     elapsed = format_time(time.time() - t0)
                     logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
                         step, len(validation_dataloader), elapsed, eval_loss/(step+1)))
+                    logging.info('      Prediction : {} '.format(outputs[1].cpu().detach().numpy().tolist()))
+                    logging.info('      Labels     : {} '.format(batch[3].cpu().numpy().tolist()))
 
                 if device == torch.device("cpu"):
                     pred_list += flatten_list(outputs.cpu().detach().numpy().tolist())
