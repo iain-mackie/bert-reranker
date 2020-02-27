@@ -2,7 +2,6 @@
 import collections
 import numpy as np
 
-#TODO - test metrics
 
 def get_map(run, R):
     correct_docs_sum = sum(run)
