@@ -157,8 +157,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     logging.info(get_results_string(labels=batch[3].cpu().numpy().tolist(),
                                                     scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
                 else:
-                    logging.info(get_results_string(labels=flatten_list(outputs[1].cpu().detach().numpy().tolist()),
-                                                    scores=flatten_list(batch[3].cpu().numpy().tolist())))
+                    logging.info(get_results_string(labels=flatten_list(batch[3].cpu().numpy().tolist())),
+                                                    scores=flatten_list(outputs[1].cpu().detach().numpy().tolist()))
 
         avg_train_loss = total_loss / len(train_dataloader)
         metrics.append('Epoch {} -  Average training loss: '.format(str(epoch_i)) + str(avg_train_loss) + '\n')
