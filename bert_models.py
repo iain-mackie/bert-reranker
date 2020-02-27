@@ -6,7 +6,7 @@ from transformers import get_linear_schedule_with_warmup
 from bert_utils import build_validation_data_loader, build_training_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
-from metrics import group_bert_outputs_by_query, get_metrics, write_trec_run
+from metrics import group_bert_outputs_by_query, get_metrics, write_trec_run, get_metrics_string
 from bert_utils import format_time, flatten_list, get_query_docids_map, get_query_rel_doc_map
 import logging
 import torch
@@ -212,12 +212,6 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                                                                      scores_groups=scores_groups,
                                                                      rel_docs_groups=rel_docs_groups)
 
-            def get_metrics_string(string_labels, metrics, name='BERT'):
-                s = '  Average {}:  '.format(name)
-                for i in zip(string_labels, metrics):
-                    s += i[0] + ': {0:.5f}, '.format(i[1])
-                return s
-
             label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
             bert_string = get_metrics_string(string_labels=string_labels, metrics=bert_metrics, name='BERT')
 
@@ -327,6 +321,8 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write
     string_labels, label_metrics, _ = get_metrics(labels_groups=labels_groups,
                                                   scores_groups=scores_groups,
                                                   rel_docs_groups=rel_docs_groups)
+    label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
+    print(label_string)
 
     print('writing groups')
     write_trec_run(scores_groups=scores_groups, queries_groups=queries_groups, doc_ids_groups=doc_ids_groups,
@@ -350,13 +346,9 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
                                                              scores_groups=scores_groups,
                                                              rel_docs_groups=rel_docs_groups)
 
-    def get_metrics_string(string_labels, metrics, name='BERT'):
-        s = '  Average {}:  '.format(name)
-        for i in zip(string_labels, metrics):
-            s += i[0] + ': {0:.4f}, '.format(i[1])
-        return s
 
     label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
+    print(label_string)
 
     return label_string
 
