@@ -425,7 +425,7 @@ if __name__ == "__main__":
     experiment_name_base = 'debug_run_dev_10'
     do_eval = True
     logging_steps = 50
-    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1run'
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
     qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
 
 
@@ -434,9 +434,9 @@ if __name__ == "__main__":
     validation_tensor = torch.load(dev_path)
     validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
 
-    train_path_list = ['/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_None.pt', '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.25.pt', '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.5.pt']
+    train_path_list = ['/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.25.pt', '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.5.pt']
     lr_list = [2e-5, 5e-5]
-    for i in zip(['rel_15%', 'rel_25%', 'rel_50%'], train_path_list):
+    for i in zip(['rel_25%', 'rel_50%'], train_path_list):
         train_flag, train_path = i[0], i[1]
         for lr in lr_list:
 
