@@ -196,7 +196,7 @@ def write_trec_run(scores_groups, queries_groups, doc_ids_groups, write_path):
 
 
 def get_metrics_string(string_labels, metrics, name='BERT'):
-    s = '  Average {}:  '.format(name)
+    s = '  {}:  '.format(name)
     for i in zip(string_labels, metrics):
         s += i[0] + ': {0:.4f}, '.format(i[1])
     return s
