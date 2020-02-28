@@ -62,10 +62,10 @@ if __name__ == "__main__":
     run_path = os.path.join(os.getcwd(), 'test_model.run')
     qrels_path = os.path.join(os.getcwd(), 'test_model.qrels')
 
-    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=validation_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=1, lr=5e-5, eps=1e-8, write=write,
-                               experiment_name=experiment_name, exp_dir=exp_dir, do_eval=do_eval, logging_steps=1,
-                               run_path=run_path, qrels_path=qrels_path)
+    # fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=validation_dataloader,
+    #                            validation_dataloader=validation_dataloader, epochs=1, lr=5e-5, eps=1e-8, write=write,
+    #                            experiment_name=experiment_name, exp_dir=exp_dir, do_eval=do_eval, logging_steps=1,
+    #                            run_path=run_path, qrels_path=qrels_path)
 
     # #Run Inference
     model_path = os.path.join(os.getcwd(), 'models', 'test_model_10', 'epoch1')
