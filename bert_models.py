@@ -435,11 +435,10 @@ if __name__ == "__main__":
     experiment_name_base = 'debug_run_dev_25'
     do_eval = True
     logging_steps = 50
-    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_25.run'
-    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_25.qrels'
-
-
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_25_dataset.pt'
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmark_Y1_25.run'
+    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmark_Y1_25.qrels'
+    
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmark_Y1_25_dataset.pt'
     print('loading dev tensor: {}'.format(dev_path))
     validation_tensor = torch.load(dev_path)
     validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
