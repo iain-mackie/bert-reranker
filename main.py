@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     # Train & validation run
     exp_dir = os.path.join(os.getcwd(), 'models/')
-    experiment_name = 'test_model_19'
+    experiment_name = 'test_model_10'
     write = True
     do_eval = True
     run_path = os.path.join(os.getcwd(), 'test_model.run')
@@ -68,12 +68,12 @@ if __name__ == "__main__":
                                run_path=run_path, qrels_path=qrels_path)
 
     # #Run Inference
-    # model_path = os.path.join(os.getcwd(), 'models', 'test_model_10', 'epoch1')
-    # write_path = os.path.join(os.getcwd(), 'models', 'test_model_10', 'bert_epoch1.run')
-    # model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/epoch7/'
-    # write_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/bert_epoch7.run'
-    #
-    # inference_bert_re_ranker(model_path=model_path, dataloader=validation_dataloader, run_path=run_path,
-    #                          write_path=write_path)
+    model_path = os.path.join(os.getcwd(), 'models', 'test_model_10', 'epoch1')
+    write_path = os.path.join(os.getcwd(), 'models', 'test_model_10', 'bert_epoch1.run')
+    #model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/epoch7/'
+    #write_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_toy_large_2/bert_epoch7.run'
+
+    inference_bert_re_ranker(model_path=model_path, dataloader=validation_dataloader, run_path=run_path,
+                             write_path=write_path, qrels_path=qrels_path)
 
 

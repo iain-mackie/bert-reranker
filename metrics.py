@@ -75,51 +75,59 @@ def get_bert_labels(labels, scores):
 
 
 def get_metrics(labels_groups, scores_groups, rel_docs_groups):
-
-    map_labels_sum, map_bert_sum = 0, 0
-    R_prec_labels_sum, R_prec_bert_sum,  = 0, 0
-    recip_rank_labels_sum, recip_rank_bert_sum = 0, 0
-    precision_20_labels_sum, precision_20_bert_sum = 0, 0
-    ndcg_20_labels_sum, ndcg_20_bert_sum = 0, 0
-    recall_40_labels_sum, recall_40_bert_sum = 0, 0
+    #TODO - refactor
+    map_original_sum, map_bert_sum, map_oracle_sum = 0, 0, 0
+    R_prec_original_sum, R_prec_bert_sum, R_prec_oracle_sum = 0, 0, 0
+    recip_rank_original_sum, recip_rank_bert_sum, recip_rank_oracle_sum = 0, 0, 0
+    precision_20_original_sum, precision_20_bert_sum, precision_20_oracle_sum = 0, 0, 0
+    ndcg_20_original_sum, ndcg_20_bert_sum, ndcg_20_oracle_sum = 0, 0, 0
+    recall_40_original_sum, recall_40_bert_sum, recall_40_oracle_sum = 0, 0, 0
 
     for i in zip(labels_groups, scores_groups, rel_docs_groups):
 
-        labels, scores, R = i[0], i[1], i[2][0]
-        bert_labels = get_bert_labels(labels=labels, scores=scores)
+        original_rank, scores, R = i[0], i[1], i[2][0]
+        bert_rank = get_bert_labels(labels=original_rank, scores=scores)
+        oracle_rank = sorted(original_rank, reverse=True)
 
-        map_labels_sum += get_map(run=labels, R=R)
-        map_bert_sum += get_map(run=bert_labels, R=R)
+        map_original_sum += get_map(run=original_rank, R=R)
+        map_bert_sum += get_map(run=bert_rank, R=R)
+        map_oracle_sum += get_map(run=oracle_rank, R=R)
 
-        R_prec_labels_sum += get_R_prec(run=labels, R=R)
-        R_prec_bert_sum += get_R_prec(run=bert_labels, R=R)
+        R_prec_original_sum += get_R_prec(run=original_rank, R=R)
+        R_prec_bert_sum += get_R_prec(run=bert_rank, R=R)
+        R_prec_oracle_sum += get_R_prec(run=oracle_rank, R=R)
 
-        recip_rank_labels_sum += get_recip_rank(run=labels)
-        recip_rank_bert_sum += get_recip_rank(run=bert_labels)
+        recip_rank_original_sum += get_recip_rank(run=original_rank)
+        recip_rank_bert_sum += get_recip_rank(run=bert_rank)
+        recip_rank_oracle_sum += get_recip_rank(run=oracle_rank)
 
-        precision_20_labels_sum += get_precision(run=labels, k=20)
-        precision_20_bert_sum += get_precision(run=bert_labels, k=20)
+        precision_20_original_sum += get_precision(run=original_rank, k=20)
+        precision_20_bert_sum += get_precision(run=bert_rank, k=20)
+        precision_20_oracle_sum += get_precision(run=oracle_rank, k=20)
 
-        recall_40_labels_sum += get_recall(run=labels, k=40, R=R)
-        recall_40_bert_sum += get_recall(run=bert_labels, k=40, R=R)
+        recall_40_original_sum += get_recall(run=original_rank, k=40, R=R)
+        recall_40_bert_sum += get_recall(run=bert_rank, k=40, R=R)
+        recall_40_oracle_sum += get_recall(run=oracle_rank, k=40, R=R)
 
-        ndcg_20_labels_sum += get_ndcg(run=labels, R=R, k=20)
-        ndcg_20_bert_sum += get_ndcg(run=bert_labels, R=R, k=20)
+        ndcg_20_original_sum += get_ndcg(run=original_rank, R=R, k=20)
+        ndcg_20_bert_sum += get_ndcg(run=bert_rank, R=R, k=20)
+        ndcg_20_oracle_sum += get_ndcg(run=oracle_rank, R=R, k=20)
 
     num_queries = len(labels_groups)
 
-    map_labels, map_bert = map_labels_sum / num_queries, map_bert_sum / num_queries
-    R_prec_labels, R_prec_bert = R_prec_labels_sum / num_queries, R_prec_bert_sum / num_queries
-    recip_rank_labels, recip_rank_bert = recip_rank_labels_sum / num_queries, recip_rank_bert_sum / num_queries
-    precision_20_labels, precision_20_bert = precision_20_labels_sum / num_queries, precision_20_bert_sum / num_queries
-    ndcg_20_labels, ndcg_20_bert = ndcg_20_labels_sum / num_queries, ndcg_20_bert_sum / num_queries
-    recall_40_labels, recall_40_bert = recall_40_labels_sum / num_queries, recall_40_bert_sum / num_queries
+    map_original, map_bert, map_oracle = map_original_sum / num_queries, map_bert_sum / num_queries, map_oracle_sum / num_queries
+    R_prec_original, R_prec_bert, R_prec_oracle = R_prec_original_sum / num_queries, R_prec_bert_sum / num_queries, R_prec_oracle_sum / num_queries
+    recip_rank_original, recip_rank_bert, recip_rank_oracle = recip_rank_original_sum / num_queries, recip_rank_bert_sum / num_queries, recip_rank_oracle_sum / num_queries
+    precision_20_original, precision_20_bert, precision_20_oracle  = precision_20_original_sum / num_queries, precision_20_bert_sum / num_queries, precision_20_oracle_sum / num_queries
+    ndcg_20_original, ndcg_20_bert, ndcg_20_oracle = ndcg_20_original_sum / num_queries, ndcg_20_bert_sum / num_queries, ndcg_20_oracle_sum / num_queries
+    recall_40_original, recall_40_bert, recall_40_oracle= recall_40_original_sum / num_queries, recall_40_bert_sum / num_queries, recall_40_oracle_sum / num_queries
 
-    string_labels = ['map', 'R_prec', 'recip_rank', 'precision_20', 'recall_40', 'ndcg_20']
-    label_metrics = [map_labels, R_prec_labels, recip_rank_labels, precision_20_labels, recall_40_labels, ndcg_20_labels]
+    mertric_strings = ['map', 'R_prec', 'recip_rank', 'precision_20', 'recall_40', 'ndcg_20']
+    label_metrics = [map_original, R_prec_original, recip_rank_original, precision_20_original, recall_40_original, ndcg_20_original]
     bert_metrics = [map_bert, R_prec_bert, recip_rank_bert, precision_20_bert, recall_40_bert, ndcg_20_bert]
+    oracle_metrics = [map_bert, R_prec_bert, recip_rank_bert, precision_20_bert, recall_40_bert, ndcg_20_bert]
 
-    return string_labels, label_metrics, bert_metrics
+    return mertric_strings, label_metrics, bert_metrics, oracle_metrics
 
 
 def group_bert_outputs_by_query(label_list, score_list, query_docids_map, query_rel_doc_map):

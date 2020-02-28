@@ -225,22 +225,26 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = group_bert_outputs_by_query(
                 score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map, query_rel_doc_map=query_rel_doc_map)
 
-            string_labels, label_metrics, bert_metrics = get_metrics(labels_groups=labels_groups,
-                                                                     scores_groups=scores_groups,
-                                                                     rel_docs_groups=rel_docs_groups)
+            metrics_strings, label_metrics, bert_metrics, oracle_metrics = get_metrics(labels_groups=labels_groups,
+                                                                                       scores_groups=scores_groups,
+                                                                                       rel_docs_groups=rel_docs_groups)
 
-            label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
-            bert_string = get_metrics_string(string_labels=string_labels, metrics=bert_metrics, name='BERT')
+            label_string = get_metrics_string(string_labels=metrics_strings, metrics=label_metrics, name='ORIGINAL')
+            bert_string = get_metrics_string(string_labels=metrics_strings, metrics=bert_metrics, name='BERT')
+            oracle_string = get_metrics_string(string_labels=metrics_strings, metrics=bert_metrics, name='ORACLE')
 
             logging.info("")
             logging.info("  Average validation loss: {0:.5f}".format(avg_validation_loss))
             logging.info(label_string)
             logging.info(bert_string)
+            logging.info(oracle_string)
             logging.info("  Validation took: {:}".format(format_time(time.time() - t0)))
 
             metrics.append('Epoch {} -  Average validation loss: '.format(str(epoch_i)) + str(avg_validation_loss) + '\n')
             metrics.append('Epoch {} -'.format(str(epoch_i)) + label_string + '\n')
             metrics.append('Epoch {} -'.format(str(epoch_i)) + bert_string + '\n')
+            metrics.append('Epoch {} -'.format(str(epoch_i)) + oracle_string + '\n')
+
 
         else:
 
@@ -340,12 +344,16 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write
         score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map, query_rel_doc_map=query_rel_doc_map)
 
     print('getting metrics')
-    string_labels, _, bert_metrics = get_metrics(labels_groups=labels_groups,
-                                                 scores_groups=scores_groups,
-                                                 rel_docs_groups=rel_docs_groups)
+    metrics_strings, label_metrics, bert_metrics, oracle_metrics = get_metrics(labels_groups=labels_groups,
+                                                                               scores_groups=scores_groups,
+                                                                               rel_docs_groups=rel_docs_groups)
 
-    label_string = get_metrics_string(string_labels=string_labels, metrics=bert_metrics, name='BERT')
+    label_string = get_metrics_string(string_labels=metrics_strings, metrics=label_metrics, name='ORIGINAL')
+    bert_string = get_metrics_string(string_labels=metrics_strings, metrics=bert_metrics, name='BERT')
+    oracle_string = get_metrics_string(string_labels=metrics_strings, metrics=bert_metrics, name='ORACLE')
     print(label_string)
+    print(bert_string)
+    print(oracle_string)
 
     print('writing groups')
     write_trec_run(scores_groups=scores_groups, queries_groups=queries_groups, doc_ids_groups=doc_ids_groups,
@@ -365,13 +373,15 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
         score_list=label_list, label_list=label_list, query_docids_map=query_docids_map,
         query_rel_doc_map=query_rel_doc_map)
 
-    string_labels, label_metrics, _ = get_metrics(labels_groups=labels_groups,
-                                                             scores_groups=scores_groups,
-                                                             rel_docs_groups=rel_docs_groups)
+    mertric_strings, label_metrics, _, oracle_metrics = get_metrics(labels_groups=labels_groups,
+                                                                    scores_groups=scores_groups,
+                                                                    rel_docs_groups=rel_docs_groups)
 
-    label_string = get_metrics_string(string_labels=string_labels, metrics=label_metrics, name='LABELS')
+    label_string = get_metrics_string(string_labels=mertric_strings, metrics=label_metrics, name='RANKING')
+    oracle_string = get_metrics_string(string_labels=mertric_strings, metrics=label_metrics, name='ORACLE')
 
     print(label_string)
+    print(oracle_string)
 
     return label_string
 
@@ -415,56 +425,56 @@ if __name__ == "__main__":
     #                                    seed_val=seed_val, write=write, model_dir=model_dir,
     #                                    experiment_name=experiment_name, do_eval=do_eval, logging_steps=logging_steps,
     #                                    run_path=run_path)
+    #
+    # batch_size = 64
+    # epochs = 20
+    # eps = 1e-10
+    # seed_val = 42
+    # write = True
+    # exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
+    # experiment_name_base = 'debug_run_dev_10'
+    # do_eval = True
+    # logging_steps = 50
+    # run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
+    # qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
+    #
+    #
+    # dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
+    # print('loading dev tensor: {}'.format(dev_path))
+    # validation_tensor = torch.load(dev_path)
+    # validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
+    #
+    # train_path_list = ['/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.25.pt', '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.5.pt']
+    # lr_list = [2e-5, 5e-5]
+    # for i in zip(['rel_25%', 'rel_50%'], train_path_list):
+    #     train_flag, train_path = i[0], i[1]
+    #     for lr in lr_list:
+    #
+    #         print('loading train tensor: {}'.format(train_path))
+    #         training_tensor = torch.load(train_path)
+    #         train_dataloader = build_training_data_loader(tensor=training_tensor, batch_size=batch_size)
+    #
+    #         pretrained_weights = 'bert-base-uncased'
+    #         relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
+    #
+    #         experiment_name = experiment_name_base + '_' + str(lr) + '_' + train_flag
+    #
+    #         fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
+    #                                    validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
+    #                                    seed_val=seed_val, write=write, exp_dir=exp_dir, experiment_name=experiment_name,
+    #                                    do_eval=do_eval, logging_steps=logging_steps, run_path=run_path, qrels_path=qrels_path)
 
-    batch_size = 64
-    epochs = 20
-    eps = 1e-10
-    seed_val = 42
-    write = True
-    exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    experiment_name_base = 'debug_run_dev_10'
-    do_eval = True
-    logging_steps = 50
-    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
-    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
 
-
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
-    print('loading dev tensor: {}'.format(dev_path))
-    validation_tensor = torch.load(dev_path)
-    validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
-
-    train_path_list = ['/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.25.pt', '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.5.pt']
-    lr_list = [2e-5, 5e-5]
-    for i in zip(['rel_25%', 'rel_50%'], train_path_list):
-        train_flag, train_path = i[0], i[1]
-        for lr in lr_list:
-
-            print('loading train tensor: {}'.format(train_path))
-            training_tensor = torch.load(train_path)
-            train_dataloader = build_training_data_loader(tensor=training_tensor, batch_size=batch_size)
-
-            pretrained_weights = 'bert-base-uncased'
-            relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
-
-            experiment_name = experiment_name_base + '_' + str(lr) + '_' + train_flag
-
-            fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
-                                       validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
-                                       seed_val=seed_val, write=write, exp_dir=exp_dir, experiment_name=experiment_name,
-                                       do_eval=do_eval, logging_steps=logging_steps, run_path=run_path, qrels_path=qrels_path)
-
-
-    # test_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100_dataset.pt'
-    # print('loading test  tensor: {}'.format(test_path))
-    # test_tensor = torch.load(test_path)
-    # batch_size = 8
-    # test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
-    # model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/epoch4/'
-    # write_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/bert_epoch4_dev_100_multi.run.debug.v1'
-    # run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100.run'
-    # qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100.qrels'
-    # inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, run_path=run_path, qrels_path=qrels_path,
-    # write_path=write_path)
+    test_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100_dataset.pt'
+    print('loading test  tensor: {}'.format(test_path))
+    test_tensor = torch.load(test_path)
+    batch_size = 8
+    test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
+    model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/epoch4/'
+    write_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/benchmarkY1_5/bert_epoch4_dev_100_multi.run.debug.v1'
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100.run'
+    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100.qrels'
+    inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, run_path=run_path, qrels_path=qrels_path,
+    write_path=write_path)
 
 
