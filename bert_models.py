@@ -231,7 +231,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
             label_string = get_metrics_string(string_labels=metrics_strings, metrics=label_metrics, name='ORIGINAL')
             bert_string = get_metrics_string(string_labels=metrics_strings, metrics=bert_metrics, name='BERT')
-            oracle_string = get_metrics_string(string_labels=metrics_strings, metrics=bert_metrics, name='ORACLE')
+            oracle_string = get_metrics_string(string_labels=metrics_strings, metrics=oracle_metrics, name='ORACLE')
 
             logging.info("")
             logging.info("  Average validation loss: {0:.5f}".format(avg_validation_loss))
@@ -350,7 +350,7 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write
 
     label_string = get_metrics_string(string_labels=metrics_strings, metrics=label_metrics, name='ORIGINAL')
     bert_string = get_metrics_string(string_labels=metrics_strings, metrics=bert_metrics, name='BERT')
-    oracle_string = get_metrics_string(string_labels=metrics_strings, metrics=bert_metrics, name='ORACLE')
+    oracle_string = get_metrics_string(string_labels=metrics_strings, metrics=oracle_metrics, name='ORACLE')
     print(label_string)
     print(bert_string)
     print(oracle_string)
@@ -373,15 +373,13 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
         score_list=label_list, label_list=label_list, query_docids_map=query_docids_map,
         query_rel_doc_map=query_rel_doc_map)
 
-    mertric_strings, label_metrics, _, oracle_metrics = get_metrics(labels_groups=labels_groups,
+    mertric_strings, label_metrics, _, _ = get_metrics(labels_groups=labels_groups,
                                                                     scores_groups=scores_groups,
                                                                     rel_docs_groups=rel_docs_groups)
 
     label_string = get_metrics_string(string_labels=mertric_strings, metrics=label_metrics, name='RANKING')
-    oracle_string = get_metrics_string(string_labels=mertric_strings, metrics=label_metrics, name='ORACLE')
 
     print(label_string)
-    print(oracle_string)
 
     return label_string
 
