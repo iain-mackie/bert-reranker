@@ -265,6 +265,7 @@ if __name__ == "__main__":
 
     max_length = 512
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    from bert_utils import convert_validation_dataset_to_pt
 
     # print('preprocessing runs and qrels')
     # # will look for {set_name}.run + {set_name}.qrels
@@ -275,19 +276,17 @@ if __name__ == "__main__":
     # build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
     #                          max_length=max_length)
 
-    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    set_name = 'dev_benchmarkY1_100'
-    print('building validation dataset: {}'.format(set_name))
-    preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
-    build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
-                           max_length=max_length)
+    for i in ['test_10', 'test_25', 'test_100', 'dev_benchmark_Y1_25']:
+        data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+        set_name = i
+        print('building validation dataset: {}'.format(set_name))
+        preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
+        build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
+                               max_length=max_length)
 
-    from bert_utils import convert_validation_dataset_to_pt
-
-    set_name = 'dev_benchmarkY1_100'
-    data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100_dataset.pt'
-    convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
+        data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
+        output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(i)
+        convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
 
 
 
