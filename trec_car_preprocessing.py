@@ -56,7 +56,7 @@ def build_training_dataset(data_path, lmdb_path, set_name, tokenizer, max_length
                     input_ids_qrels += [q_d['input_ids']]
                     token_type_ids_qrels += [q_d['token_type_ids']]
                     attention_mask_qrels += [q_d['attention_mask']]
-                    labels_rel += [[1]]
+                    labels_qrels += [[1]]
 
                 else:
                     input_ids_not_rel += [q_d['input_ids']]
@@ -175,7 +175,7 @@ def load_qrels(path):
             topic, _, doc_title, relevance = line.rstrip().split(' ')
             if int(relevance) >= 1:
                 qrels[topic].append(doc_title)
-            if i % 1000000 == 0:
+            if i % 10000 == 0:
                 print('Loading qrels {}'.format(i))
     return qrels
 
@@ -191,7 +191,7 @@ def load_run(path):
             if topic not in run:
                 run[topic] = []
             run[topic].append((doc_title, int(rank)))
-            if i % 1000000 == 0:
+            if i % 10000 == 0:
                 print('Loading run {}'.format(i))
 
     # Sort candidate docs by rank.
