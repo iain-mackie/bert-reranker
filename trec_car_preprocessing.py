@@ -12,6 +12,13 @@ import lmdb
 import os
 
 
+def process_query(query):
+    query = query.replace('enwiki:', '')
+    query = query.replace('%20', ' ')
+    query = query.replace('/', ' ')
+    return convert_to_unicode(query)
+
+
 def build_training_dataset(data_path, lmdb_path, set_name, tokenizer, max_length=512):
 
     print('Building {} dataset as jsons'.format(set_name))
@@ -30,13 +37,7 @@ def build_training_dataset(data_path, lmdb_path, set_name, tokenizer, max_length
         for i, query in enumerate(data):
 
             qrels, doc_titles = data[query]
-            query = query.replace('enwiki:', '')
-            query = query.replace('%20', ' ')
-            query = query.replace('/', ' ')
-            query = convert_to_unicode(query)
-            if i % 1000 == 0:
-                print('query', query)
-
+            query = process_query(query)
             all_docs = list(set(doc_titles + qrels))
 
             for d in all_docs:
@@ -63,7 +64,7 @@ def build_training_dataset(data_path, lmdb_path, set_name, tokenizer, max_length
                     attention_mask_not_rel += [q_d['attention_mask']]
                     labels_not_rel += [[0]]
 
-            if i % 250 == 0:
+            if i % 100 == 0:
                 print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
                 time_passed = time.time() - start_time
                 est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
@@ -113,12 +114,7 @@ def build_validation_dataset(data_path, lmdb_path, set_name, tokenizer, max_leng
         for i, query in enumerate(data):
 
             qrels, doc_titles = data[query]
-            query = query.replace('enwiki:', '')
-            query = query.replace('%20', ' ')
-            query = query.replace('/', ' ')
-            query = convert_to_unicode(query)
-            if i % 1000 == 0:
-                print('query', query)
+            query = process_query(query)
 
             for d in doc_titles:
                 text = txn.get(d.encode())
@@ -133,7 +129,7 @@ def build_validation_dataset(data_path, lmdb_path, set_name, tokenizer, max_leng
                 else:
                     labels += [[0]]
 
-            if i % 250 == 0:
+            if i % 100 == 0:
                 print('wrote {}, {} of {} queries'.format(set_name, i, len(data)))
                 time_passed = time.time() - start_time
                 est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
