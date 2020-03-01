@@ -389,7 +389,7 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
 
 if __name__ == "__main__":
 
-    batch_size = 32
+    batch_size = 24
 
     dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
     print('loading dev tensor: {}'.format(dev_path))
