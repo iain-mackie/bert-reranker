@@ -1,6 +1,6 @@
 
 from torch.utils.data import RandomSampler, DataLoader, SequentialSampler, TensorDataset
-from preprocessing_utils import read_from_json
+from preprocessing_utils import read_from_json, read_from_json_given_suffix
 
 import datetime
 import os
@@ -172,13 +172,13 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_rel
     print('saving tensor to: {}'.format(output_path))
     torch.save(dataset, output_path)
 
+
 def get_tensor(set_name, data_path, suffix):
 
-    file_name = set_name + suffix
-    path = data_path + file_name
-    data = read_from_json(path=path)
+    data = read_from_json_given_suffix(data_path=data_path, set_name=set_name, suffix=suffix, ordered_dict=False)
     data_tensor = torch.tensor(data)
-    print('tensor shape of {}: {}'.format(file_name, data_tensor.shape))
+    read_from_json_given_suffix()
+    print('tensor shape of {}: {}'.format(set_name + suffix, data_tensor.shape))
     return data_path
 
 
