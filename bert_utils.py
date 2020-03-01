@@ -172,34 +172,22 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_rel
     print('saving tensor to: {}'.format(output_path))
     torch.save(dataset, output_path)
 
+def get_tensor(set_name, data_path, suffix):
+
+    file_name = set_name + suffix
+    path = data_path + file_name
+    data = read_from_json(path=path)
+    data_tensor = torch.tensor(data)
+    print('tensor shape of {}: {}'.format(file_name, data_tensor.shape))
+    return data_path
+
 
 def convert_validation_dataset_to_pt(set_name, data_path, output_path):
 
-    path = data_path + '{}_input_ids.json'.format(set_name)
-    print('reading file: {}'.format(path))
-    input_ids = read_from_json(path=path)
-
-    path = data_path + '{}_token_type_ids.json'.format(set_name)
-    print('reading file: {}'.format(path))
-    token_type_ids = read_from_json(path=path)
-
-    path = data_path + '{}_attention_mask.json'.format(set_name)
-    print('reading file: {}'.format(path))
-    attention_mask = read_from_json(path=path)
-
-    path = data_path + '{}_labels.json'.format(set_name)
-    print('reading file: {}'.format(path))
-    labels = read_from_json(path=path)
-
-    input_ids_tensor = torch.tensor(input_ids)
-    token_type_ids_tensor = torch.tensor(token_type_ids)
-    attention_mask_tensor = torch.tensor(attention_mask)
-    labels_tensor = torch.tensor(labels)
-
-    print('tensor shape of input_ids: {}'.format(input_ids_tensor.shape))
-    print('tensor shape token_type_ids: {}'.format(token_type_ids_tensor.shape))
-    print('tensor shape attention_mask: {}'.format(attention_mask_tensor.shape))
-    print('tensor shape labels: {}'.format(labels_tensor.shape))
+    input_ids_tensor = get_tensor(set_name=set_name, data_path=data_path, suffix='_input_ids.json')
+    token_type_ids_tensor = get_tensor(set_name=set_name, data_path=data_path, suffix='_token_type_ids.json')
+    attention_mask_tensor = get_tensor(set_name=set_name, data_path=data_path, suffix='_attention_mask.json')
+    labels_tensor = get_tensor(set_name=set_name, data_path=data_path, suffix='_labels.json')
 
     dataset = TensorDataset(input_ids_tensor, token_type_ids_tensor, attention_mask_tensor, labels_tensor)
 

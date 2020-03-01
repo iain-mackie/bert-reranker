@@ -24,6 +24,12 @@ def write_to_json(data, path):
         json.dump(data, f, indent=4)
 
 
+def write_to_json_given_suffix(data_path, set_name, data, suffix):
+    file_name = set_name + suffix
+    path = data_path + file_name
+    write_to_json(data=data, path=path)
+
+
 def read_from_json(path, ordered_dict=False):
     if ordered_dict == False:
         with open(path) as f:
@@ -33,6 +39,12 @@ def read_from_json(path, ordered_dict=False):
         with open(path) as f:
             data = json.load(f, object_pairs_hook=collections.OrderedDict)
         return data
+
+
+def read_from_json_given_suffix(data_path, set_name, suffix, ordered_dict=False):
+    file_name = set_name + suffix
+    path = data_path + file_name
+    read_from_json(path=path, ordered_dict=ordered_dict)
 
 
 def read_to_pickle(data, path):

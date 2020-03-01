@@ -1,9 +1,9 @@
 
 from trec_car_tools import iter_paragraphs, ParaText
-from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from transformers import BertTokenizer
-from torch.utils.data import TensorDataset
-from preprocessing_utils import read_from_json, write_to_json, convert_to_unicode
+from preprocessing_utils import read_from_json, write_to_json, convert_to_unicode, write_to_json_given_suffix, \
+    read_from_json_given_suffix
+from bert_utils import convert_validation_dataset_to_pt, convert_training_dataset_to_pt
 
 import collections
 import time
@@ -18,18 +18,11 @@ def build_training_dataset(data_path, lmdb_path, set_name, tokenizer, max_length
     start_time = time.time()
 
     print('reading merged data')
-    read_path = data_path + set_name + '_merge.json'
-    data = read_from_json(path=read_path, ordered_dict=True)
+    data = read_from_json_given_suffix(data_path=data_path, set_name=set_name, suffix='_merge.json', ordered_dict=True)
 
-    input_ids_rel = []
-    token_type_ids_rel = []
-    attention_mask_rel = []
-    labels_rel = []
-
-    input_ids_not_rel = []
-    token_type_ids_not_rel = []
-    attention_mask_not_rel = []
-    labels_not_rel = []
+    input_ids_rel, token_type_ids_rel, attention_mask_rel, labels_rel = [], [], [], []
+    input_ids_not_rel, token_type_ids_not_rel, attention_mask_not_rel, labels_not_rel = [], [], [], []
+    input_ids_qrels, token_type_ids_qrels, attention_mask_qrels, labels_qrels = [], [], [], []
 
     env = lmdb.open(lmdb_path, readonly=True)
     with env.begin() as txn:
@@ -52,11 +45,18 @@ def build_training_dataset(data_path, lmdb_path, set_name, tokenizer, max_length
                 q_d = tokenizer.encode_plus(text=query, text_pair=convert_to_unicode(text), max_length=max_length,
                                             add_special_tokens=True, pad_to_max_length=True)
 
-                if d in qrels:
+                if (d in qrels) and (d in doc_titles):
                     input_ids_rel += [q_d['input_ids']]
                     token_type_ids_rel += [q_d['token_type_ids']]
                     attention_mask_rel += [q_d['attention_mask']]
                     labels_rel += [[1]]
+
+                elif (d in qrels) and (d not in doc_titles):
+                    input_ids_qrels += [q_d['input_ids']]
+                    token_type_ids_qrels += [q_d['token_type_ids']]
+                    attention_mask_qrels += [q_d['attention_mask']]
+                    labels_rel += [[1]]
+
                 else:
                     input_ids_not_rel += [q_d['input_ids']]
                     token_type_ids_not_rel += [q_d['token_type_ids']]
@@ -69,36 +69,31 @@ def build_training_dataset(data_path, lmdb_path, set_name, tokenizer, max_length
                 est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
                 print('estimated total hours to save: {}'.format(est_hours))
 
-    print('len of input_ids: rel {}, not rel: {}'.format(len(input_ids_rel), len(input_ids_not_rel)))
-    print('len of token_type_ids: rel {}, not rel: {}'.format(len(token_type_ids_rel), len(token_type_ids_not_rel)))
-    print('len of attention_mask: rel {}, not rel: {}'.format(len(attention_mask_rel), len(attention_mask_not_rel)))
-    print('len of labels: rel {}, not rel: {}'.format(len(labels_rel), len(labels_not_rel)))
+    names = ['input_ids', 'token_type_ids', 'attention_mask', 'labels']
+    rel_lengths = [len(input_ids_rel), len(token_type_ids_rel), len(attention_mask_rel), len(labels_rel)]
+    not_rel_lengths = [len(input_ids_not_rel), len(token_type_ids_not_rel), len(attention_mask_not_rel), len(labels_not_rel)]
+    qrels_lengths = [len(input_ids_qrels), len(token_type_ids_qrels), len(attention_mask_qrels), len(labels_qrels)]
+    for name, rel_length, not_rel_length, qrels_length in zip(names, rel_lengths, not_rel_lengths, qrels_lengths):
+        print('length of {} - rel: {}, not rel {}, qrels: []'.format(name, rel_length, not_rel_length, qrels_length))
 
     print('Writing lists to rel jsons')
-    path = data_path + '{}_input_ids_rel.json'.format(set_name)
-    write_to_json(data=input_ids_rel, path=path)
-
-    path = data_path + '{}_token_type_ids_rel.json'.format(set_name)
-    write_to_json(data=token_type_ids_rel, path=path)
-
-    path = data_path + '{}_attention_mask_rel.json'.format(set_name)
-    write_to_json(data=attention_mask_rel, path=path)
-
-    path = data_path + '{}_labels_rel.json'.format(set_name)
-    write_to_json(data=labels_rel, path=path)
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=input_ids_rel, suffix='_input_ids_rel.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=token_type_ids_rel, suffix='_token_type_ids_rel.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=attention_mask_rel, suffix='_attention_mask_rel.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=labels_rel, suffix='_labels_rel.json')
 
     print('Writing lists to not rel jsons')
-    path = data_path + '{}_input_ids_not_rel.json'.format(set_name)
-    write_to_json(data=input_ids_not_rel, path=path)
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=input_ids_not_rel, suffix='_input_ids_not_rel.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=token_type_ids_not_rel, suffix='_token_type_ids_not_rel.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=attention_mask_not_rel, suffix='_attention_mask_not_rel.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=labels_not_rel, suffix='_labels_not_rel.json')
 
-    path = data_path + '{}_token_type_ids_not_rel.json'.format(set_name)
-    write_to_json(data=token_type_ids_not_rel, path=path)
+    print('Writing lists to qrels jsons')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=input_ids_qrels, suffix='_input_ids_qrels.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=token_type_ids_qrels, suffix='_token_type_ids_qrels.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=attention_mask_qrels, suffix='_attention_mask_qrels.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=labels_qrels, suffix='_labels_qrels.json')
 
-    path = data_path + '{}_attention_mask_not_rel.json'.format(set_name)
-    write_to_json(data=attention_mask_not_rel, path=path)
-
-    path = data_path + '{}_labels_not_rel.json'.format(set_name)
-    write_to_json(data=labels_not_rel, path=path)
     print('Done')
 
 
@@ -108,13 +103,9 @@ def build_validation_dataset(data_path, lmdb_path, set_name, tokenizer, max_leng
     start_time = time.time()
 
     print('reading merged data')
-    read_path = data_path + set_name + '_merge.json'
-    data = read_from_json(path=read_path, ordered_dict=True)
+    data = read_from_json_given_suffix(data_path=data_path, set_name=set_name, suffix='_merge.json', ordered_dict=True)
 
-    input_ids = []
-    token_type_ids = []
-    attention_mask = []
-    labels = []
+    input_ids, token_type_ids, attention_mask, labels = [], [], [], []
 
     env = lmdb.open(lmdb_path, readonly=True)
     with env.begin() as txn:
@@ -148,23 +139,15 @@ def build_validation_dataset(data_path, lmdb_path, set_name, tokenizer, max_leng
                 est_hours = (len(data) - i) * time_passed / (max(1.0, i) * 3600)
                 print('estimated total hours to save: {}'.format(est_hours))
 
-    print('len of input_ids: {}'.format(len(input_ids)))
-    print('len of token_type_ids: {}'.format(len(token_type_ids)))
-    print('len of attention_mask: {}'.format(len(attention_mask)))
-    print('len of labels: {}'.format(len(labels)))
+    names = ['input_ids', 'token_type_ids', 'attention_mask', 'labels']
+    lengths = [len(input_ids), len(token_type_ids), len(attention_mask), len(labels)]
+    for name, length in zip(names, lengths):
+        print('length of {}: {}'.format(name, length))
 
-    print('Writing lists to jsons')
-    path = data_path + '{}_input_ids.json'.format(set_name)
-    write_to_json(data=input_ids, path=path)
-
-    path = data_path + '{}_token_type_ids.json'.format(set_name)
-    write_to_json(data=token_type_ids, path=path)
-
-    path = data_path + '{}_attention_mask.json'.format(set_name)
-    write_to_json(data=attention_mask, path=path)
-
-    path = data_path + '{}_labels.json'.format(set_name)
-    write_to_json(data=labels, path=path)
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=input_ids, suffix='_input_ids.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=token_type_ids, suffix='_token_type_ids.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=attention_mask, suffix='_attention_mask.json')
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=labels, suffix='_labels.json')
     print('Done')
 
 
@@ -236,21 +219,18 @@ def merge(qrels, run):
 def preprocess_runs_and_qrels(set_name, data_path):
 
     print('building run')
-    read_path = data_path + '{}.run'.format(set_name)
-    write_path = data_path + set_name + '_run.json'
+    read_path = data_path + set_name + '.run'
     run = load_run(path=read_path)
-    write_to_json(data=run, path=write_path)
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=run, suffix='_run.json')
 
     print('building qrels')
-    read_path = data_path + '{}.qrels'.format(set_name)
-    write_path = data_path + set_name + '_qrels.json'
+    read_path = data_path + set_name + '.qrels'
     qrels = load_qrels(path=read_path)
-    write_to_json(data=qrels, path=write_path)
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=qrels, suffix='_qrels.json')
 
     print('merging run + qrels')
-    write_path = data_path + set_name + '_merge.json'
     data = merge(qrels=qrels, run=run)
-    write_to_json(data=data, path=write_path)
+    write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=data, suffix='_merge.json')
 
 
 if __name__ == "__main__":
@@ -265,29 +245,27 @@ if __name__ == "__main__":
 
     max_length = 512
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    from bert_utils import convert_validation_dataset_to_pt
 
-    # print('preprocessing runs and qrels')
-    # # will look for {set_name}.run + {set_name}.qrels
-    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    # set_name = 'dev_benchmarkY1_100'
-    # print('building training dataset: {}'.format(set_name))
-    # preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
-    # build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
-    #                          max_length=max_length)
+    print('preprocessing runs and qrels')
+    # will look for {set_name}.run + {set_name}.qrels
+    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data/'
+    set_name = 'train_benchmarkY1'
+    print('building training dataset: {}'.format(set_name))
+    preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
+    build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
+                           max_length=max_length)
 
-    for i in ['test_10', 'test_25', 'test_100', 'dev_benchmark_Y1_25']:
-        data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-        set_name = i
-        print('building validation dataset: {}'.format(set_name))
-        preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
-        build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
-                               max_length=max_length)
-
-        data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
-        output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(i)
-        convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
-
-
+    # for i in ['test_10', 'test_25', 'test_100', 'dev_benchmark_Y1_25']:
+    #     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+    #     set_name = i
+    #     print('building validation dataset: {}'.format(set_name))
+    #     preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
+    #     build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
+    #                            max_length=max_length)
+    #
+    #     data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
+    #     output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(i)
+    #     convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
+    #
 
 
