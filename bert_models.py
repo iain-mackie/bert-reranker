@@ -413,12 +413,13 @@ if __name__ == "__main__":
     logging_steps = 100
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
+    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
     experiment_name = 'test_lr_1e-4_rank_10'
 
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
                                validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
                                seed_val=seed_val, write=write, exp_dir=exp_dir, experiment_name=experiment_name,
-                               do_eval=do_eval, logging_steps=logging_steps, run_path=run_path)
+                               do_eval=do_eval, logging_steps=logging_steps, run_path=run_path, qrels_path=qrels_path)
 
 
     # test_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100_dataset.pt'
