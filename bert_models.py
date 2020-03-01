@@ -389,7 +389,7 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
 
 if __name__ == "__main__":
 
-    batch_size = 24
+    batch_size = 64
 
     dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
     print('loading dev tensor: {}'.format(dev_path))
@@ -403,7 +403,7 @@ if __name__ == "__main__":
 
     # static
     pretrained_weights = 'bert-base-uncased'
-    relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
+    relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
     epochs = 10
     eps = 1e-8
     lr = 1e-4
