@@ -75,7 +75,7 @@ def build_training_dataset(data_path, lmdb_path, set_name, tokenizer, max_length
     not_rel_lengths = [len(input_ids_not_rel), len(token_type_ids_not_rel), len(attention_mask_not_rel), len(labels_not_rel)]
     qrels_lengths = [len(input_ids_qrels), len(token_type_ids_qrels), len(attention_mask_qrels), len(labels_qrels)]
     for name, rel_length, not_rel_length, qrels_length in zip(names, rel_lengths, not_rel_lengths, qrels_lengths):
-        print('length of {} - rel: {}, not rel {}, qrels: []'.format(name, rel_length, not_rel_length, qrels_length))
+        print('length of {} - rel: {}, not rel {}, qrels: {}'.format(name, rel_length, not_rel_length, qrels_length))
 
     print('Writing lists to rel jsons')
     write_to_json_given_suffix(data_path=data_path, set_name=set_name, data=input_ids_rel, suffix='_input_ids_rel.json')
