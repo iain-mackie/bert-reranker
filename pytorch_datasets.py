@@ -19,23 +19,42 @@ def get_class_data_inputs(data_path, set_name, c):
     return class_data_inputs
 
 
-def convert_training_dataset_to_pt(set_name, data_path, output_path, include_qrels=False):
+def convert_training_dataset_to_pt(set_name, data_path, output_path, include_qrels=False, pad_rel_docs=False):
 
     data_inputs = {}
     for c in ['rel', 'not_rel', 'qrels']:
         data_inputs[c] = get_class_data_inputs(data_path=data_path, set_name=set_name, c=c)
 
-    input_ids = data_inputs['rel']['input_ids'] + data_inputs['not_rel']['input_ids']
-    token_type_ids = data_inputs['rel']['token_type_ids'] + data_inputs['not_rel']['token_type_ids']
-    attention_mask = data_inputs['rel']['attention_mask'] + data_inputs['not_rel']['attention_mask']
-    labels = data_inputs['rel']['labels'] + data_inputs['not_rel']['labels']
+    len_rel = len(data_inputs['rel']['input_ids'])
+    len_not_rel = len(data_inputs['not_rel']['input_ids'])
+    len_qrels = len(data_inputs['qrels']['input_ids'])
 
     if include_qrels:
-        print('adding Q in qrels but in origianl run')
-        input_ids += data_inputs['qrels']['input_ids']
-        token_type_ids += data_inputs['qrels']['token_type_ids']
-        attention_mask += data_inputs['qrels']['attention_mask']
-        labels += data_inputs['qrels']['labels']
+        print('For R docs --> using run ({} docs) + qrels ({} docs)'.format(len_rel, len_qrels))
+        input_ids_rel = data_inputs['rel']['input_ids'] + data_inputs['qrels']['input_ids']
+        token_type_ids_rel = data_inputs['rel']['token_type_ids'] + data_inputs['qrels']['token_type_ids']
+        attention_mask_rel = data_inputs['rel']['attention_mask'] + data_inputs['qrels']['attention_mask']
+        labels_rel = data_inputs['rel']['labels'] + data_inputs['qrels']['labels']
+    else:
+        print('For R docs --> solely run ({} docs)'.format(len_rel))
+        input_ids_rel = data_inputs['rel']['input_ids']
+        token_type_ids_rel = data_inputs['rel']['token_type_ids']
+        attention_mask_rel = data_inputs['rel']['attention_mask']
+        labels_rel = data_inputs['rel']['labels']
+
+    if pad_rel_docs:
+        diff = len_not_rel - len_rel
+        print('not rel ({} docs) minus rel ({} docs) --> add {} rel docs'.format(len_not_rel, len_rel, diff))
+        input_ids_rel += random.choices(input_ids_rel, k=diff)
+        token_type_ids_rel += random.choices(token_type_ids_rel, k=diff)
+        attention_mask_rel += random.choices(attention_mask_rel, k=diff)
+        labels_rel += random.choices(labels_rel, k=diff)
+
+    print('Adding {} not rel docs'.format(len_not_rel))
+    input_ids = input_ids_rel + data_inputs['not_rel']['input_ids']
+    token_type_ids = token_type_ids_rel + data_inputs['not_rel']['token_type_ids']
+    attention_mask = attention_mask_rel + data_inputs['not_rel']['attention_mask']
+    labels = labels_rel + data_inputs['not_rel']['labels']
 
     input_ids_tensor = torch.tensor(input_ids)
     token_type_ids_tensor = torch.tensor(token_type_ids)
