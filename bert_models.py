@@ -375,12 +375,12 @@ if __name__ == "__main__":
 
     batch_size = 32
 
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
-    print('loading dev tensor: {}'.format(dev_path))
-    validation_tensor = torch.load(dev_path)
-    validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
+    # dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
+    # print('loading dev tensor: {}'.format(dev_path))
+    # validation_tensor = torch.load(dev_path)
+    # validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.5.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_no_qrels.pt'
     print('loading train tensor: {}'.format(train_path))
     train_tensor = torch.load(train_path)
     train_dataloader = build_training_data_loader(tensor=train_tensor, batch_size=batch_size)
@@ -388,22 +388,35 @@ if __name__ == "__main__":
     # static
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
-    epochs = 10
+    epochs = 12
     eps = 1e-8
-    lr = 1e-4
+    lr = 5e-5
     seed_val = 42
     write = True
     do_eval = True
     logging_steps = 100
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
-    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
-    experiment_name = 'test_post_refactor'
+    base_path = '/nfs/trec_car/data/bert_reranker_datasets/'
+    #run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
+    #qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
+    experiment_name = 'test_no_qrels'
 
-    fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
-                               seed_val=seed_val, write=write, exp_dir=exp_dir, experiment_name=experiment_name,
-                               do_eval=do_eval, logging_steps=logging_steps, run_path=run_path, qrels_path=qrels_path)
+    metadata = [('dev_benchmarkY1.run', 'dev_benchmarkY1.qrels', 'dev_benchmarkY1.pt'),
+                ('dev_benchmark_Y1_25.run', 'dev_benchmark_Y1_25.qrels', 'dev_benchmark_Y1_25_dataset.pt'),
+                ('dev_benchmarkY1_100.run', 'dev_benchmarkY1_100.qrels', 'dev_benchmarkY1_100_dataset.pt')]
+
+    for run_file, qrels_file, pt_file in metadata:
+        run_path = base_path + run_file
+        qrels_path = base_path + qrels_file
+        dev_path = base_path + pt_file
+        print('loading dev tensor: {}'.format(dev_path))
+        validation_tensor = torch.load(dev_path)
+        validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
+
+        fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
+                                   validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
+                                   seed_val=seed_val, write=write, exp_dir=exp_dir, experiment_name=experiment_name,
+                                   do_eval=do_eval, logging_steps=logging_steps, run_path=run_path, qrels_path=qrels_path)
 
 
     # test_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100_dataset.pt'
