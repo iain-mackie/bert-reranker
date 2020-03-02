@@ -410,7 +410,7 @@ if __name__ == "__main__":
         run_path = base_path + run_file
         qrels_path = base_path + qrels_file
         dev_path = base_path + pt_file
-        experiment_name = 'test_no_qrels_old_train_' + qrels_file
+        experiment_name = 'test_with_qrels_new_train_' + qrels_file
 
         print('loading dev tensor: {}'.format(dev_path))
         validation_tensor = torch.load(dev_path)
