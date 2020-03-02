@@ -1,6 +1,6 @@
 
 from torch.utils.data import RandomSampler, DataLoader, SequentialSampler, TensorDataset
-from preprocessing_utils import read_from_json, read_from_json_given_suffix
+from utils.file_utils import read_from_json, read_from_json_given_suffix
 
 import datetime
 import os
@@ -180,6 +180,7 @@ if __name__ == '__main__':
     # data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
     # output_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
     # convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
-    qrels_path = os.path.join(os.getcwd(), 'test_model.qrels')
-    get_query_rel_doc_map(qrels_path=qrels_path)
+    # qrels_path = os.path.join(os.getcwd(), 'test_model.qrels')
+    # get_query_rel_doc_map(qrels_path=qrels_path)
+    pass
 
