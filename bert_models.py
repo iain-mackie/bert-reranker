@@ -380,7 +380,7 @@ if __name__ == "__main__":
     validation_tensor = torch.load(dev_path)
     validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_None.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_50.pt'
     print('loading train tensor: {}'.format(train_path))
     train_tensor = torch.load(train_path)
     train_dataloader = build_training_data_loader(tensor=train_tensor, batch_size=batch_size)
@@ -398,7 +398,7 @@ if __name__ == "__main__":
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
     qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
-    experiment_name = 'test_lr_1e-4_rank_10'
+    experiment_name = 'test_post_refactor'
 
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
                                validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
