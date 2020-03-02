@@ -44,7 +44,7 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, include_qre
 
     if pad_rel_docs:
         diff = len_not_rel - len_rel
-        print('not rel ({} docs) minus rel ({} docs) --> add {} rel docs'.format(len_not_rel, len_rel, diff))
+        print('not rel ({} docs) minus rel ({} docs) --> add {} sampled docs'.format(len_not_rel, len_rel, diff))
         input_ids_rel += random.choices(input_ids_rel, k=diff)
         token_type_ids_rel += random.choices(token_type_ids_rel, k=diff)
         attention_mask_rel += random.choices(attention_mask_rel, k=diff)
@@ -109,7 +109,10 @@ if __name__ == '__main__':
 
     data_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/'
     set_name = 'train_benchmarkY1_10'
-    output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_with_qrels.pt'
-    convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, include_qrels=True,
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_no_qrels.pt'
+    convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, include_qrels=False,
                                    pad_rel_docs=False)
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_no_qrels_pad.pt'
+    convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, include_qrels=False,
+                                   pad_rel_docs=True)
 
