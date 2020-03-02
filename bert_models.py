@@ -3,26 +3,24 @@
 from transformers import BertModel, BertPreTrainedModel
 from transformers.optimization import AdamW
 from transformers import get_linear_schedule_with_warmup
-from bert_utils import build_validation_data_loader, build_training_data_loader
+from pytorch_datasets import build_validation_data_loader, build_training_data_loader
 from torch import nn, sigmoid
 from torch.nn import MSELoss
-from metrics import group_bert_outputs_by_query, get_metrics, write_trec_run, get_metrics_string, get_results_string
-from bert_utils import format_time, flatten_list, get_query_docids_map, get_query_rel_doc_map
+from metrics import group_bert_outputs_by_query, get_metrics
+from utils.logging_utils import get_metrics_string, log_epoch, format_time
+from utils.trec_utils import write_trec_run,  get_query_docids_map, get_query_rel_doc_map
+from utils.data_utils import flatten_list
+
 import logging
 import torch
 import time
 import numpy as np
 import random
 import os
-import collections
-
-
-#TODO - add comments and change docstring
-
-#TODO - train / validation on multi GPU
 
 
 class BertReRanker(BertPreTrainedModel):
+
     def __init__(self, config):
         super().__init__(config)
 
@@ -65,6 +63,7 @@ class BertReRanker(BertPreTrainedModel):
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
                                seed_val=42, write=False, exp_dir=None, experiment_name='test', do_eval=True,
                                logging_steps=100, run_path=None, qrels_path=None):
+
     # Set the seed value all over the place to make this reproducible.
     print('starting fine tuning')
     random.seed(seed_val)
@@ -152,16 +151,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
             # Progress update every X batches.
             if step % logging_steps == 0 and not step == 0:
-                elapsed = format_time(time.time() - t0)
-                logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
-                    step, len(train_dataloader), elapsed, total_loss/(step+1)))
-
-                if device == torch.device("cpu"):
-                    logging.info(get_results_string(labels=batch[3].cpu().numpy().tolist(),
-                                                    scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
-                else:
-                    logging.info(get_results_string(labels=flatten_list(batch[3].cpu().numpy().tolist()),
-                                                    scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
+                log_epoch(t0=t0, step=step, total_steps=len(train_dataloader), loss_sum=total_loss,
+                          device=device, labels=batch[3], scores=outputs[1])
 
         avg_train_loss = total_loss / len(train_dataloader)
         metrics.append('Epoch {} -  Average training loss: '.format(str(epoch_i)) + str(avg_train_loss) + '\n')
@@ -208,16 +199,9 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
                 # Progress update every X batches.
                 if step % logging_steps == 0 and not step == 0:
-                    elapsed = format_time(time.time() - t0)
-                    logging.info('  Batch {:>5,}  of  {:>5,}.    Elapsed: {:}.    MSE:  {}'.format(
-                        step, len(validation_dataloader), elapsed, eval_loss/(step+1)))
+                    log_epoch(t0=t0, step=step, total_steps=len(validation_dataloader), loss_sum=eval_loss,
+                              device=device, labels=batch[3], scores=outputs[1])
 
-                    if device == torch.device("cpu"):
-                        logging.info(get_results_string(labels=batch[3].cpu().numpy().tolist(),
-                                                        scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
-                    else:
-                        logging.info(get_results_string(labels=flatten_list(batch[3].cpu().numpy().tolist()),
-                                                        scores=flatten_list(outputs[1].cpu().detach().numpy().tolist())))
 
             # Report the final accuracy for this validation run.
             avg_validation_loss = eval_loss / len(validation_dataloader)
@@ -229,9 +213,9 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                                                                                        scores_groups=scores_groups,
                                                                                        rel_docs_groups=rel_docs_groups)
 
-            label_string = get_metrics_string(string_labels=metrics_strings, metrics=label_metrics, name='ORIGINAL')
-            bert_string = get_metrics_string(string_labels=metrics_strings, metrics=bert_metrics, name='BERT')
-            oracle_string = get_metrics_string(string_labels=metrics_strings, metrics=oracle_metrics, name='ORACLE')
+            label_string = get_metrics_string(metrics_strings=metrics_strings, metrics=label_metrics, name='ORIGINAL')
+            bert_string = get_metrics_string(metrics_strings=metrics_strings, metrics=bert_metrics, name='BERT')
+            oracle_string = get_metrics_string(metrics_strings=metrics_strings, metrics=oracle_metrics, name='ORACLE')
 
             logging.info("")
             logging.info("  Average validation loss: {0:.5f}".format(avg_validation_loss))
@@ -348,9 +332,9 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write
                                                                                scores_groups=scores_groups,
                                                                                rel_docs_groups=rel_docs_groups)
 
-    label_string = get_metrics_string(string_labels=metrics_strings, metrics=label_metrics, name='ORIGINAL')
-    bert_string = get_metrics_string(string_labels=metrics_strings, metrics=bert_metrics, name='BERT')
-    oracle_string = get_metrics_string(string_labels=metrics_strings, metrics=oracle_metrics, name='ORACLE')
+    label_string = get_metrics_string(metrics_strings=metrics_strings, metrics=label_metrics, name='ORIGINAL')
+    bert_string = get_metrics_string(metrics_strings=metrics_strings, metrics=bert_metrics, name='BERT')
+    oracle_string = get_metrics_string(metrics_strings=metrics_strings, metrics=oracle_metrics, name='ORACLE')
     print(label_string)
     print(bert_string)
     print(oracle_string)
@@ -373,12 +357,12 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
         score_list=label_list, label_list=label_list, query_docids_map=query_docids_map,
         query_rel_doc_map=query_rel_doc_map)
 
-    mertric_strings, label_metrics, _, oracle_metrics = get_metrics(labels_groups=labels_groups,
+    metrics_strings, label_metrics, _, oracle_metrics = get_metrics(labels_groups=labels_groups,
                                                                     scores_groups=scores_groups,
                                                                     rel_docs_groups=rel_docs_groups)
 
-    label_string = get_metrics_string(string_labels=mertric_strings, metrics=label_metrics, name='RANKING')
-    oracle_string = get_metrics_string(string_labels=mertric_strings, metrics=oracle_metrics, name='ORACLE')
+    label_string = get_metrics_string(metrics_strings=metrics_strings, metrics=label_metrics, name='RANKING')
+    oracle_string = get_metrics_string(metrics_strings=metrics_strings, metrics=oracle_metrics, name='ORACLE')
 
     print(label_string)
     print(oracle_string)

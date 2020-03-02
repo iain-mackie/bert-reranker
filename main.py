@@ -3,7 +3,7 @@ from transformers import BertTokenizer
 from torch.utils.data import TensorDataset
 import torch
 from bert_models import BertReRanker, fine_tuning_bert_re_ranker, inference_bert_re_ranker
-from bert_utils import build_training_data_loader, build_validation_data_loader
+from pytorch_datasets import build_training_data_loader, build_validation_data_loader
 import os
 import time
 

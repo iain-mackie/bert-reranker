@@ -1,9 +1,9 @@
 
-import collections
 import numpy as np
 
 
 def get_map(run, R):
+
     correct_docs_sum = sum(run)
     if (correct_docs_sum > 0.0) and (R > 0):
         precision_sum = 0
@@ -16,6 +16,7 @@ def get_map(run, R):
 
 
 def get_R_prec(run, R):
+
     if R > 0:
         r_run = run[:R]
         return sum(r_run) / R
@@ -24,6 +25,7 @@ def get_R_prec(run, R):
 
 
 def get_recip_rank(run):
+
     for i, r in enumerate(run):
         if r == 1.0:
             return 1/(i+1)
@@ -31,11 +33,13 @@ def get_recip_rank(run):
 
 
 def get_precision(run, k=20):
+
     k_run = run[:k]
     return sum(k_run) / k
 
 
 def get_recall(run, R, k=40):
+
     k_run = run[:k]
     correct_docs_sum = sum(k_run)
     if R > 0:
@@ -44,9 +48,9 @@ def get_recall(run, R, k=40):
 
 
 def get_ndcg(run, R, k=20):
+
     k_run = run[:k]
-    i_dcg = 0
-    dcg = 0
+    i_dcg, dcg = 0, 0
     num_rel = sum(run)
     if (num_rel > 0) and (R > 0):
         for i, r in enumerate(k_run):
@@ -65,6 +69,7 @@ def get_ndcg(run, R, k=20):
 
 
 def get_bert_labels(labels, scores):
+
     bert_labels = []
     ordered_scores = sorted(list(set(scores)), reverse=True)
     for os in ordered_scores:
@@ -72,7 +77,6 @@ def get_bert_labels(labels, scores):
         for i in ixs:
             bert_labels.append(labels[i])
     return bert_labels
-
 
 
 def get_query_metrics(metrics, rank, R):
@@ -120,8 +124,8 @@ def group_bert_outputs_by_query(label_list, score_list, query_docids_map, query_
     labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = [], [], [], [], []
     labels, scores, queries, doc_ids = [], [], [], []
     doc_counter = 0
-    for i in zip(label_list, score_list, query_docids_map):
-        query = i[2][0]
+    for l, s, qdm in zip(label_list, score_list, query_docids_map):
+        query = qdm[0]
 
         if (doc_counter > 0) and (last_query != query):
 
@@ -134,13 +138,13 @@ def group_bert_outputs_by_query(label_list, score_list, query_docids_map, query_
                 sum_rel_docs = len(query_rel_doc_map[last_query])
                 rel_docs_groups.append([sum_rel_docs])
             else:
-                rel_docs_groups.append([0])
+                rel_docs_groups.append([l])
             labels, scores, queries, doc_ids = [], [], [], []
 
-        labels.append(i[0])
-        scores.append(i[1])
+        labels.append(l)
+        scores.append(s)
         queries.append(query)
-        doc_ids.append(i[2][1])
+        doc_ids.append(qdm[1])
 
         last_query = query
         doc_counter += 1
@@ -158,40 +162,9 @@ def group_bert_outputs_by_query(label_list, score_list, query_docids_map, query_
     return labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups
 
 
-def write_trec_run(scores_groups, queries_groups, doc_ids_groups, write_path):
-
-    with open(write_path, "a+") as f:
-        for i in zip(scores_groups, queries_groups, doc_ids_groups):
-
-            queries = i[1]
-            assert len(set(queries)) == 1, 'Too many queries: {}'.format(queries)
-
-            query = queries[0]
-            scores = i[0]
-            doc_ids = i[2]
-
-            d = {i[0]: i[1] for i in zip(doc_ids, scores)}
-            od = collections.OrderedDict(sorted(d.items(), key=lambda item: item[1], reverse=True))
-            rank = 1
-            for doc_id in od.keys():
-                output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(od[doc_id]), "BERT")) + '\n'
-                f.write(output_line)
-                rank += 1
-
-
-def get_metrics_string(string_labels, metrics, name='BERT'):
-    s = '  {}:  '.format(name)
-    for i in zip(string_labels, metrics):
-        s += i[0] + ': {0:.4f}, '.format(i[1])
-    return s
-
-def get_results_string(labels, scores):
-    s = '  '
-    for i in zip(labels, scores):
-        s += '(truth: {:.3f}, pred: {:.3f}), '.format(i[0], i[1])
-    return s
-
 if __name__ == '__main__':
+    from utils.logging_utils import get_results_string
+
     l1 = [1, 2, 3, 4, 5]
     l2 = [0.121212121, 0.34334343434, 0.5656565656, 0.67676767, 0.8989898989]
     print(get_results_string(labels=l1, scores=l2))

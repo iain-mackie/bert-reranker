@@ -1,9 +1,9 @@
 
 from trec_car_tools import iter_paragraphs, ParaText
 from transformers import BertTokenizer
-from preprocessing_utils import read_from_json, write_to_json, convert_to_unicode, write_to_json_given_suffix, \
-    read_from_json_given_suffix
-from bert_utils import convert_validation_dataset_to_pt, convert_training_dataset_to_pt
+from utils.file_utils import read_from_json, write_to_json, write_to_json_given_suffix, read_from_json_given_suffix
+from utils.data_utils import convert_to_unicode
+from pytorch_datasets import convert_validation_dataset_to_pt, convert_training_dataset_to_pt
 
 import collections
 import time

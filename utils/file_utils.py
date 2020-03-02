@@ -1,21 +1,7 @@
 
 import json
-import pickle
-import six
 import collections
-
-
-def convert_to_unicode(text):
-    """Converts `text` to Unicode (if it's not already), assuming utf-8 input."""
-    if six.PY3:
-        if isinstance(text, str):
-            return text
-        elif isinstance(text, bytes):
-            return text.decode("utf-8", "ignore")
-        else:
-            raise ValueError("Unsupported string type: %s" % (type(text)))
-    else:
-        raise ValueError("Not running on Python 3?")
+import pickle
 
 
 def write_to_json(data, path):
@@ -25,11 +11,13 @@ def write_to_json(data, path):
 
 
 def write_to_json_given_suffix(data_path, set_name, data, suffix):
+
     path = data_path + set_name + suffix
     write_to_json(data=data, path=path)
 
 
 def read_from_json(path, ordered_dict=False):
+
     if ordered_dict == False:
         with open(path) as f:
             data = json.load(f)
@@ -41,6 +29,7 @@ def read_from_json(path, ordered_dict=False):
 
 
 def read_from_json_given_suffix(data_path, set_name, suffix, ordered_dict=False):
+
     path = data_path + set_name + suffix
     return read_from_json(path=path, ordered_dict=ordered_dict)
 

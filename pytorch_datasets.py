@@ -10,41 +10,8 @@ import random
 #TODO - add data shuffle
 
 
-def get_query_docids_map(run_path):
-
-    query_docids_map = []
-    with open(run_path) as ref_file:
-
-        for line in ref_file:
-            query, _, doc_id, _, _, _ = line.strip().split(" ")
-
-            query_docids_map.append((query, doc_id))
-
-    return query_docids_map
 
 
-def get_query_rel_doc_map(qrels_path):
-    query_rel_doc_map = {}
-    with open(qrels_path) as qrels_file:
-
-        for line in qrels_file:
-            query, _, doc_id, _ = line.strip().split(" ")
-
-            if query in query_rel_doc_map:
-                query_rel_doc_map[query].append(doc_id)
-            else:
-                query_rel_doc_map[query] = [doc_id]
-
-    return query_rel_doc_map
-
-
-def format_time(elapsed):
-    # Format as hh:mm:ss
-    return str(datetime.timedelta(seconds=int(round((elapsed)))))
-
-
-def flatten_list(l):
-    return list(itertools.chain(*l))
 
 
 def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_rel=None):
