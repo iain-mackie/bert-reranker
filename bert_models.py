@@ -379,7 +379,8 @@ if __name__ == "__main__":
     print('loading dev tensor: {}'.format(dev_path))
     validation_tensor = torch.load(dev_path)
     validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_with_qrels.pt'
+    #train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_with_qrels.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_no_qrels_pad.pt'
     #train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.25.pt'
     print('loading train tensor: {}'.format(train_path))
     train_tensor = torch.load(train_path)
