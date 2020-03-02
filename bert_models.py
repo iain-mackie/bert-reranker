@@ -401,8 +401,10 @@ if __name__ == "__main__":
     # loop over training & validation
     for t in training_metadata:
         for r, q, pt in validation_metadata:
-
-            experiment_name = 'exp_new_pipelines_' + t[14:] + '_' + q[:len(q)-6]
+            
+            train_file = t[14:]
+            train_file = train_file[:len(train_file) - 3]
+            experiment_name = 'exp_new_pipelines_' + train_file + '_' + q[:len(q)-6]
 
             dev_path = base_path + pt
             print('loading dev tensor: {}'.format(dev_path))
