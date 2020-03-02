@@ -29,6 +29,7 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, include_qre
     token_type_ids = data_inputs['rel']['token_type_ids'] + data_inputs['not_rel']['token_type_ids']
     attention_mask = data_inputs['rel']['attention_mask'] + data_inputs['not_rel']['attention_mask']
     labels = data_inputs['rel']['labels'] + data_inputs['not_rel']['labels']
+    print(len(data_inputs['rel']['labels']), len(data_inputs['not_rel']['labels']), len(labels))
 
     if include_qrels:
         print('adding Q in qrels but in origianl run')
