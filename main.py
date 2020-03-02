@@ -59,8 +59,8 @@ if __name__ == "__main__":
     experiment_name = 'test_model_20'
     write = True
     do_eval = True
-    run_path = os.path.join(os.getcwd(), 'test_model.run')
-    qrels_path = os.path.join(os.getcwd(), 'test_model.qrels')
+    run_path = os.path.join(os.getcwd(), 'test_data', 'test_model.run')
+    qrels_path = os.path.join(os.getcwd(), 'test_data', 'test_model.qrels')
 
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=validation_dataloader,
                                validation_dataloader=validation_dataloader, epochs=1, lr=5e-5, eps=1e-8, write=write,
