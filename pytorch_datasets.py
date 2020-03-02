@@ -73,7 +73,6 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, percent_rel
                 attention_mask_rel_reduced += [attention_mask_rel[i]]
                 labels_rel_reduced += [labels_rel[i]]
 
-
             input_ids = input_ids_rel_reduced + input_ids_not_rel
             token_type_ids = token_type_ids_rel_reduced + token_type_ids_not_rel
             attention_mask = attention_mask_rel_reduced + attention_mask_not_rel

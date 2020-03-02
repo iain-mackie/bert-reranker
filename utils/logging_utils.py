@@ -1,5 +1,5 @@
 
-from pytorch_datasets import flatten_list
+from utils.data_utils import flatten_list
 
 import datetime
 import logging
