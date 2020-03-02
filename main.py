@@ -55,7 +55,7 @@ if __name__ == "__main__":
     #relevance_bert = BertReRanker.from_pretrained(pretrained_weights)
 
     # Train & validation run
-    exp_dir = os.path.join(os.getcwd(), 'models/')
+    exp_dir = os.path.join(os.getcwd(), 'exp/')
     experiment_name = 'test_model_20'
     write = True
     do_eval = True
