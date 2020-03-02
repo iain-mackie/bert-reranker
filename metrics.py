@@ -124,8 +124,8 @@ def group_bert_outputs_by_query(label_list, score_list, query_docids_map, query_
     labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = [], [], [], [], []
     labels, scores, queries, doc_ids = [], [], [], []
     doc_counter = 0
-    for l, s, qdm in zip(label_list, score_list, query_docids_map):
-        query = qdm[0]
+    for i in zip(label_list, score_list, query_docids_map):
+        query = i[2][0]
 
         if (doc_counter > 0) and (last_query != query):
 
@@ -138,13 +138,13 @@ def group_bert_outputs_by_query(label_list, score_list, query_docids_map, query_
                 sum_rel_docs = len(query_rel_doc_map[last_query])
                 rel_docs_groups.append([sum_rel_docs])
             else:
-                rel_docs_groups.append([l])
+                rel_docs_groups.append([0])
             labels, scores, queries, doc_ids = [], [], [], []
 
-        labels.append(l)
-        scores.append(s)
+        labels.append(i[0])
+        scores.append(i[1])
         queries.append(query)
-        doc_ids.append(qdm[1])
+        doc_ids.append(i[2][1])
 
         last_query = query
         doc_counter += 1
