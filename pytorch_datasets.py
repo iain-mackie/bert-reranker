@@ -106,8 +106,10 @@ def build_validation_data_loader(tensor, batch_size):
 
 
 if __name__ == '__main__':
+
     data_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/'
     set_name = 'train_benchmarkY1_10'
     output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_with_qrels.pt'
-    convert_training_dataset_to_pt(set_name, data_path, output_path, include_qrels=True)
+    convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, include_qrels=True,
+                                   pad_rel_docs=False)
 
