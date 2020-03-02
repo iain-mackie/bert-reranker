@@ -399,16 +399,19 @@ if __name__ == "__main__":
     base_path = '/nfs/trec_car/data/bert_reranker_datasets/'
     #run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
     #qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
-    experiment_name = 'test_no_qrels'
+    #experiment_name = 'test_no_qrels'
 
     metadata = [('dev_benchmarkY1.run', 'dev_benchmarkY1.qrels', 'dev_benchmarkY1.pt'),
                 ('dev_benchmark_Y1_25.run', 'dev_benchmark_Y1_25.qrels', 'dev_benchmark_Y1_25_dataset.pt'),
                 ('dev_benchmarkY1_100.run', 'dev_benchmarkY1_100.qrels', 'dev_benchmarkY1_100_dataset.pt')]
 
     for run_file, qrels_file, pt_file in metadata:
+
         run_path = base_path + run_file
         qrels_path = base_path + qrels_file
         dev_path = base_path + pt_file
+        experiment_name = 'test_no_qrels' + qrels_file
+
         print('loading dev tensor: {}'.format(dev_path))
         validation_tensor = torch.load(dev_path)
         validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
