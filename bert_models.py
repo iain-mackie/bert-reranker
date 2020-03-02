@@ -400,7 +400,7 @@ if __name__ == "__main__":
     base_path = '/nfs/trec_car/data/bert_reranker_datasets/'
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
     qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
-    experiment_name = 'test_with_qrels_new_train_'
+    experiment_name = 'test_with_qrels_and_pad'
 
     # metadata = [('dev_benchmarkY1.run', 'dev_benchmarkY1.qrels', 'dev_benchmarkY1.pt'),
     #             ('dev_benchmark_Y1_25.run', 'dev_benchmark_Y1_25.qrels', 'dev_benchmark_Y1_25_dataset.pt'),
