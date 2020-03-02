@@ -380,7 +380,7 @@ if __name__ == "__main__":
     validation_tensor = torch.load(dev_path)
     validation_dataloader = build_validation_data_loader(tensor=validation_tensor, batch_size=batch_size)
 
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_50.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_0.5.pt'
     print('loading train tensor: {}'.format(train_path))
     train_tensor = torch.load(train_path)
     train_dataloader = build_training_data_loader(tensor=train_tensor, batch_size=batch_size)
