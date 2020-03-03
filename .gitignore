@@ -8,3 +8,5 @@ dedup.articles-paragraphs.cbor
 models/*
 exp/*
 !exp/blank
+scripts/*
+!scripts/*.sh

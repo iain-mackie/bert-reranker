@@ -45,10 +45,12 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, include_qre
     if pad_rel_docs:
         diff = len_not_rel - len_rel
         print('not rel ({} docs) minus rel ({} docs) --> add {} sampled docs'.format(len_not_rel, len_rel, diff))
-        input_ids_rel += random.choices(input_ids_rel, k=diff)
-        token_type_ids_rel += random.choices(token_type_ids_rel, k=diff)
-        attention_mask_rel += random.choices(attention_mask_rel, k=diff)
-        labels_rel += random.choices(labels_rel, k=diff)
+        idx_list = list(range(len(input_ids_rel)))
+        for idx in random.choices(idx_list, k=10):
+            input_ids_rel += [input_ids_rel[idx]]
+            token_type_ids_rel += [token_type_ids_rel[idx]]
+            attention_mask_rel += [attention_mask_rel[idx]]
+            labels_rel += [labels_rel[idx]]
 
     print('Adding {} not rel docs'.format(len_not_rel))
     input_ids = input_ids_rel + data_inputs['not_rel']['input_ids']
