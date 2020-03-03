@@ -46,7 +46,7 @@ def convert_training_dataset_to_pt(set_name, data_path, output_path, include_qre
         diff = len_not_rel - len_rel
         print('not rel ({} docs) minus rel ({} docs) --> add {} sampled docs'.format(len_not_rel, len_rel, diff))
         idx_list = list(range(len(input_ids_rel)))
-        for idx in random.choices(idx_list, k=10):
+        for idx in random.choices(idx_list, k=diff):
             input_ids_rel += [input_ids_rel[idx]]
             token_type_ids_rel += [token_type_ids_rel[idx]]
             attention_mask_rel += [attention_mask_rel[idx]]
