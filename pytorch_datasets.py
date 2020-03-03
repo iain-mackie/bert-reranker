@@ -114,9 +114,9 @@ if __name__ == '__main__':
     # output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_no_qrels.pt'
     # convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, include_qrels=False,
     #                                pad_rel_docs=False)
-    # output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_no_qrels_pad.pt'
-    # convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, include_qrels=False,
-    #                                pad_rel_docs=True)
+    output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_no_qrels_pad.pt'
+    convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, include_qrels=False,
+                                   pad_rel_docs=True)
     output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_10_dataset_with_qrels_pad.pt'
     convert_training_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path, include_qrels=True,
                                    pad_rel_docs=True)
