@@ -391,7 +391,7 @@ if __name__ == "__main__":
     train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_50_dataset_no_qrels_pad.pt'
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_10.run'
     qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_10.qrels'
-    experiment_name = 'train_50_dev_25_no_qrels_pad'
+    experiment_name = 'train_50_dev_10_no_qrels_pad'
 
     print('loading dev tensor: {}'.format(dev_path))
     validation_tensor = torch.load(dev_path)
