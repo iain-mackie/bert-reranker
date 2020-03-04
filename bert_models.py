@@ -379,7 +379,7 @@ if __name__ == "__main__":
     batch_size = 16*3
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
-    epochs = 10
+    epochs = 8
     eps = 1e-8
     lr = 5e-5
     seed_val = 42
@@ -390,11 +390,11 @@ if __name__ == "__main__":
 
     for i in ['25', '100']:
 
+        train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_{}_dataset_no_qrels_pad.pt'.format(i)
         dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_.pt'
-        train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_50_dataset_no_qrels_pad.pt'
         run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
         qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
-        experiment_name = 'train_50_dev_10_no_qrels_pad'
+        experiment_name = 'train_{}_dev_10_no_qrels_pad'.format(i)
 
         print('loading dev tensor: {}'.format(dev_path))
         validation_tensor = torch.load(dev_path)
