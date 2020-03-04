@@ -27,6 +27,7 @@ RUN pip install torch torchvision
 RUN pip install torchtext pytorch-nlp nltk line_profiler runipy dotmap
 RUN pip install cbor
 RUN pip install transformers
+RUN pip install lmdb
 
 #RUN apt-get install -y curl nodejs npm
 #RUN jupyter labextension install jupyterlab-drawio
