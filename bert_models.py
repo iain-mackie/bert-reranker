@@ -457,5 +457,5 @@ if __name__ == "__main__":
     batch_size = 64
     test_data_loader = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
-    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/tets.qrels'
+    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
     run_metrics(validation_dataloader=test_path, run_path=run_path, qrels_path=qrels_path)
