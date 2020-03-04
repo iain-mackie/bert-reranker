@@ -387,10 +387,10 @@ if __name__ == "__main__":
     do_eval = True
     logging_steps = 100
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_10_dataset.pt'
+    dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
     train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_50_dataset_no_qrels_pad.pt'
-    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_10.run'
-    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_10.qrels'
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
+    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
     experiment_name = 'train_50_dev_10_no_qrels_pad'
 
     print('loading dev tensor: {}'.format(dev_path))
