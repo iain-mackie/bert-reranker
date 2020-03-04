@@ -8,7 +8,7 @@ from torch import nn, sigmoid
 from torch.nn import MSELoss
 from metrics import group_bert_outputs_by_query, get_metrics
 from utils.logging_utils import get_metrics_string, log_epoch, format_time
-from utils.trec_utils import write_trec_run,  get_query_docids_map, get_query_rel_doc_map
+from utils.trec_utils import write_trec_run,  get_query_docids_map, get_query_rel_doc_map, write_trec_eval
 from utils.data_utils import flatten_list
 
 import logging
@@ -343,6 +343,8 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write
     write_trec_run(scores_groups=scores_groups, queries_groups=queries_groups, doc_ids_groups=doc_ids_groups,
                    write_path=write_path)
 
+    write_trec_eval(write_path, label_string, oracle_string, bert_string)
+
 
 def run_metrics(validation_dataloader, run_path, qrels_path):
 
@@ -373,30 +375,30 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
 
 if __name__ == "__main__":
 
-    # static
-    batch_size = 16*3
-    pretrained_weights = 'bert-base-uncased'
-    relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
-    epochs = 15
-    eps = 1e-8
-    #lr = 5e-5
-    seed_val = 42
-    write = True
-    do_eval = True
-    logging_steps = 100
-    exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    base_path = '/nfs/trec_car/data/bert_reranker_datasets/'
-    # run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
-    # qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
-
-    training_metadata = ['training_data/train_benchmarkY1_10_dataset_no_qrels_pad.pt',
-                         'training_data/train_benchmarkY1_10_dataset_no_qrels.pt',
-                         'training_data/train_benchmarkY1_10_dataset_with_qrels_pad.pt',
-                         'training_data/train_benchmarkY1_10_dataset_with_qrels.pt']
-
-    validation_metadata = [('dev_benchmarkY1.run', 'dev_benchmarkY1.qrels', 'dev_benchmarkY1.pt')]
-                           # ('dev_benchmark_Y1_25.run', 'dev_benchmark_Y1_25.qrels', 'dev_benchmark_Y1_25_dataset.pt'),
-                           # ('dev_benchmarkY1_100.run', 'dev_benchmarkY1_100.qrels', 'dev_benchmarkY1_100_dataset.pt')]
+    # # static
+    # batch_size = 16*3
+    # pretrained_weights = 'bert-base-uncased'
+    # relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
+    # epochs = 15
+    # eps = 1e-8
+    # #lr = 5e-5
+    # seed_val = 42
+    # write = True
+    # do_eval = True
+    # logging_steps = 100
+    # exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
+    # base_path = '/nfs/trec_car/data/bert_reranker_datasets/'
+    # # run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
+    # # qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
+    #
+    # training_metadata = ['training_data/train_benchmarkY1_10_dataset_no_qrels_pad.pt',
+    #                      'training_data/train_benchmarkY1_10_dataset_no_qrels.pt',
+    #                      'training_data/train_benchmarkY1_10_dataset_with_qrels_pad.pt',
+    #                      'training_data/train_benchmarkY1_10_dataset_with_qrels.pt']
+    #
+    # validation_metadata = [('dev_benchmarkY1.run', 'dev_benchmarkY1.qrels', 'dev_benchmarkY1.pt')]
+    #                        # ('dev_benchmark_Y1_25.run', 'dev_benchmark_Y1_25.qrels', 'dev_benchmark_Y1_25_dataset.pt'),
+    #                        # ('dev_benchmarkY1_100.run', 'dev_benchmarkY1_100.qrels', 'dev_benchmarkY1_100_dataset.pt')]
 
     # # loop over training & validation
     # for lr in [5e-5, 3e-5]:
@@ -427,16 +429,26 @@ if __name__ == "__main__":
     #                                        qrels_path=qrels_path)
 
 
-    test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
+    test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_10_dataset.pt'
     print('loading test  tensor: {}'.format(test_path))
     test_tensor = torch.load(test_path)
     batch_size = 32*3
     test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
-    model_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/exp_new_pipelines_V3_train_benchmarkY1_10_dataset_no_qrels_pad_dev_benchmarkY1_5e-05/epoch5/'
-    write_path = '/nfs/trec_car/data/bert_reranker_datasets/test_1000_new_pipeline.run'
-    run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
-    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
-    inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, run_path=run_path, qrels_path=qrels_path,
-    write_path=write_path)
+    run_path = '/nfs/trec_car/data/bert_reranker_datasets/test_10.run'
+    qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test_10.qrels'
+    exp_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
+    write_base = '/nfs/trec_car/data/bert_reranker_datasets/'
+    exp_metadata = [
+        ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_no_qrels_dev_benchmarkY1_5e-05/epoch4/', 'test_10_new_pipeline_no_qrels.run'),
+        ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_no_qrels_pad_dev_benchmarkY1_5e-05/epoch1/', 'test_10_new_pipeline_no_qrels_pad.run'),
+        ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_with_qrels_dev_benchmarkY1_5e-05/epoch1/', 'test_10_new_pipeline_with_qrels.run'),
+        ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_with_qrels_pad_dev_benchmarkY1_5e-05/epoch13/', 'test_10_new_pipeline_with_qrels_pad.run'),
+    ]
+    for m, w in exp_metadata:
+        model_path = exp_path + m
+        write_path = write_base + w
+
+        inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, run_path=run_path, qrels_path=qrels_path,
+        write_path=write_path)
 
 

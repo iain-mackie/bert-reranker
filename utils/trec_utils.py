@@ -49,3 +49,13 @@ def write_trec_run(scores_groups, queries_groups, doc_ids_groups, write_path):
                 output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(od[doc_id]), "BERT")) + '\n'
                 f.write(output_line)
                 rank += 1
+
+
+def write_trec_eval(write_path, label_string, oracle_string, bert_string):
+
+    eval_path = write_path + '.eval'
+
+    with open(eval_path, "a+") as f:
+        for s in [label_string, oracle_string, bert_string]:
+            f.write(s + '\n')
+
