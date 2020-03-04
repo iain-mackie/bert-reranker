@@ -354,6 +354,7 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
     label_list = []
     device = torch.device("cpu")
     for step, batch in enumerate(validation_dataloader):
+        print(batch[3])
         if device == torch.device("cpu"):
             label_list += batch[3].cpu().numpy().tolist()
         else:
