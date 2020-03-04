@@ -388,7 +388,7 @@ if __name__ == "__main__":
     logging_steps = 100
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
     dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmark_Y1_25_dataset.pt'
-    train_path = '/nfs/trec_car/data/bert_reranker_datasets/train_benchmarkY1_50_dataset_no_qrels_pad.pt'
+    train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_50_dataset_no_qrels_pad.pt'
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmark_Y1_25.run'
     qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmark_Y1_25.qrels'
     experiment_name = 'train_50_dev_25_no_qrels_pad'
