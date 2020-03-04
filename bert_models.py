@@ -460,7 +460,7 @@ if __name__ == "__main__":
     print('loading test  tensor: {}'.format(test_path))
     test_tensor = torch.load(test_path)
     batch_size = 64
-    test_data_loader = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
+    test_dataloader = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
     run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
     qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
-    run_metrics(validation_dataloader=test_path, run_path=run_path, qrels_path=qrels_path)
+    run_metrics(validation_dataloader=test_dataloader, run_path=run_path, qrels_path=qrels_path)
