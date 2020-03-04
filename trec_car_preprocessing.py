@@ -245,14 +245,15 @@ if __name__ == "__main__":
     print('preprocessing runs and qrels')
     # will look for {set_name}.run + {set_name}.qrels
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data/'
-    set_name = 'train_benchmarkY1_10'
-    print('building training dataset: {}'.format(set_name))
-    preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
-    build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
-                           max_length=max_length)
+    set_names = ['train_benchmarkY1_25', 'train_benchmarkY1_100']
+    for set_name in set_names:
+        print('building training dataset: {}'.format(set_name))
+        preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
+        build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
+                               max_length=max_length)
 
 
-
+    #
     # for i in ['test_10', 'test_25', 'test_100', 'dev_benchmark_Y1_25']:
     #     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
     #     set_name = i
@@ -264,6 +265,6 @@ if __name__ == "__main__":
     #     data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
     #     output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(i)
     #     convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
-    #
+
 
 
