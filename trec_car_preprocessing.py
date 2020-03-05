@@ -252,6 +252,11 @@ if __name__ == "__main__":
         build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
                                max_length=max_length)
 
+        output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_250_dataset_no_qrels_pad.pt'
+        convert_training_dataset_to_pt(set_name=set_name, data_path=data_dir, output_path=output_path,
+                                       include_qrels=False,
+                                       pad_rel_docs=True)
+
 
     #
     # for i in ['test_10', 'test_25', 'test_100', 'dev_benchmark_Y1_25']:
