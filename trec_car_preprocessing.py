@@ -254,8 +254,7 @@ if __name__ == "__main__":
 
         output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_250_dataset_no_qrels_pad.pt'
         convert_training_dataset_to_pt(set_name=set_name, data_path=data_dir, output_path=output_path,
-                                       include_qrels=False,
-                                       pad_rel_docs=True)
+                                       include_qrels=False, pad_rel_docs=True)
 
 
     #
