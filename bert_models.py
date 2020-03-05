@@ -417,21 +417,21 @@ if __name__ == "__main__":
         # ('train_50_dev_10_no_qrels_pad/epoch2/', '50'),
         ('train_100_dev_10_no_qrels_pad2e-05/epoch2/', '100')
     ]
-    for t in ['10', '100']:
+    for t in ['1000']:
         for m, r in exp_metadata:
-            test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_{}_dataset.pt'.format(t)
+            test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
             print('loading test  tensor: {}'.format(test_path))
             test_tensor = torch.load(test_path)
             batch_size = 32 * 3
             test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
 
-            run_path = '/nfs/trec_car/data/bert_reranker_datasets/test_{}.run'.format(t)
-            qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test_{}.qrels'.format(t)
+            run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
+            qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
             model_path = exp_path + m
             write_path = write_base + 'test_{}_train_{}_new_pipeline_no_qrels_pad_2e-05.run'.format(t, r)
 
             inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, run_path=run_path, qrels_path=qrels_path,
-            write_path=write_path)
+                                     write_path=write_path)
 
     # test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
     # print('loading test  tensor: {}'.format(test_path))
