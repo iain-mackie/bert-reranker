@@ -245,7 +245,7 @@ if __name__ == "__main__":
     print('preprocessing runs and qrels')
     # will look for {set_name}.run + {set_name}.qrels
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data/'
-    set_names = ['train_benchmarkY1_25', 'train_benchmarkY1_100']
+    set_names = ['train_benchmarkY1_250']
     for set_name in set_names:
         print('building training dataset: {}'.format(set_name))
         preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
