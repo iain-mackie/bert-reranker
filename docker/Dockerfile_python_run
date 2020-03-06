@@ -1,0 +1,6 @@
+FROM aquaktus/docker_ml_by_carlos:v6
+
+RUN pip install cbor
+RUN pip install lmdb
+
+CMD python3 {}

@@ -414,12 +414,12 @@ if __name__ == "__main__":
     exp_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
     write_base = '/nfs/trec_car/data/bert_reranker_datasets/test_runs/'
     exp_metadata = [
-        # ('train_25_dev_10_no_qrels_pad/epoch4/', '25'),
-        # ('train_50_dev_10_no_qrels_pad/epoch2/', '50'),
-        ('train_250_dev_10_no_qrels_pad2e-05/epoch3/', '250')
+        ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_no_qrels_dev_benchmarkY1_5e-05/epoch4/', 'no_qrels'),
+        ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_with_qrels_dev_benchmarkY1_5e-05/epoch1/', 'with_qrels'),
+        ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_with_qrels_pad_dev_benchmarkY1_5e-05/epoch13/', 'with_qrels_pad'),
     ]
     for t in ['1000']:
-        for m, r in exp_metadata:
+        for m, desc in exp_metadata:
             test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
             print('loading test  tensor: {}'.format(test_path))
             test_tensor = torch.load(test_path)
@@ -429,7 +429,7 @@ if __name__ == "__main__":
             run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
             qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
             model_path = exp_path + m
-            write_path = write_base + 'test_{}_train_{}_new_pipeline_no_qrels_pad.run'.format(t, r)
+            write_path = write_base + 'test_{}_train_{}_new_pipeline_no_qrels_pad.run'.format(t, desc)
 
             inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, run_path=run_path, qrels_path=qrels_path,
                                      write_path=write_path)
