@@ -245,14 +245,14 @@ if __name__ == "__main__":
     print('preprocessing runs and qrels')
     # will look for {set_name}.run + {set_name}.qrels
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data/'
-    set_names = ['train_benchmarkY1_250']
+    set_names = ['train_benchmarkY1_500']
     for set_name in set_names:
         print('building training dataset: {}'.format(set_name))
         preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
         build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
                                max_length=max_length)
 
-        output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_250_dataset_no_qrels_pad.pt'
+        output_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data/train_benchmarkY1_500_dataset_no_qrels_pad.pt'
         convert_training_dataset_to_pt(set_name=set_name, data_path=data_dir, output_path=output_path,
                                        include_qrels=False, pad_rel_docs=True)
 

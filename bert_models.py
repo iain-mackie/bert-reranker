@@ -346,7 +346,7 @@ def inference_bert_re_ranker(model_path, dataloader, run_path, qrels_path, write
     write_trec_eval(write_path, label_string, oracle_string, bert_string)
 
 
-def run_metrics(validation_dataloader, run_path, qrels_path):
+def run_metrics_from_dataloader(validation_dataloader, run_path, qrels_path):
 
     query_docids_map = get_query_docids_map(run_path=run_path)
     query_rel_doc_map = get_query_rel_doc_map(qrels_path=qrels_path)
@@ -372,8 +372,40 @@ def run_metrics(validation_dataloader, run_path, qrels_path):
     return label_string
 
 
+def run_metrics(run_path, qrels_path):
+
+    query_docids_map = get_query_docids_map(run_path=run_path)
+    query_rel_doc_map = get_query_rel_doc_map(qrels_path=qrels_path)
+
+    label_list = []
+    for q, docids in query_docids_map:
+        print(q, docids)
+        if docids in query_rel_doc_map[q]:
+            print('rel query')
+        else:
+            print('not rel query')
+    # labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = group_bert_outputs_by_query(
+    #     score_list=label_list, label_list=label_list, query_docids_map=query_docids_map,
+    #     query_rel_doc_map=query_rel_doc_map)
+    #
+    # metrics_strings, label_metrics, _, oracle_metrics = get_metrics(labels_groups=labels_groups,
+    #                                                                 scores_groups=scores_groups,
+    #                                                                 rel_docs_groups=rel_docs_groups)
+    #
+    # label_string = get_metrics_string(metrics_strings=metrics_strings, metrics=label_metrics, name='RANKING')
+    # oracle_string = get_metrics_string(metrics_strings=metrics_strings, metrics=oracle_metrics, name='ORACLE')
+    #
+    # print(label_string)
+    # print(oracle_string)
+    #
+    # return label_string
+
+
 
 if __name__ == "__main__":
+    run_path = os.path.join(os.getcwd(), 'test_data', 'test_model.run')
+    qrels_path = os.path.join(os.getcwd(), 'test_data', 'test_model.qrels')
+    run_metrics(run_path, qrels_path)
 
     #static
     # batch_size = 16*3
@@ -411,28 +443,28 @@ if __name__ == "__main__":
     #                                     do_eval=do_eval, logging_steps=logging_steps, run_path=run_path,
     #                                     qrels_path=qrels_path)
 
-    exp_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
-    write_base = '/nfs/trec_car/data/bert_reranker_datasets/test_runs/'
-    exp_metadata = [
-        ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_no_qrels_dev_benchmarkY1_5e-05/epoch4/', 'no_qrels'),
-        ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_with_qrels_dev_benchmarkY1_5e-05/epoch1/', 'with_qrels'),
-        ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_with_qrels_pad_dev_benchmarkY1_5e-05/epoch13/', 'with_qrels_pad'),
-    ]
-    for t in ['1000']:
-        for m, desc in exp_metadata:
-            test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
-            print('loading test  tensor: {}'.format(test_path))
-            test_tensor = torch.load(test_path)
-            batch_size = 32 * 3
-            test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
-
-            run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
-            qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
-            model_path = exp_path + m
-            write_path = write_base + 'test_{}_train_{}_new_pipeline_no_qrels_pad.run'.format(t, desc)
-
-            inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, run_path=run_path, qrels_path=qrels_path,
-                                     write_path=write_path)
+    # exp_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
+    # write_base = '/nfs/trec_car/data/bert_reranker_datasets/test_runs/'
+    # exp_metadata = [
+    #     ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_no_qrels_dev_benchmarkY1_5e-05/epoch4/', 'no_qrels'),
+    #     ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_with_qrels_dev_benchmarkY1_5e-05/epoch1/', 'with_qrels'),
+    #     ('exp_new_pipelines_V3_train_benchmarkY1_10_dataset_with_qrels_pad_dev_benchmarkY1_5e-05/epoch13/', 'with_qrels_pad'),
+    # ]
+    # for t in ['1000']:
+    #     for m, desc in exp_metadata:
+    #         test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
+    #         print('loading test  tensor: {}'.format(test_path))
+    #         test_tensor = torch.load(test_path)
+    #         batch_size = 32 * 3
+    #         test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
+    #
+    #         run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
+    #         qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
+    #         model_path = exp_path + m
+    #         write_path = write_base + 'test_{}_train_{}_new_pipeline_no_qrels_pad.run'.format(t, desc)
+    #
+    #         inference_bert_re_ranker(model_path=model_path, dataloader=test_tensor, run_path=run_path, qrels_path=qrels_path,
+    #                                  write_path=write_path)
 
     # test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
     # print('loading test  tensor: {}'.format(test_path))
