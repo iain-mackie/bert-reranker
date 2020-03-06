@@ -3,4 +3,5 @@ FROM aquaktus/docker_ml_by_carlos:v6
 RUN pip install cbor
 RUN pip install lmdb
 
-CMD python3 {}
+#CMD python ${PATH}
+CMD python3 /nfs/trec_car/data/bert_reranker_datasets/bert-reranker/bert_models.py
