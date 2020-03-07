@@ -59,3 +59,53 @@ def write_trec_eval(write_path, label_string, oracle_string, bert_string):
         for s in [label_string, oracle_string, bert_string]:
             f.write(s + '\n')
 
+
+def get_re_ranking_dict(re_ranking_path):
+
+    re_ranking_dict = collections.OrderedDict()
+    with open(re_ranking_path) as re_ranking_file:
+        for line in re_ranking_file:
+            q, _, doc_id, _, _, _ = line.strip().split(" ")
+            if q not in re_ranking_dict:
+                re_ranking_dict[q] = []
+            re_ranking_dict[q].append(doc_id)
+    return re_ranking_dict
+
+
+def get_reduce_run_dict(run_path, reduce_docs):
+
+    reduce_run_dict = collections.OrderedDict()
+    with open(run_path) as run_file:
+        for line in run_file:
+            q, _, doc_id, r, _, _ = line.strip().split(" ")
+
+            if q not in reduce_run_dict:
+                reduce_run_dict[q] = []
+            if int(r) <= reduce_docs:
+                reduce_run_dict[q].append(doc_id)
+
+    return reduce_run_dict
+
+
+def reduce_re_ranking_by_original_run(run_path, re_ranking_path, write_path, reduce_docs=10):
+
+    re_ranking_dict = get_re_ranking_dict(re_ranking_path=re_ranking_path)
+    reduce_run_dict = get_reduce_run_dict(run_path=run_path, reduce_docs=reduce_docs)
+
+    with open(write_path, "a+") as f:
+        for query, docs_ids in re_ranking_dict.items():
+            rank = 1
+            for doc_id in docs_ids:
+                if doc_id in reduce_run_dict[query]:
+                    output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(0.0), "BERT-REDUCED")) + '\n'
+                    f.write(output_line)
+                    rank += 1
+
+
+if __name__ == '__main__':
+    run_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/test.run'
+    re_ranking_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/bert_predictions_test.run'
+    write_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/test_100.run'
+    reduce_re_ranking_by_original_run(run_path=run_path, re_ranking_path=re_ranking_path, write_path=write_path,
+                                      reduce_docs=100)
+
