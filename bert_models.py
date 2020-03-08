@@ -455,16 +455,16 @@ if __name__ == "__main__":
     exp_metadata = [
         ('train_500_dev_10_no_qrels_pad1e-05/epoch2/', '500'),
     ]
-    for t in ['1000']:
+    for t in ['10', '100']:
         for m, desc in exp_metadata:
-            test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_dataset.pt'
+            test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_{}_dataset.pt'.format(t)
             print('loading test  tensor: {}'.format(test_path))
             test_tensor = torch.load(test_path)
-            batch_size = 32 * 3
+            batch_size = 16 * 4
             test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
 
-            run_path = '/nfs/trec_car/data/bert_reranker_datasets/test.run'
-            qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test.qrels'
+            run_path = '/nfs/trec_car/data/bert_reranker_datasets/test_{}.run'.format(t)
+            qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test_{}.qrels'.format(t)
             model_path = exp_path + m
             write_path = write_base + 'test_{}_train_{}_new_pipeline_no_qrels_pad.run'.format(t, desc)
 
