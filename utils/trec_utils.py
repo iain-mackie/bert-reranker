@@ -95,17 +95,20 @@ def reduce_re_ranking_by_original_run(run_path, re_ranking_path, write_path, red
     with open(write_path, "a+") as f:
         for query, docs_ids in re_ranking_dict.items():
             rank = 1
+            score = 0.0
             for doc_id in docs_ids:
                 if doc_id in reduce_run_dict[query]:
-                    output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(0.0), "BERT-REDUCED")) + '\n'
+                    output_line = " ".join((query, "Q0", str(doc_id), str(rank), str(score), "BERT-REDUCED")) + '\n'
                     f.write(output_line)
                     rank += 1
+                    score -= 0.1
 
 
 if __name__ == '__main__':
+    reduce_docs = 100
     run_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/test.run'
     re_ranking_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/bert_predictions_test.run'
-    write_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/test_100.run'
+    write_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/test_reduced_{}.run'.format(reduce_docs)
     reduce_re_ranking_by_original_run(run_path=run_path, re_ranking_path=re_ranking_path, write_path=write_path,
-                                      reduce_docs=100)
+                                      reduce_docs=reduce_docs)
 
