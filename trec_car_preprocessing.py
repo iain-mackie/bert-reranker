@@ -232,10 +232,11 @@ def preprocess_runs_and_qrels(set_name, data_path):
 if __name__ == "__main__":
     from utils.trec_utils import random_sample_qrels
 
-    num_queries = 10
-    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample/'
-    set_name = 'train_fold_0_train_hierarchical'
-    random_sample_qrels(data_dir, set_name, num_queries)
+    num_queries_list = [500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]:
+    for num_queries in num_queries_list:
+        data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample/'
+        set_name = 'train_fold_0_train_hierarchical'
+        random_sample_qrels(data_dir, set_name, num_queries=num_queries)
     # corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
     # lmdb_path = '/nfs/trec_car/data/bert_reranker_datasets/trec_car_lmdb'
     # if os.path.exists(lmdb_path) == False:
