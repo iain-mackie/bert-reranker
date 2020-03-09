@@ -231,7 +231,7 @@ def preprocess_runs_and_qrels(set_name, data_path):
 
 if __name__ == "__main__":
     from utils.trec_utils import random_sample_qrels
-    
+
     num_queries = 10
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample_queries/'
     set_name = 'train_fold_0_train_hierarchical'

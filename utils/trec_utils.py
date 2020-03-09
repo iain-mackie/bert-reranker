@@ -116,7 +116,7 @@ def write_qrels(random_query_od, data_dir, set_name, num_queries):
 
 
 def write_topics(random_query_od, data_dir, set_name, num_queries):
-    write_path = data_dir + set_name + '.topics'
+    write_path = data_dir + set_name + '_' + str(num_queries) + '_random_queries.topics'
     print('writing topics to: {}'.format(write_path))
     with open(write_path, "a+") as f:
         for query, _ in random_query_od.items():
