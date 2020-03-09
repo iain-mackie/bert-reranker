@@ -372,41 +372,6 @@ def run_metrics_from_dataloader(validation_dataloader, run_path, qrels_path):
     return label_string
 
 
-# def run_metrics(run_path, qrels_path):
-#
-#     query_docids_map = get_query_docids_map(run_path=run_path)
-#     query_rel_doc_map = get_query_rel_doc_map(qrels_path=qrels_path)
-#     print(query_docids_map)
-#     print(query_rel_doc_map)
-#
-#     label_list = []
-#     for q, docids in query_docids_map:
-#         print(q, docids)
-#         try:
-#             rel_queries = query_rel_doc_map[q]
-#             if docids in rel_queries:
-#                 print('rel query')
-#             else:
-#                 print('not rel query')
-#         except:
-#             print('query not in qrels')
-
-    # labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = group_bert_outputs_by_query(
-    #     score_list=label_list, label_list=label_list, query_docids_map=query_docids_map,
-    #     query_rel_doc_map=query_rel_doc_map)
-    #
-    # metrics_strings, label_metrics, _, oracle_metrics = get_metrics(labels_groups=labels_groups,
-    #                                                                 scores_groups=scores_groups,
-    #                                                                 rel_docs_groups=rel_docs_groups)
-    #
-    # label_string = get_metrics_string(metrics_strings=metrics_strings, metrics=label_metrics, name='RANKING')
-    # oracle_string = get_metrics_string(metrics_strings=metrics_strings, metrics=oracle_metrics, name='ORACLE')
-    #
-    # print(label_string)
-    # print(oracle_string)
-    #
-    # return label_string
-
 
 
 if __name__ == "__main__":
