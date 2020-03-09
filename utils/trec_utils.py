@@ -146,13 +146,11 @@ def random_sample_qrels(data_dir, set_name, num_queries):
 
     queries = list(query_od.keys())
     max_num_queries = len(queries)
-    print(queries)
     if max_num_queries <= num_queries:
         print('Not enough queries to meet request')
         return query_od
 
     random_queries = get_random_queries(queries=queries, num_queries=num_queries)
-    print(random_queries)
 
     random_query_od = collections.OrderedDict()
     for q in random_queries:

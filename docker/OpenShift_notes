@@ -1,7 +1,7 @@
 Commands to run to make files read/write
 
 - end of scripts groupwrite permissons (run chmod -R 775 *)
-- copy scp (chmod -R 775 * && chgrp -R nfsnobody *)
+- copy scp (chmod -R 775 * && chmod -R +w * && chgrp -R nfsnobody *)
 
 
 serviceAccount: containerroot
