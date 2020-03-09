@@ -106,8 +106,8 @@ def reduce_re_ranking_by_original_run(run_path, re_ranking_path, write_path, red
                     score -= 0.1
 
 
-def write_qrels(random_query_od, output_dir, name):
-    write_path = output_dir + name + '.qrels'
+def write_qrels(random_query_od, data_dir, set_name, num_queries):
+    write_path = data_dir + set_name + '_' + str(num_queries) + '_random_queries.qrels'
     print('writing qrels to: {}'.format(write_path))
     with open(write_path, "a+") as f:
         for _, lines in random_query_od.items():
@@ -115,8 +115,8 @@ def write_qrels(random_query_od, output_dir, name):
                 f.write(line)
 
 
-def write_topics(random_query_od, output_dir, name):
-    write_path = output_dir + name + '.topics'
+def write_topics(random_query_od, data_dir, set_name, num_queries):
+    write_path = data_dir + set_name + '.topics'
     print('writing topics to: {}'.format(write_path))
     with open(write_path, "a+") as f:
         for query, _ in random_query_od.items():
@@ -132,8 +132,8 @@ def get_random_queries(queries, num_queries):
             return sorted(random_queries)
 
 
-def random_sample_qrels(qrels_path, num_queries, output_dir, name):
-
+def random_sample_qrels(data_dir, set_name, num_queries):
+    qrels_path = data_dir + set_name + '.qrels'
     query_od = collections.OrderedDict()
     with open(qrels_path) as qrels_file:
         for line in qrels_file:
@@ -158,9 +158,9 @@ def random_sample_qrels(qrels_path, num_queries, output_dir, name):
     for q in random_queries:
         random_query_od[q] = query_od[q]
 
-    write_topics(random_query_od=random_query_od, output_dir=output_dir, name=name)
+    write_topics(random_query_od=random_query_od, data_dir=data_dir, set_name=set_name, num_queries=num_queries)
 
-    write_qrels(random_query_od=random_query_od, output_dir=output_dir, name=name)
+    write_qrels(random_query_od=random_query_od, data_dir=data_dir, set_name=set_name, num_queries=num_queries)
 
 
 
@@ -175,8 +175,7 @@ if __name__ == '__main__':
     #                                   reduce_docs=reduce_docs)
 
 
-    qrels_path = '/home/imackie/Documents/github/bert-reranker/test_data/test_model.qrels'
-    num_queries = 3
-    output_dir = '/home/imackie/Documents/github/bert-reranker/test_data/'
-    name = 'test_model_3'
-    random_sample_qrels(qrels_path, num_queries,output_dir, name)
+    num_queries = 500
+    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample_queries/'
+    set_name = 'train_fold_0_train_hierarchical'
+    random_sample_qrels(data_dir, set_name, num_queries)
