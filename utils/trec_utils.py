@@ -175,7 +175,7 @@ if __name__ == '__main__':
     #                                   reduce_docs=reduce_docs)
 
 
-    num_queries = 500
+    num_queries = 10
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample_queries/'
     set_name = 'train_fold_0_train_hierarchical'
     random_sample_qrels(data_dir, set_name, num_queries)
