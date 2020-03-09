@@ -233,7 +233,7 @@ if __name__ == "__main__":
     from utils.trec_utils import random_sample_qrels
 
     num_queries = 10
-    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample_queries/'
+    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample/'
     set_name = 'train_fold_0_train_hierarchical'
     random_sample_qrels(data_dir, set_name, num_queries)
     # corpus_path = '/nfs/trec_car/data/paragraphs/dedup.articles-paragraphs.cbor'
