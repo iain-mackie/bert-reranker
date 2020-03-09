@@ -1,5 +1,7 @@
 
 import collections
+import random
+
 
 def get_query_docids_map(run_path):
 
@@ -104,11 +106,77 @@ def reduce_re_ranking_by_original_run(run_path, re_ranking_path, write_path, red
                     score -= 0.1
 
 
-if __name__ == '__main__':
-    reduce_docs = 100
-    run_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/test.run'
-    re_ranking_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/bert_predictions_test.run'
-    write_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/test_reduced_{}.run'.format(reduce_docs)
-    reduce_re_ranking_by_original_run(run_path=run_path, re_ranking_path=re_ranking_path, write_path=write_path,
-                                      reduce_docs=reduce_docs)
+def write_qrels(random_query_od, output_dir, name):
+    write_path = output_dir + name + '.qrels'
+    print('writing qrels to: {}'.format(write_path))
+    with open(write_path, "a+") as f:
+        for _, lines in random_query_od.items():
+            for line in lines:
+                f.write(line)
 
+
+def write_topics(random_query_od, output_dir, name):
+    write_path = output_dir + name + '.topics'
+    print('writing topics to: {}'.format(write_path))
+    with open(write_path, "a+") as f:
+        for query, _ in random_query_od.items():
+            f.write(query + '\n')
+
+
+def get_random_queries(queries, num_queries):
+    random.shuffle(queries)
+    random_queries = []
+    for q in queries:
+        random_queries.append(q)
+        if len(random_queries) == num_queries:
+            return sorted(random_queries)
+
+
+def random_sample_qrels(qrels_path, num_queries, output_dir, name):
+
+    query_od = collections.OrderedDict()
+    with open(qrels_path) as qrels_file:
+        for line in qrels_file:
+            query, i, doc_id, rank = line.strip().split(" ")
+
+            if query not in query_od:
+                query_od[query] = []
+
+            query_od[query].append(line)
+
+    queries = list(query_od.keys())
+    max_num_queries = len(queries)
+    print(queries)
+    if max_num_queries <= num_queries:
+        print('Not enough queries to meet request')
+        return query_od
+
+    random_queries = get_random_queries(queries=queries, num_queries=num_queries)
+    print(random_queries)
+
+    random_query_od = collections.OrderedDict()
+    for q in random_queries:
+        random_query_od[q] = query_od[q]
+
+    write_topics(random_query_od=random_query_od, output_dir=output_dir, name=name)
+
+    write_qrels(random_query_od=random_query_od, output_dir=output_dir, name=name)
+
+
+
+
+
+if __name__ == '__main__':
+    # reduce_docs = 100
+    # run_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/test.run'
+    # re_ranking_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/bert_predictions_test.run'
+    # write_path = '/Users/iain/LocalStorage/coding/github/bert-reranker/test_data/test_reduced_{}.run'.format(reduce_docs)
+    # reduce_re_ranking_by_original_run(run_path=run_path, re_ranking_path=re_ranking_path, write_path=write_path,
+    #                                   reduce_docs=reduce_docs)
+
+
+    qrels_path = '/home/imackie/Documents/github/bert-reranker/test_data/test_model.qrels'
+    num_queries = 3
+    output_dir = '/home/imackie/Documents/github/bert-reranker/test_data/'
+    name = 'test_model_3'
+    random_sample_qrels(qrels_path, num_queries,output_dir, name)
