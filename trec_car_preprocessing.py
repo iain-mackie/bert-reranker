@@ -232,7 +232,7 @@ def preprocess_runs_and_qrels(set_name, data_path):
 if __name__ == "__main__":
     from utils.trec_utils import random_sample_qrels
 
-    num_queries_list = [500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
+    #num_queries_list = [500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample_queries/'
     set_name_base = 'train_fold_0_train_hierarchical'
     # for num_queries in num_queries_list:
@@ -253,12 +253,12 @@ if __name__ == "__main__":
     # will look for {set_name}.run + {set_name}.qrels
     #data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data/'
 
-    for num_queries in num_queries_list:
+    for num_queries in [100000]:
         set_name = set_name_base + '_{}_random_queries'.format(num_queries)
         print('building training dataset: {}'.format(set_name))
-        preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
-        build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
-                               max_length=max_length)
+        # preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
+        # build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
+        #                        max_length=max_length)
 
         output_path = data_dir + set_name + '_dataset.pt'
         convert_training_dataset_to_pt(set_name=set_name, data_path=data_dir, output_path=output_path,
