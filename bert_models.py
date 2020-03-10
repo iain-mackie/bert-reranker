@@ -389,7 +389,7 @@ if __name__ == "__main__":
     # run_metrics(run_path, qrels_path)
 
     #static
-    batch_size = 16*3
+    batch_size = 8*3
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
     epochs = 5
@@ -398,7 +398,7 @@ if __name__ == "__main__":
     seed_val = 42
     write = True
     do_eval = True
-    logging_steps = 200
+    logging_steps = 500
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
 
     for lr in lr_list:
