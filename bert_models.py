@@ -389,7 +389,7 @@ if __name__ == "__main__":
     # run_metrics(run_path, qrels_path)
 
     #static
-    batch_size = 32*4
+    batch_size = 16*4
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
     epochs = 5
