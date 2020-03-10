@@ -118,7 +118,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         logging.info("=================================")
         logging.info('======== Epoch {:} / {:} ========'.format(epoch_i, epochs))
         logging.info("=================================")
-        
+
         t0 = time.time()
         train_loss = 0
         model.train()
@@ -152,8 +152,8 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 metrics.append('Training loss: {}\n'.format(str(avg_train_loss)))
 
                 logging.info('----- Epoch {} / Batch {} -----\n'.format(str(epoch_i), str(train_step+1)))
-                log_epoch(t0=t0, step=train_step, total_steps=len(train_dataloader), loss_sum=train_loss,
-                          device=device, labels=train_batch[3], scores=outputs[1])
+                # log_epoch(t0=t0, step=train_step, total_steps=len(train_dataloader), loss_sum=train_loss,
+                #           device=device, labels=train_batch[3], scores=outputs[1])
                 logging.info("Training loss: {0:.5f}".format(avg_train_loss))
                 logging.info("Training time: {:}".format(format_time(time.time() - t0)))
 
