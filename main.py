@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=validation_dataloader,
                                validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8, write=write,
-                               experiment_name=experiment_name, exp_dir=exp_dir, do_eval=do_eval, validation_steps=2,
+                               experiment_name=experiment_name, exp_dir=exp_dir, do_eval=do_eval, validation_steps=3,
                                run_path=run_path, qrels_path=qrels_path)
 
     # #Run Inference

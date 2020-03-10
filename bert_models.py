@@ -71,10 +71,13 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
     torch.manual_seed(seed_val)
     torch.cuda.manual_seed_all(seed_val)
 
+    exp_path = exp_dir + experiment_name + '/'
+    results_path = exp_path + 'results.txt'
+    results_csv_path = exp_path + 'results.csv'
+
     if write:
         if os.path.isdir(exp_dir):
             print('*** Starting logging ***')
-            exp_path = exp_dir + experiment_name + '/'
             if os.path.isdir(exp_path) == False:
                 os.mkdir(exp_path)
             logging_path = exp_path + 'output.log'
@@ -146,10 +149,15 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             if ((train_step+1) % validation_steps == 0) or ((train_step+1) == len(validation_dataloader)):
 
                 metrics = []
+                metrics_stats_headers = 'epoch,batch,'
+                metrics_stats = [epoch_i, train_step+1]
 
                 avg_train_loss = train_loss / len(train_dataloader)
                 metrics.append('----- Epoch {} / Batch {} -----\n'.format(str(epoch_i), str(train_step+1)))
                 metrics.append('Training loss: {}\n'.format(str(avg_train_loss)))
+
+                metrics_stats_headers += 'train_loss,'
+                metrics_stats.append(avg_train_loss)
 
                 logging.info('----- Epoch {} / Batch {} -----\n'.format(str(epoch_i), str(train_step+1)))
                 # log_epoch(t0=t0, step=train_step, total_steps=len(train_dataloader), loss_sum=train_loss,
@@ -199,6 +207,16 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                     metrics_strings, label_metrics, bert_metrics, oracle_metrics = get_metrics(labels_groups=labels_groups,
                                                                                                scores_groups=scores_groups,
                                                                                                rel_docs_groups=rel_docs_groups)
+                    metrics_stats_headers += 'dev_loss,'
+                    metrics_stats.append(avg_validation_loss)
+
+                    for l in [label_metrics, bert_metrics, oracle_metrics]:
+                        for i in l:
+                            metrics_stats.append(i)
+
+                    for l in ['ORIGINAL', 'BERT', 'ORACLE']:
+                        for s in metrics_strings:
+                            metrics_stats_headers += l + '_' + s + ','
 
                     label_string = get_metrics_string(metrics_strings=metrics_strings, metrics=label_metrics, name='ORIGINAL')
                     bert_string = get_metrics_string(metrics_strings=metrics_strings, metrics=bert_metrics, name='BERT')
@@ -223,7 +241,6 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 if write:
                     logging.info('Writing epoch model to file')
                     if os.path.isdir(exp_dir):
-                        exp_path = exp_dir + experiment_name + '/'
 
                         if os.path.isdir(exp_path) == False:
                             os.mkdir(exp_path)
@@ -238,11 +255,18 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                             model.save_pretrained(epoch_dir)
 
                         logging.info('writing epoch metrics')
-                        results_path = exp_path + 'results.txt'
                         f = open(results_path, "a+")
                         for m in metrics:
                             f.write(m)
-                        f.close()
+
+                        if os.path.exists(results_csv_path) == False:
+                            with open(results_csv_path, 'a+') as f:
+                                f.write(metrics_stats_headers + '\n')
+
+                        with open(results_csv_path, 'a+') as f:
+                            for m in metrics_stats:
+                                f.write('{0:.5f},'.format(m))
+                            f.write('\n')
 
                     else:
                         logging.warning('MODEL PATH DOES NOT EXIST')
