@@ -62,7 +62,7 @@ class BertReRanker(BertPreTrainedModel):
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
                                seed_val=42, write=False, exp_dir=None, experiment_name='test', do_eval=True,
-                               validation_steps=100, run_path=None, qrels_path=None):
+                               logging_steps=100, run_path=None, qrels_path=None):
 
     # Set the seed value all over the place to make this reproducible.
     print('starting fine tuning')
@@ -100,7 +100,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
     logging.info('--- SETUP ---')
     setup_strings = ['epochs', 'lr', 'eps', 'seed_val', 'write', 'exp_dir', 'experiment_name', 'do_eval', 'logging_steps', 'run_path', 'qrels_path']
-    setup_values = [epochs, lr, eps, seed_val, write, exp_dir, experiment_name, do_eval, validation_steps, run_path, qrels_path]
+    setup_values = [epochs, lr, eps, seed_val, write, exp_dir, experiment_name, do_eval, logging_steps, run_path, qrels_path]
     for i in zip(setup_strings, setup_values):
         logging.info('{}: {}'.format(i[0], i[1]))
     logging.info('-------------')
@@ -146,7 +146,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             scheduler.step()
 
             # Progress update every X batches.
-            if ((train_step+1) % validation_steps == 0) or ((train_step+1) == len(validation_dataloader)):
+            if ((train_step+1) % logging_steps == 0) or ((train_step+1) == len(train_dataloader)):
 
                 metrics = []
                 metrics_stats_headers = 'epoch,batch,'
@@ -389,7 +389,7 @@ if __name__ == "__main__":
     # run_metrics(run_path, qrels_path)
 
     #static
-    batch_size = 16*4
+    batch_size = 32*4
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
     epochs = 5
@@ -398,7 +398,7 @@ if __name__ == "__main__":
     seed_val = 42
     write = True
     do_eval = True
-    validation_steps = 10000
+    logging_steps = 100
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
 
     for lr in lr_list:
@@ -408,7 +408,7 @@ if __name__ == "__main__":
             dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
             run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.run'
             qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.qrels'
-            experiment_name = 'random_queries_{}_dev_10'.format(i) + str(lr)
+            experiment_name = 'random_queries_{}_dev_10'.format(i) + '_' + str(lr)
 
             print('loading dev tensor: {}'.format(dev_path))
             validation_tensor = torch.load(dev_path)
@@ -421,7 +421,7 @@ if __name__ == "__main__":
             fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=train_dataloader,
                                         validation_dataloader=validation_dataloader, epochs=epochs, lr=lr, eps=eps,
                                         seed_val=seed_val, write=write, exp_dir=exp_dir, experiment_name=experiment_name,
-                                        do_eval=do_eval, validation_steps=validation_steps, run_path=run_path,
+                                        do_eval=do_eval, logging_steps=logging_steps, run_path=run_path,
                                         qrels_path=qrels_path)
 
     # exp_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
