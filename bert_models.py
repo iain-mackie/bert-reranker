@@ -392,17 +392,17 @@ if __name__ == "__main__":
     batch_size = 8*3
     pretrained_weights = 'bert-base-uncased'
     relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
-    epochs = 5
+    epochs = 4
     eps = 1e-8
     lr_list = [1e-5]
     seed_val = 42
     write = True
     do_eval = True
-    logging_steps = 500
+    logging_steps = 10000
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
 
-    for lr in lr_list:
-        for i in ['500']:
+    for i in ['1000', '2500', '5000', '10000']:
+        for lr in lr_list:
 
             train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample_queries/train_fold_0_train_hierarchical_{}_random_queries_dataset.pt'.format(i)
             dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1.pt'
