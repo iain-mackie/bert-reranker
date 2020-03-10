@@ -62,7 +62,7 @@ class BertReRanker(BertPreTrainedModel):
 
 def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, epochs=5, lr=5e-5, eps=1e-8,
                                seed_val=42, write=False, exp_dir=None, experiment_name='test', do_eval=True,
-                               logging_steps=100, run_path=None, qrels_path=None):
+                               validation_steps=100, run_path=None, qrels_path=None):
 
     # Set the seed value all over the place to make this reproducible.
     print('starting fine tuning')
@@ -97,7 +97,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
 
     logging.info('--- SETUP ---')
     setup_strings = ['epochs', 'lr', 'eps', 'seed_val', 'write', 'exp_dir', 'experiment_name', 'do_eval', 'logging_steps', 'run_path', 'qrels_path']
-    setup_values = [epochs, lr, eps, seed_val, write, exp_dir, experiment_name, do_eval, logging_steps, run_path, qrels_path]
+    setup_values = [epochs, lr, eps, seed_val, write, exp_dir, experiment_name, do_eval, validation_steps, run_path, qrels_path]
     for i in zip(setup_strings, setup_values):
         logging.info('{}: {}'.format(i[0], i[1]))
     logging.info('-------------')
@@ -109,39 +109,32 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
     query_docids_map = get_query_docids_map(run_path=run_path)
     query_rel_doc_map = get_query_rel_doc_map(qrels_path=qrels_path)
 
-    loss_values = []
-    epoch_i = 0
-    for i in range(0, epochs):
-
-        epoch_i += 1
-
-        metrics = []
-        metrics.append('------------------------\n')
+    for epoch_i in range(1, epochs+1):
 
         # ========================================
         #               Training
         # ========================================
 
-        logging.info("")
+        logging.info("=================================")
         logging.info('======== Epoch {:} / {:} ========'.format(epoch_i, epochs))
-        logging.info('Training...')
-
+        logging.info("=================================")
+        
         t0 = time.time()
-        total_loss = 0
+        train_loss = 0
         model.train()
 
-        for step, batch in enumerate(train_dataloader):
+        for train_step, train_batch in enumerate(train_dataloader):
 
-            b_input_ids = batch[0].to(device)
-            b_token_type_ids = batch[1].to(device)
-            b_attention_mask = batch[2].to(device)
-            b_labels = batch[3].to(device, dtype=torch.float)
+            b_input_ids = train_batch[0].to(device)
+            b_token_type_ids = train_batch[1].to(device)
+            b_attention_mask = train_batch[2].to(device)
+            b_labels = train_batch[3].to(device, dtype=torch.float)
 
             model.zero_grad()
             outputs = model.forward(input_ids=b_input_ids, attention_mask=b_attention_mask,
                                     token_type_ids=b_token_type_ids, labels=b_labels)
             loss = outputs[0]
-            total_loss += loss.sum().item()
+            train_loss += loss.sum().item()
 
             loss.sum().backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -150,119 +143,111 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             scheduler.step()
 
             # Progress update every X batches.
-            if step % logging_steps == 0 and not step == 0:
-                log_epoch(t0=t0, step=step, total_steps=len(train_dataloader), loss_sum=total_loss,
-                          device=device, labels=batch[3], scores=outputs[1])
+            if ((train_step+1) % validation_steps == 0) or ((train_step+1) == len(validation_dataloader)):
 
-        avg_train_loss = total_loss / len(train_dataloader)
-        metrics.append('Epoch {} -  Average training loss: '.format(str(epoch_i)) + str(avg_train_loss) + '\n')
-        loss_values.append(avg_train_loss)
+                metrics = []
 
-        logging.info("")
-        logging.info("  Average training loss: {0:.5f}".format(avg_train_loss))
-        logging.info("  Training epoch took: {:}".format(format_time(time.time() - t0)))
+                avg_train_loss = train_loss / len(train_dataloader)
+                metrics.append('----- Epoch {} / Batch {} -----\n'.format(str(epoch_i), str(train_step+1)))
+                metrics.append('Training loss: {}\n'.format(str(avg_train_loss)))
 
-        # ========================================
-        #               Validation
-        # ========================================
-        if do_eval:
+                logging.info('----- Epoch {} / Batch {} -----\n'.format(str(epoch_i), str(train_step+1)))
+                log_epoch(t0=t0, step=train_step, total_steps=len(train_dataloader), loss_sum=train_loss,
+                          device=device, labels=train_batch[3], scores=outputs[1])
+                logging.info("Training loss: {0:.5f}".format(avg_train_loss))
+                logging.info("Training time: {:}".format(format_time(time.time() - t0)))
 
-            logging.info("---")
-            logging.info('Validation...')
+                if do_eval:
 
-            t0 = time.time()
-            eval_loss = 0
+                    # ========================================
+                    #               Validation
+                    # ========================================
 
-            pred_list = []
-            label_list = []
+                    t0 = time.time()
+                    dev_loss = 0
 
-            model.eval()
-            for step, batch in enumerate(validation_dataloader):
+                    pred_list = []
+                    label_list = []
 
-                b_input_ids = batch[0].to(device)
-                b_token_type_ids = batch[1].to(device)
-                b_attention_mask = batch[2].to(device)
-                b_labels = batch[3].to(device, dtype=torch.float)
+                    model.eval()
+                    for dev_step, dev_batch in enumerate(validation_dataloader):
 
-                with torch.no_grad():
-                    outputs = model.forward(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
-                                            attention_mask=b_attention_mask, labels=b_labels)
-                loss = outputs[0]
-                eval_loss += loss.sum().item()
+                        b_input_ids = dev_batch[0].to(device)
+                        b_token_type_ids = dev_batch[1].to(device)
+                        b_attention_mask = dev_batch[2].to(device)
+                        b_labels = dev_batch[3].to(device, dtype=torch.float)
 
-                if device == torch.device("cpu"):
-                    pred_list += flatten_list(outputs[1].cpu().detach().numpy().tolist())
-                    label_list += batch[3].cpu().numpy().tolist()
+                        with torch.no_grad():
+                            outputs = model.forward(input_ids=b_input_ids, token_type_ids=b_token_type_ids,
+                                                    attention_mask=b_attention_mask, labels=b_labels)
+                        loss = outputs[0]
+                        dev_loss += loss.sum().item()
+
+                        if device == torch.device("cpu"):
+                            pred_list += flatten_list(outputs[1].cpu().detach().numpy().tolist())
+                            label_list += dev_batch[3].cpu().numpy().tolist()
+                        else:
+                            pred_list += flatten_list(outputs[1].cpu().detach().numpy().tolist())
+                            label_list += flatten_list(b_labels.cpu().numpy().tolist())
+
+                    # Report the final accuracy for this validation run.
+                    avg_validation_loss = dev_loss / len(validation_dataloader)
+
+                    labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = group_bert_outputs_by_query(
+                        score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map, query_rel_doc_map=query_rel_doc_map)
+
+                    metrics_strings, label_metrics, bert_metrics, oracle_metrics = get_metrics(labels_groups=labels_groups,
+                                                                                               scores_groups=scores_groups,
+                                                                                               rel_docs_groups=rel_docs_groups)
+
+                    label_string = get_metrics_string(metrics_strings=metrics_strings, metrics=label_metrics, name='ORIGINAL')
+                    bert_string = get_metrics_string(metrics_strings=metrics_strings, metrics=bert_metrics, name='BERT')
+                    oracle_string = get_metrics_string(metrics_strings=metrics_strings, metrics=oracle_metrics, name='ORACLE')
+
+                    logging.info("Validation loss: {0:.5f}".format(avg_validation_loss))
+                    logging.info("Validation time: {:}".format(format_time(time.time() - t0)))
+                    logging.info(label_string)
+                    logging.info(bert_string)
+                    logging.info(oracle_string)
+
+                    metrics.append('Validation loss: ' + str(avg_validation_loss) + '\n')
+                    metrics.append(' ' + label_string + '\n')
+                    metrics.append(' ' + bert_string + '\n')
+                    metrics.append(' ' + oracle_string + '\n')
+
                 else:
-                    pred_list += flatten_list(outputs[1].cpu().detach().numpy().tolist())
-                    label_list += flatten_list(b_labels.cpu().numpy().tolist())
 
-                # Progress update every X batches.
-                if step % logging_steps == 0 and not step == 0:
-                    log_epoch(t0=t0, step=step, total_steps=len(validation_dataloader), loss_sum=eval_loss,
-                              device=device, labels=batch[3], scores=outputs[1])
+                    logging.info('*** skipping validation ***')
 
+                # Writing model & metrics
+                if write:
+                    logging.info('Writing epoch model to file')
+                    if os.path.isdir(exp_dir):
+                        exp_path = exp_dir + experiment_name + '/'
 
-            # Report the final accuracy for this validation run.
-            avg_validation_loss = eval_loss / len(validation_dataloader)
+                        if os.path.isdir(exp_path) == False:
+                            os.mkdir(exp_path)
 
-            labels_groups, scores_groups, queries_groups, doc_ids_groups, rel_docs_groups = group_bert_outputs_by_query(
-                score_list=pred_list, label_list=label_list, query_docids_map=query_docids_map, query_rel_doc_map=query_rel_doc_map)
+                        epoch_dir = exp_path + 'epoch{}_batch{}/'.format(epoch_i, train_step+1)
+                        if os.path.isdir(epoch_dir) == False:
+                            os.mkdir(epoch_dir)
 
-            metrics_strings, label_metrics, bert_metrics, oracle_metrics = get_metrics(labels_groups=labels_groups,
-                                                                                       scores_groups=scores_groups,
-                                                                                       rel_docs_groups=rel_docs_groups)
+                        try:
+                            model.module.save_pretrained(epoch_dir)
+                        except AttributeError:
+                            model.save_pretrained(epoch_dir)
 
-            label_string = get_metrics_string(metrics_strings=metrics_strings, metrics=label_metrics, name='ORIGINAL')
-            bert_string = get_metrics_string(metrics_strings=metrics_strings, metrics=bert_metrics, name='BERT')
-            oracle_string = get_metrics_string(metrics_strings=metrics_strings, metrics=oracle_metrics, name='ORACLE')
+                        logging.info('writing epoch metrics')
+                        results_path = exp_path + 'results.txt'
+                        f = open(results_path, "a+")
+                        for m in metrics:
+                            f.write(m)
+                        f.close()
 
-            logging.info("")
-            logging.info("  Average validation loss: {0:.5f}".format(avg_validation_loss))
-            logging.info(label_string)
-            logging.info(bert_string)
-            logging.info(oracle_string)
-            logging.info("  Validation took: {:}".format(format_time(time.time() - t0)))
-
-            metrics.append('Epoch {} -  Average validation loss: '.format(str(epoch_i)) + str(avg_validation_loss) + '\n')
-            metrics.append('Epoch {} -'.format(str(epoch_i)) + label_string + '\n')
-            metrics.append('Epoch {} -'.format(str(epoch_i)) + bert_string + '\n')
-            metrics.append('Epoch {} -'.format(str(epoch_i)) + oracle_string + '\n')
-
-
-        else:
-
-            logging.info('*** skipping validation ***')
-
-        # Writing model & metrics
-        if write:
-            logging.info('Writing epoch model to file')
-            if os.path.isdir(exp_dir):
-                exp_path = exp_dir + experiment_name + '/'
-
-                if os.path.isdir(exp_path) == False:
-                    os.mkdir(exp_path)
-
-                epoch_dir = exp_path + 'epoch{}/'.format(epoch_i)
-                if os.path.isdir(epoch_dir) == False:
-                    os.mkdir(epoch_dir)
-
-                try:
-                    model.module.save_pretrained(epoch_dir)
-                except AttributeError:
-                    model.save_pretrained(epoch_dir)
-
-                logging.info('writing epoch metrics')
-                results_path = exp_path + 'results.txt'
-                f = open(results_path, "a+")
-                for m in metrics:
-                    f.write(m)
-                f.close()
-
-            else:
-                logging.warning('MODEL PATH DOES NOT EXIST')
-        else:
-            logging.warning('*** Not writing model to file ***')
+                    else:
+                        logging.warning('MODEL PATH DOES NOT EXIST')
+                else:
+                    logging.warning('*** Not writing model to file ***')
 
     logging.info("")
     logging.info("Training complete!")
