@@ -427,7 +427,7 @@ if __name__ == "__main__":
     exp_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
     write_base = '/nfs/trec_car/data/bert_reranker_datasets/test_runs/'
     exp_metadata = [
-        ('random_queries_2500_dev_10_5e-06/epoch2_batch1000/', '2500'),
+        ('random_queries_2500_dev_10_5e-06/epoch2_batch10000/', '2500'),
     ]
     for t in [10, 100, 1000]:
         for m, desc in exp_metadata:
