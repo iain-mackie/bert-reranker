@@ -427,7 +427,7 @@ if __name__ == "__main__":
     exp_path = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
     write_base = '/nfs/trec_car/data/bert_reranker_datasets/test_runs/'
     exp_metadata = [
-        ('random_queries_2500_dev_10_5e-06/epoch2_batch10000/', '2500'),
+        ('random_queries_5000_dev_10_5e-06/epoch2_batch10000/', '5000'),
     ]
     for t in [10, 100, 1000]:
         for m, desc in exp_metadata:
@@ -442,7 +442,7 @@ if __name__ == "__main__":
 
             print('loading test  tensor: {}'.format(test_path))
             test_tensor = torch.load(test_path)
-            batch_size = 32 * 3
+            batch_size = 32 * 4
             test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
 
             model_path = exp_path + m
