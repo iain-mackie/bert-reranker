@@ -401,7 +401,7 @@ if __name__ == "__main__":
     logging_steps = 10000
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
 
-    for i in ['10000']:
+    for i in ['25000']:
         for lr in lr_list:
 
             train_path = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample_queries/train_fold_0_train_hierarchical_{}_random_queries_dataset.pt'.format(i)
