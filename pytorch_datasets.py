@@ -78,7 +78,7 @@ def get_tensor(set_name, data_path, suffix):
 
     data = read_from_json_given_suffix(data_path=data_path, set_name=set_name, suffix=suffix, ordered_dict=False)
     data_tensor = torch.tensor(data)
-    print('tensor shape of {}: {}'.format(set_name + suffix, data_tensor.shape))
+    print('{} --> tensor.shape: {}, tensor.size: {}'.format(set_name + suffix, data_tensor.shape, data_tensor.size(0)))
     return data_path
 
 
