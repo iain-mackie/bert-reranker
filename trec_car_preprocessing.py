@@ -233,8 +233,8 @@ if __name__ == "__main__":
     from utils.trec_utils import random_sample_qrels
 
     #num_queries_list = [500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
-    data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample_queries/'
-    set_name_base = 'train_fold_0_train_hierarchical'
+    # data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data_sample_queries/'
+    # set_name_base = 'train_fold_0_train_hierarchical'
     # for num_queries in num_queries_list:
     #     random_sample_qrels(data_dir, set_name, num_queries=num_queries)
 
@@ -249,34 +249,34 @@ if __name__ == "__main__":
     max_length = 512
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
-    print('preprocessing runs and qrels')
+    # print('preprocessing runs and qrels')
     # will look for {set_name}.run + {set_name}.qrels
     #data_dir = '/nfs/trec_car/data/bert_reranker_datasets/training_data/'
 
-    for num_queries in [100000]:
-        set_name = set_name_base + '_{}_random_queries'.format(num_queries)
-        print('building training dataset: {}'.format(set_name))
+    # for num_queries in [100000]:
+    #     set_name = set_name_base + '_{}_random_queries'.format(num_queries)
+    #     print('building training dataset: {}'.format(set_name))
         # preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
         # build_training_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
         #                        max_length=max_length)
 
-        output_path = data_dir + set_name + '_dataset.pt'
-        convert_training_dataset_to_pt(set_name=set_name, data_path=data_dir, output_path=output_path,
-                                       include_qrels=False, pad_rel_docs=True)
+        # output_path = data_dir + set_name + '_dataset.pt'
+        # convert_training_dataset_to_pt(set_name=set_name, data_path=data_dir, output_path=output_path,
+        #                                include_qrels=False, pad_rel_docs=True)
 
 
-    #
-    # for i in ['test_10', 'test_25', 'test_100', 'dev_benchmark_Y1_25']:
-    #     data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
-    #     set_name = i
-    #     print('building validation dataset: {}'.format(set_name))
-    #     preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
-    #     build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
-    #                            max_length=max_length)
-    #
-    #     data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
-    #     output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(i)
-    #     convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
+
+    for i in ['dev_250']:
+        data_dir = '/nfs/trec_car/data/bert_reranker_datasets/'
+        set_name = i
+        print('building validation dataset: {}'.format(set_name))
+        preprocess_runs_and_qrels(set_name=set_name, data_path=data_dir)
+        build_validation_dataset(data_path=data_dir, lmdb_path=lmdb_path, set_name=set_name, tokenizer=tokenizer,
+                                 max_length=max_length)
+
+        data_path = '/nfs/trec_car/data/bert_reranker_datasets/'
+        output_path = '/nfs/trec_car/data/bert_reranker_datasets/{}_dataset.pt'.format(i)
+        convert_validation_dataset_to_pt(set_name=set_name, data_path=data_path, output_path=output_path)
 
 
 
