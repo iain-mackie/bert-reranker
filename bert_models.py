@@ -125,7 +125,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
         t0 = time.time()
         train_loss = 0
         model.train()
-
+        #TODO - fixed dev loss!!
         for train_step, train_batch in enumerate(train_dataloader):
 
             b_input_ids = train_batch[0].to(device)
@@ -152,7 +152,7 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
                 metrics_stats_headers = 'epoch,batch,'
                 metrics_stats = [epoch_i, train_step+1]
 
-                avg_train_loss = train_loss / len(train_dataloader)
+                avg_train_loss = train_loss / (train_step+1)
                 metrics.append('----- Epoch {} / Batch {} -----\n'.format(str(epoch_i), str(train_step+1)))
                 metrics.append('Training loss: {}\n'.format(str(avg_train_loss)))
 
