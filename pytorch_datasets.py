@@ -89,7 +89,7 @@ def convert_validation_dataset_to_pt(set_name, data_path, output_path):
     attention_mask_tensor = get_tensor(set_name=set_name, data_path=data_path, suffix='_attention_mask.json')
     labels_tensor = get_tensor(set_name=set_name, data_path=data_path, suffix='_labels.json')
 
-    dataset = TensorDataset(input_ids_tensor, token_type_ids_tensor, attention_mask_tensor, labels_tensor)
+    dataset = TensorDataset([input_ids_tensor, token_type_ids_tensor, attention_mask_tensor, labels_tensor])
 
     print('saving tensor to: {}'.format(output_path))
     torch.save(dataset, output_path)
