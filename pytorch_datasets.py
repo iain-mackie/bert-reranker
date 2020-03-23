@@ -79,7 +79,7 @@ def get_tensor(set_name, data_path, suffix):
     data = read_from_json_given_suffix(data_path=data_path, set_name=set_name, suffix=suffix, ordered_dict=True)
     data_tensor = torch.tensor(data)
     print('{} --> tensor.shape: {}, tensor.size: {}'.format(set_name + suffix, data_tensor.shape, data_tensor.size(0)))
-    return data_path
+    return data_tensor
 
 
 def convert_validation_dataset_to_pt(set_name, data_path, output_path):
