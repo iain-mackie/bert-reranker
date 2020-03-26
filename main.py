@@ -56,16 +56,18 @@ if __name__ == "__main__":
 
     # Train & validation run
     exp_dir = os.path.join(os.getcwd(), 'exp/')
-    experiment_name = 'test_model_21'
+    experiment_name = 'test_model_22'
     write = True
     do_eval = True
     run_path = os.path.join(os.getcwd(), 'test_data', 'test_model.run')
     qrels_path = os.path.join(os.getcwd(), 'test_data', 'test_model.qrels')
 
     fine_tuning_bert_re_ranker(model=relevance_bert, train_dataloader=validation_dataloader,
-                               validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8, write=write,
-                               experiment_name=experiment_name, exp_dir=exp_dir, do_eval=do_eval, validation_steps=3,
+                               validation_dataloader=validation_dataloader, epochs=2, lr=5e-5, eps=1e-8,
+                               weight_decay=0.01, num_warmup_steps=0, seed_val=42, write=write,
+                               experiment_name=experiment_name, exp_dir=exp_dir, do_eval=do_eval, logging_steps=2,
                                run_path=run_path, qrels_path=qrels_path)
+
 
     # #Run Inference
     # model_path = os.path.join(os.getcwd(), 'models', 'test_model_20', 'epoch1')

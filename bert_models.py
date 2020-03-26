@@ -137,9 +137,9 @@ def fine_tuning_bert_re_ranker(model, train_dataloader, validation_dataloader, e
             outputs = model.forward(input_ids=b_input_ids, attention_mask=b_attention_mask,
                                     token_type_ids=b_token_type_ids, labels=b_labels)
             loss = outputs[0]
-            train_loss += loss.sum().item()
+            train_loss += loss.mean().item()
 
-            loss.sum().backward()
+            loss.mean().backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
 
             optimizer.step()
@@ -410,7 +410,7 @@ if __name__ == "__main__":
             dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_250_dataset.pt'
             run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_250.run'
             qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_250.qrels'
-            experiment_name = 'random_queries_{}_dev_250'.format(i) + '_' + str(lr)
+            experiment_name = 'random_queries_{}_dev_250_mean_lr'.format(i) + '_' + str(lr)
 
             print('loading dev tensor: {}'.format(dev_path))
             validation_tensor = torch.load(dev_path)
