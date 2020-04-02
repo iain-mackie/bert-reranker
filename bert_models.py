@@ -394,7 +394,7 @@ if __name__ == "__main__":
     relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
     epochs = 3
     eps = 1e-8
-    lr_list = [1e-5]
+    lr_list = [2e-5]
     seed_val = 42
     write = True
     do_eval = True
