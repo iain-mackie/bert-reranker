@@ -400,7 +400,7 @@ if __name__ == "__main__":
     do_eval = True
     logging_steps = 25000
     weight_decay = 0.01
-    num_warmup_steps = 50000
+    num_warmup_steps = 100000
     exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
 
     for i in ['50000']:
