@@ -392,15 +392,15 @@ if __name__ == "__main__":
     # batch_size = 16*2
     # pretrained_weights = 'bert-base-uncased'
     # relevance_bert = nn.DataParallel(BertReRanker.from_pretrained(pretrained_weights))
-    # epochs = 4
+    # epochs = 3
     # eps = 1e-8
-    # lr_list = [8e-7]
+    # lr_list = [1e-5]
     # seed_val = 42
     # write = True
     # do_eval = True
     # logging_steps = 10000
     # weight_decay = 0.01
-    # num_warmup_steps = 10000
+    # num_warmup_steps = 50000
     # exp_dir = '/nfs/trec_car/data/bert_reranker_datasets/exp/'
     #
     # for i in ['50000']:
@@ -444,7 +444,7 @@ if __name__ == "__main__":
 
             print('loading test  tensor: {}'.format(test_path))
             test_tensor = torch.load(test_path)
-            batch_size = 128 * 4
+            batch_size = 128 * 6
             test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
 
             model_path = exp_path + m
