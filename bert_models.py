@@ -444,7 +444,7 @@ if __name__ == "__main__":
 
             print('loading test  tensor: {}'.format(test_path))
             test_tensor = torch.load(test_path)
-            batch_size = 128 * 6
+            batch_size = 128 * 8
             test_tensor = build_validation_data_loader(tensor=test_tensor, batch_size=batch_size)
 
             model_path = exp_path + m
