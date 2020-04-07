@@ -1,0 +1,52 @@
+Commands to run to make files read/write
+
+- end of scripts groupwrite permissons (run chmod -R 775 *)
+- copy scp (chmod -R 775 * && chmod -R +w * && chgrp -R nfsnobody *)
+
+################################################
+
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: pythonmlnotebookgpu2-imackie
+  namespace: imackieproject
+spec:
+  replicas: 1
+  strategy:
+    resources: {}
+  template:
+    metadata:
+      labels:
+        app: pythonMLNotebook
+        deploymentconfig: pythonMLNotebookGPU
+    spec:
+      containers:
+      - name: deepo-ml-plus-imackie
+        image: iainmackie/multi-task-base-image:v1
+        resources:
+          requests:
+            cpu: "2000m"
+            memory: "6Gi"
+          limits:
+            cpu: "16000m"
+            memory: "128Gi"
+        command:
+          - 'jupyter-lab'
+        args:
+          - '--no-browser'
+          - '--ip=0.0.0.0'
+          - '--allow-root'
+          - '--NotebookApp.token='
+          - '--notebook-dir="/nfs/"'
+        ports:
+          - containerPort: 8888
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - mountPath: /nfs/
+            name: nfs-access
+      securityContext: {}
+      serviceAccount: containerroot
+      volumes:
+      - name: nfs-access
+        persistentVolumeClaim:
+          claimName: imackievol1claim
