@@ -442,7 +442,7 @@ if __name__ == "__main__":
             #     run_path = '/nfs/trec_car/data/bert_reranker_datasets/test_{}.run'.format(t)
             #     qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/test_{}.qrels'.format(t)
 
-            test_path = '/nfs/trec_car/data/bert_reranker_datasets/tensor_dataset_chuck_0.pt'
+            test_path = '/nfs/trec_car/data/bert_reranker_datasets/test_chunks/tensor_dataset_chuck_22.pt'
             qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmark_Y1_25.qrels'
             run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmark_Y1_25.run'
 
