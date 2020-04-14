@@ -406,7 +406,7 @@ if __name__ == "__main__":
     for _ in ['50000']:
         for lr in lr_list:
 
-            train_path = '/nfs/trec_car/data/bert_reranker_datasets/test_chucks_train/tensor_dataset_chuck_0.pt'
+            train_path = '/nfs/trec_car/data/bert_reranker_datasets/test_chunks_train/tensor_dataset_chuck_1.pt'
             dev_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100_dataset.pt'
             run_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100.run'
             qrels_path = '/nfs/trec_car/data/bert_reranker_datasets/dev_benchmarkY1_100.qrels'
